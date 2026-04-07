@@ -49,9 +49,16 @@
         .t-info { position: absolute; bottom: 0; width: 100%; padding: 15px; background: linear-gradient(transparent, rgba(0,0,0,0.8)); color: white; }
 
         /* BOTÕES */
-        .btn { width: 100%; padding: 16px; border: none; border-radius: 20px; font-weight: 800; cursor: pointer; transition: 0.2s; font-family: inherit; }
-        .btn-p { background: var(--primary); color: white; }
-        .btn-m { background: var(--money); color: white; }
+        .btn { width: 100%; padding: 16px; border: none; border-radius: 20px; font-weight: 800; font-size: 15px; cursor: pointer; transition: 0.2s; font-family: inherit; display: block; }
+
+/* Cor Vermelha (Principal) */
+        .btn-p { background-color: #FF4B5C !important; color: white !important; }
+
+/* Cor Verde (Sucesso/Dinheiro) */
+        .btn-m { background-color: #10B981 !important; color: white !important; }
+
+/* Efeito de clique em qualquer botão */
+        .btn:active { transform: scale(0.96); opacity: 0.9; }
 
         /* NAV MENU */
         .nav { position: fixed; bottom: 15px; left: 15px; right: 15px; height: 70px; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); border-radius: 35px; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.1); z-index: 1000; }
@@ -80,7 +87,7 @@
             <h2>Nossa Jornada</h2>
             <input type="email" id="email" placeholder="Seu E-mail">
             <input type="password" id="pass" placeholder="Senha">
-            <button class="btn btn-p" onclick="handleAuth()" id="btn-auth-text">Entrar no Mapa</button>
+            <button class="btn btn-p" onclick="handleAuth()" id="btn-auth-text" style="margin-top:15px;">Entrar no Mapa</button>
             <p style="font-size: 13px; color: var(--sub); margin-top: 15px;" onclick="toggleAuth()">Não tem conta? <b style="color:var(--primary)">Criar Jornada</b></p>
         </div>
     </div>
@@ -228,9 +235,21 @@
     }
     function fecharAlerta() { document.getElementById('modal-alerta').style.display = 'none'; }
     function toggleAuth() {
-        isLogin = !isLogin;
-        document.getElementById('btn-auth-text').innerText = isLogin ? "Entrar no Mapa" : "Criar Jornada";
+    isLogin = !isLogin;
+    const btn = document.getElementById('btn-auth-text');
+    const title = document.querySelector('#login-screen h2');
+    const link = document.querySelector('#login-screen p');
+
+    if (isLogin) {
+        title.innerText = "Nossa Jornada";
+        btn.innerText = "Entrar no Mapa";
+        link.innerHTML = 'Não tem conta? <b style="color:var(--primary)">Criar Jornada</b>';
+    } else {
+        title.innerText = "Nova Jornada 🚀";
+        btn.innerText = "Criar Minha Conta";
+        link.innerHTML = 'Já tem conta? <b style="color:var(--primary)">Fazer Login</b>';
     }
+}
 
     // --- AUTENTICAÇÃO ---
     async function handleAuth() {
