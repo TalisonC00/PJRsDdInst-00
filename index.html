@@ -183,17 +183,34 @@
     </div>
 
     <div id="aba-perfil" class="aba">
-        <div class="card" style="text-align: center;">
-            <img id="p-img" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="avatar" style="width: 100px; height: 100px; margin-bottom: 15px;">
+    <div class="card" style="text-align: center; position: relative;">
+        
+        <button onclick="toggleEdicaoPerfil()" style="position: absolute; right: 20px; top: 20px; background: none; border: none; font-size: 20px; cursor: pointer;">⚙️</button>
+
+        <div id="perfil-view">
+            <img id="p-img-view" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="avatar" style="width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary); margin-bottom: 15px;">
+            <h2 id="p-nome-view" style="margin: 0; font-size: 22px;">Viajante</h2>
+            <p id="p-user-view" style="color: var(--sub); margin: 5px 0 15px;">@user814</p>
+            <p id="p-bio-view" style="font-size: 14px; line-height: 1.5; padding: 0 20px; color: #475569;">Sua biografia aparecerá aqui...</p>
+        </div>
+
+        <div id="perfil-edit" style="display: none;">
+            <img id="p-img-edit" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="avatar" style="width: 100px; height: 100px; margin-bottom: 15px; border-radius: 50%; object-fit: cover;">
             <input type="file" id="f-upload" style="display:none" onchange="processarFotoPerfil(this)">
             <button onclick="document.getElementById('f-upload').click()" class="btn" style="background:#f1f5f9; font-size:12px; margin-bottom:15px;">Mudar Foto 📸</button>
+            
             <input type="text" id="edit-nome" placeholder="Nome">
             <input type="text" id="edit-user" placeholder="username">
-            <textarea id="edit-bio" placeholder="Sua biografia..."></textarea>
-            <button class="btn btn-p" onclick="salvarPerfil()">Salvar Perfil ✨</button>
-            <button onclick="auth.signOut()" style="margin-top:20px; color:red; border:none; background:none; font-weight:bold;">Sair da Conta</button>
+            <textarea id="edit-bio" placeholder="Sua biografia..." style="height: 100px;"></textarea>
+            
+            <button class="btn btn-p" onclick="salvarPerfil()">Salvar Perfil</button>
+            <button onclick="toggleEdicaoPerfil()" style="margin-top: 10px; background: none; border: none; color: var(--sub); font-size: 13px; cursor: pointer;">Cancelar</button>
         </div>
+
+        <hr style="border: 0; border-top: 1px solid #f1f5f9; margin: 25px 0;">
+        <button onclick="auth.signOut()" style="color:#FF4B5C; border:none; background:none; font-weight:800; font-size: 14px; cursor: pointer;">Sair da Conta</button>
     </div>
+</div>
 
     <nav class="nav">
         <div class="nav-item ativa" onclick="mudarAba('feed', this)">🏠</div>
