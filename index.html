@@ -104,18 +104,18 @@
         </div>
     </div>
 
-    <div class="header">
-        <div class="header-title">
-            <h3 style="font-size: 14px;">Jornada Social 🌍</h3>
-            <span id="info-conquistas" style="font-size: 8px;">CONQUISTAS: 0</span>
-        </div>
-        <div class="header-profile" onclick="mudarAba('perfil', document.getElementById('nav-perfil'))">
-            <div class="header-info">
-                <div id="h-nome" style="font-size: 11px; font-weight: 800; color: var(--text);">Carregando...</div>
-                <div id="h-user" style="font-size: 9px; color: var(--sub);">@...</div>
-            </div>
-            <img id="h-avatar" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="header-avatar">
-        </div>
+    <div class="header" style="display: flex; align-items: center; justify-content: space-between; background: #fff; padding: 10px 16px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+    
+    <div style="width: 40px;"></div> 
+
+    <div style="text-align: center; flex: 1;">
+        <h3 style="margin: 0; font-size: 16px; color: var(--primary); font-weight: 800;">Nossa Jornada 🌍</h3>
+        <span id="info-conquistas" style="font-size: 9px; font-weight: 800; color: var(--sub); text-transform: uppercase;">Conquistas: 0</span>
+    </div>
+
+    <div onclick="mudarAba('perfil', document.getElementById('nav-perfil'))" style="cursor: pointer; position: relative;">
+        <img id="h-avatar" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary);">
+    </div>
     </div>
 
     <div id="aba-feed" class="aba ativa"><div id="feed-container"></div></div>
@@ -161,17 +161,38 @@
     </div>
 
     <div id="aba-perfil" class="aba">
-        <div class="card" style="text-align: center;">
-            <img id="p-img" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="avatar" style="width: 100px; height: 100px; margin-bottom: 15px;">
-            <input type="file" id="f-upload" style="display:none" onchange="processarFotoPerfil(this)">
-            <button onclick="document.getElementById('f-upload').click()" class="btn" style="background:#f1f5f9; font-size:12px; margin-bottom:15px;">Trocar Foto de Perfil 📸</button>
-            <input type="text" id="edit-nome" placeholder="Seu Nome">
-            <input type="text" id="edit-user" placeholder="seu_username">
-            <textarea id="edit-bio" placeholder="Sua bio..."></textarea>
-            <button class="btn btn-p" onclick="salvarPerfil()">Atualizar Perfil ✨</button>
-            <button onclick="auth.signOut()" style="margin-top:20px; color:red; border:none; background:none; font-weight:bold; font-size:12px;">Deslogar da Conta</button>
+    <div class="card" style="text-align: center; position: relative;">
+        <button onclick="ativarEdicao()" style="position: absolute; right: 20px; top: 20px; border: none; background: none; font-size: 22px; cursor: pointer;">⚙️</button>
+
+        <img id="p-img" src="https://via.placeholder.com/100" class="perfil-avatar" style="width: 110px; height: 110px; border-radius: 50%; border: 4px solid var(--primary); margin-bottom: 15px; object-fit: cover;">
+
+        <div id="perfil-view">
+            <h2 id="view-nome" style="margin: 0; font-size: 22px;">Nome Usuário</h2>
+            <p id="view-user" style="color: var(--sub); margin: 5px 0;">@username</p>
+            <p id="view-bio" style="font-size: 14px; padding: 0 10px;">Biografia do viajante...</p>
         </div>
+
+        <div id="perfil-edit" style="display: none; margin-top: 15px;">
+    
+    <input type="text" id="edit-nome" placeholder="Nome completo">
+
+    <div style="position: relative; margin: 8px 0;">
+        <input type="text" id="edit-user" placeholder="seu_username" 
+               oninput="validarUsernameRealtime(this.value)" 
+               style="margin-bottom: 5px;">
+        <span id="user-status" style="font-size: 11px; font-weight: 800; display: block; text-align: left; padding-left: 5px;"></span>
     </div>
+    <textarea id="edit-bio" placeholder="Sua biografia..."></textarea>
+    
+    <div style="display: flex; gap: 10px; margin-top: 10px;">
+        <button class="btn btn-p" onclick="salvarPerfil()" style="flex: 2;">Salvar</button>
+        <button class="btn" onclick="cancelarEdicao()" style="flex: 1; background: #eee;">Sair</button>
+    </div>
+</div>
+
+        <button onclick="auth.signOut()" style="margin-top: 25px; color: #ef4444; border: none; background: none; font-weight: bold; font-size: 13px;">Sair da Conta</button>
+    </div>
+</div>
 
     <nav class="nav">
         <div class="nav-item ativa" onclick="mudarAba('feed', this)">🏠</div>
@@ -235,10 +256,77 @@
             } catch(err) { customAlerta(err.message, '❌'); }
         }
 
+        function ativarEdicao() {
+    document.getElementById('perfil-view').style.display = 'none';
+    document.getElementById('perfil-edit').style.display = 'block';
+    
+    // Preenche os inputs com o que já está na tela para facilitar
+    document.getElementById('edit-nome').value = document.getElementById('view-nome').innerText;
+    document.getElementById('edit-user').value = document.getElementById('view-user').innerText.replace('@', '');
+    document.getElementById('edit-bio').value = document.getElementById('view-bio').innerText;
+}
+
+function cancelarEdicao() {
+    document.getElementById('perfil-view').style.display = 'block';
+    document.getElementById('perfil-edit').style.display = 'none';
+}
+
+// Chame esta função dentro do seu saveProfile antigo para fechar a edição após salvar
+async function salvarPerfil() {
+    const novoNome = document.getElementById('edit-nome').value;
+    const novoUser = document.getElementById('edit-user').value.toLowerCase().trim();
+    const novaBio = document.getElementById('edit-bio').value;
+
+    // 1. Atualiza o perfil principal
+    await db.ref(`usuarios/${me.uid}/perfil`).update({
+        nome: novoNome,
+        username: novoUser,
+        bio: novaBio
+    });
+
+    // 2. Registra o novo username no "Cartório" para ninguém mais usar
+    await db.ref(`usernames/${novoUser}`).set(me.uid);
+
+    cancelarEdicao(); // Fecha a tela de edição
+    customAlerta("Perfil atualizado com sucesso!", "✨");
+}
+
         auth.onAuthStateChanged(user => {
             if(user) { me = user; document.getElementById('login-screen').style.display = 'none'; initApp(); }
             else { document.getElementById('login-screen').style.display = 'flex'; }
         });
+
+        async function validarUsernameRealtime(val) {
+    const user = val.toLowerCase().trim().replace(/[^a-z0-9_.]/g, '');
+    const status = document.getElementById('user-status');
+    const btnSalvar = document.querySelector('#perfil-edit .btn-p'); // Seleciona o botão de salvar
+
+    // Limpa o campo se estiver vazio
+    if (user.length < 3) {
+        status.innerText = "Mínimo 3 caracteres...";
+        status.style.color = "var(--sub)";
+        btnSalvar.disabled = true;
+        btnSalvar.style.opacity = "0.5";
+        return;
+    }
+
+    // Consulta o "Cartório" no Firebase
+    const snap = await db.ref('usernames/' + user).once('value');
+    
+    if (snap.exists() && snap.val() !== me.uid) {
+        // Se o username existe e NÃO é o meu atual
+        status.innerText = "Ocupado❌";
+        status.style.color = "#ef4444"; // Vermelho
+        btnSalvar.disabled = true;
+        btnSalvar.style.opacity = "0.5";
+    } else {
+        // Se estiver livre ou for o meu próprio
+        status.innerText = "Disponível✅";
+        status.style.color = "var(--money)"; // Verde
+        btnSalvar.disabled = false;
+        btnSalvar.style.opacity = "1";
+    }
+}
 
         // NAVEGAÇÃO
         function mudarAba(id, el) {
