@@ -18,67 +18,114 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
-        
-        :root {
-            --primary: #FF4B5C; --sky: #BAE6FD; --money: #10B981;
-            --text: #1E293B; --sub: #64748B; --glass: rgba(255, 255, 255, 0.95);
-        }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--sky); margin: 0; color: var(--text); overflow-x: hidden; }
+:root {
+    --primary: #FF4B5C; 
+    --sky: #BAE6FD; 
+    --money: #10B981;
+    --text: #1E293B; 
+    --sub: #64748B; 
+    --glass: rgba(255, 255, 255, 0.95);
+}
 
-        /* HEADER COM PERFIL NO TOPO DIREITO */
-        .header { 
-            background: #fff; padding: 10px 16px; display: flex; justify-content: space-between; 
-            align-items: center; box-shadow: 0 4px 20px rgba(0,0,0,0.03); position: sticky; top: 0; z-index: 2000; 
-        }
-        .header-profile { display: flex; align-items: center; gap: 10px; cursor: pointer; }
-        .header-avatar { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); }
-        .header-info { text-align: right; line-height: 1.2; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-        /* NAVEGAÇÃO POR ABAS */
-        .aba { display: none; min-height: calc(100vh - 130px); padding-bottom: 90px; }
-        .aba.ativa { display: block; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+body { 
+    font-family: 'Plus Jakarta Sans', sans-serif; 
+    background: var(--sky); 
+    margin: 0; 
+    color: var(--text); 
+    overflow-x: hidden; 
+}
 
-        /* MAPA FULL */
-        .mapa-container { height: calc(100vh - 135px); width: 100vw; background: white; position: relative; }
-        #svg-container { width: 100%; height: 100%; }
-        path { fill: #F1F5F9; stroke: #fff; stroke-width: 0.8; transition: 0.5s; cursor: pointer; }
-        .visitado { fill: var(--primary) !important; }
+/* --- ESTILO DOS BOTÕES (ADICIONADO PARA CORREÇÃO) --- */
+.btn { 
+    width: 100%; 
+    padding: 16px; 
+    border: none; 
+    border-radius: 20px; 
+    font-weight: 800; 
+    font-size: 15px; 
+    cursor: pointer; 
+    transition: 0.3s;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
 
-        /* FORMULÁRIO DE REGISTRO (GRID ORGANIZADO) */
-        .card { background: white; margin: 15px; border-radius: 28px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-        .exp-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 15px 0; }
-        .exp-item { background: #F8FAFC; border: 1.5px solid #F1F5F9; border-radius: 12px; padding: 10px; display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; }
-        .exp-item span { font-size: 20px; }
-        input, select, textarea { width: 100%; padding: 14px; margin: 8px 0; border: 1.5px solid #F1F5F9; border-radius: 14px; font-size: 15px; outline: none; background: #F8FAFC; font-family: inherit; }
+.btn-p { background-color: var(--primary) !important; color: white !important; }
+.btn-m { background-color: var(--money) !important; color: white !important; }
+.btn-n { background-color: #F1F5F9 !important; color: var(--text) !important; }
 
-        /* FEED E CARROSSEL */
-        .feed-card { background: white; margin: 15px; border-radius: 30px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-        .carrossel { display: flex; overflow-x: auto; snap-type: x mandatory; height: 320px; scrollbar-width: none; background: #f1f5f9; }
-        .carrossel img { flex: 0 0 100%; height: 100%; object-fit: cover; snap-align: center; }
+.btn:active { transform: scale(0.96); opacity: 0.9; }
 
-        /* CONQUISTAS (BADGES) */
-        .badge-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
-        .badge { text-align: center; opacity: 0.15; filter: grayscale(1); transition: 0.4s; }
-        .badge.active { opacity: 1; filter: grayscale(0); transform: scale(1.05); }
-        .b-icon { width: 60px; height: 60px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; margin: 0 auto 8px; }
+/* --- HEADER --- */
+.header { 
+    background: #fff; padding: 10px 16px; display: flex; justify-content: space-between; 
+    align-items: center; box-shadow: 0 4px 20px rgba(0,0,0,0.03); position: sticky; top: 0; z-index: 2000; 
+}
+.header-profile { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+.header-avatar { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); }
+.header-info { text-align: right; line-height: 1.2; }
 
-        /* MODAIS E ALERTAS (SEM GITHUB NAME) */
-        .modal-custom { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 5000; display: none; align-items: center; justify-content: center; }
-        .alert-box { background: white; padding: 25px; border-radius: 28px; width: 85%; max-width: 320px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
+/* --- NAVEGAÇÃO POR ABAS --- */
+.aba { display: none; min-height: calc(100vh - 130px); padding-bottom: 90px; }
+.aba.ativa { display: block; animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* MENU INFERIOR */
-        .nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 70px; background: var(--glass); display: flex; justify-content: space-around; align-items: center; z-index: 1000; border-top: 1px solid rgba(0,0,0,0.05); }
-        .nav-item { font-size: 24px; opacity: 0.3; transition: 0.3s; cursor: pointer; }
-        .nav-item.ativa { opacity: 1; color: var(--primary); transform: translateY(-5px); }
+/* --- MAPA FULL --- */
+.mapa-container { height: calc(100vh - 135px); width: 100vw; background: white; position: relative; }
+#svg-container { width: 100%; height: 100%; }
+path { fill: #F1F5F9; stroke: #fff; stroke-width: 0.8; transition: 0.5s; cursor: pointer; }
+.visitado { fill: var(--primary) !important; }
 
-        #login-screen { position: fixed; inset: 0; background: var(--sky); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        
-        /* POP-UP DO MAPA */
-        #photo-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 30px; z-index: 3000; width: 90%; max-height: 80vh; display: none; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
-        #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2500; display: none; backdrop-filter: blur(4px); }
+/* --- CARDS E INPUTS --- */
+.card { background: white; margin: 15px; border-radius: 28px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+
+input, select, textarea { 
+    width: 100%; padding: 14px; margin: 8px 0; border: 1.5px solid #F1F5F9; 
+    border-radius: 14px; font-size: 15px; outline: none; background: #F8FAFC; font-family: inherit; 
+}
+
+/* --- GRID DE EXPERIÊNCIAS --- */
+.exp-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 15px 0; }
+.exp-item { 
+    background: #F8FAFC; border: 1.5px solid #F1F5F9; border-radius: 12px; 
+    padding: 10px; display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; 
+}
+.exp-item span { font-size: 20px; }
+
+/* --- FEED E CARROSSEL --- */
+.feed-card { background: white; margin: 15px; border-radius: 30px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+.carrossel { display: flex; overflow-x: auto; snap-type: x mandatory; height: 320px; scrollbar-width: none; background: #f1f5f9; }
+.carrossel img { flex: 0 0 100%; height: 100%; object-fit: cover; snap-align: center; }
+
+/* --- CONQUISTAS (BADGES) --- */
+.badge-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+.badge { text-align: center; opacity: 0.15; filter: grayscale(1); transition: 0.4s; }
+.badge.active { opacity: 1; filter: grayscale(0); transform: scale(1.05); }
+.b-icon { width: 60px; height: 60px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; margin: 0 auto 8px; }
+
+/* --- MODAIS E ALERTAS --- */
+.modal-custom { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 5000; display: none; align-items: center; justify-content: center; }
+.alert-box { background: white; padding: 25px; border-radius: 28px; width: 85%; max-width: 320px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
+
+/* --- MENU INFERIOR --- */
+.nav { 
+    position: fixed; bottom: 0; left: 0; width: 100%; height: 70px; 
+    background: var(--glass); display: flex; justify-content: space-around; 
+    align-items: center; z-index: 1000; border-top: 1px solid rgba(0,0,0,0.05); 
+}
+.nav-item { font-size: 24px; opacity: 0.3; transition: 0.3s; cursor: pointer; }
+.nav-item.ativa { opacity: 1; color: var(--primary); transform: translateY(-5px); }
+
+#login-screen { position: fixed; inset: 0; background: var(--sky); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
+
+/* --- POP-UP DO MAPA --- */
+#photo-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 30px; z-index: 3000; width: 90%; max-height: 80vh; display: none; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+#overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2500; display: none; backdrop-filter: blur(4px); }
     </style>
 </head>
 <body>
