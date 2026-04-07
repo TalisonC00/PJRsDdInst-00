@@ -197,17 +197,17 @@
         <div id="perfil-modo-edit" style="display: none;">
             <div style="position: relative; display: inline-block;">
                 <img id="p-img" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; opacity: 0.6;">
-                <button onclick="document.getElementById('f-upload').click()" style="position: absolute; inset: 0; background: none; border: none; cursor: pointer; font-size: 20px;">📸</button>
+                <button onclick="document.getElementById('f-upload').click()" style="position: absolute; inset: 0; background: none; border: none; cursor: pointer; font-size: 20px;"></button>
             </div>
             <input type="file" id="f-upload" style="display:none" onchange="processarFotoPerfil(this)">
             
-            <p style="font-size: 11px; color: var(--sub); margin-bottom: 15px;">Toque na foto para alterar</p>
+            <p style="font-size: 11px; color: var(--sub); margin-bottom: 15px;">📸 Toque na foto para alterar</p>
 
             <input type="text" id="edit-nome" placeholder="Nome">
             <input type="text" id="edit-user" placeholder="username">
             <textarea id="edit-bio" placeholder="Sua biografia..." style="height: 80px; resize: none;"></textarea>
             
-            <button class="btn btn-p" onclick="salvarPerfil()">Salvar Alterações ✨</button>
+            <button class="btn btn-p" onclick="salvarPerfil()">Salvar Alterações</button>
             <button onclick="toggleModoPerfil()" style="background: none; border: none; color: var(--sub); margin-top: 15px; font-weight: 600; cursor: pointer;">Cancelar</button>
         </div>
 
