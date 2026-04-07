@@ -4,13 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Jornada Social 🌍</title>
-
+    
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#FF4B5C">
+    <link rel="apple-touch-icon" href="icone.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="icone.png">
-    
+
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
@@ -21,82 +20,65 @@
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
         
         :root {
-            --primary: #FF4B5C;
-            --sky: #BAE6FD;
-            --money: #10B981;
-            --text: #1E293B;
-            --sub: #64748B;
-            --glass: rgba(255, 255, 255, 0.95);
+            --primary: #FF4B5C; --sky: #BAE6FD; --money: #10B981;
+            --text: #1E293B; --sub: #64748B; --glass: rgba(255, 255, 255, 0.95);
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--sky); margin: 0; color: var(--text); overflow-x: hidden; }
 
-        /* HEADER COM PERFIL ALINHADO À DIREITA */
+        /* HEADER COM PERFIL NO TOPO DIREITO */
         .header { 
-            background: #fff; 
-            padding: 10px 16px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.03); 
-            position: sticky; 
-            top: 0; 
-            z-index: 2000; 
+            background: #fff; padding: 10px 16px; display: flex; justify-content: space-between; 
+            align-items: center; box-shadow: 0 4px 20px rgba(0,0,0,0.03); position: sticky; top: 0; z-index: 2000; 
         }
-        .header-title { flex: 1; }
-        .header h3 { margin: 0; font-size: 16px; color: var(--primary); font-weight: 800; }
-        #info-conquistas { font-size: 9px; font-weight: 800; color: var(--sub); text-transform: uppercase; }
-        
-        .header-profile { display: flex; align-items: center; gap: 8px; cursor: pointer; }
-        .header-avatar { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); }
+        .header-profile { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        .header-avatar { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); }
+        .header-info { text-align: right; line-height: 1.2; }
 
-        /* TELAS */
-        .aba { display: none; min-height: calc(100vh - 130px); padding-bottom: 90px; animation: fadeIn 0.3s ease; }
-        .aba.ativa { display: block; }
+        /* NAVEGAÇÃO POR ABAS */
+        .aba { display: none; min-height: calc(100vh - 130px); padding-bottom: 90px; }
+        .aba.ativa { display: block; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* CARDS E FORMULÁRIOS */
-        .card { background: white; margin: 15px; border-radius: 28px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-        input, textarea, select { width: 100%; padding: 14px; margin: 8px 0; border: 1.5px solid #F1F5F9; border-radius: 14px; font-size: 15px; outline: none; background: #F8FAFC; font-family: inherit; }
-        .btn { width: 100%; padding: 16px; border: none; border-radius: 18px; font-weight: 800; font-size: 16px; cursor: pointer; transition: 0.2s; }
-        .btn-p { background: var(--primary); color: white; }
-        .btn-m { background: var(--money); color: white; }
-
         /* MAPA FULL */
-        .mapa-full { height: calc(100vh - 145px); width: 100vw; background: white; position: relative; overflow: hidden; }
+        .mapa-container { height: calc(100vh - 135px); width: 100vw; background: white; position: relative; }
         #svg-container { width: 100%; height: 100%; }
         path { fill: #F1F5F9; stroke: #fff; stroke-width: 0.8; transition: 0.5s; cursor: pointer; }
         .visitado { fill: var(--primary) !important; }
 
-        /* FORMULÁRIO DE EXPERIÊNCIAS (GRID) */
+        /* FORMULÁRIO DE REGISTRO (GRID ORGANIZADO) */
+        .card { background: white; margin: 15px; border-radius: 28px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
         .exp-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 15px 0; }
         .exp-item { background: #F8FAFC; border: 1.5px solid #F1F5F9; border-radius: 12px; padding: 10px; display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; }
         .exp-item span { font-size: 20px; }
-        .exp-item input { width: 16px; height: 16px; margin: 0; }
+        input, select, textarea { width: 100%; padding: 14px; margin: 8px 0; border: 1.5px solid #F1F5F9; border-radius: 14px; font-size: 15px; outline: none; background: #F8FAFC; font-family: inherit; }
 
-        /* FEED E RANKING */
+        /* FEED E CARROSSEL */
         .feed-card { background: white; margin: 15px; border-radius: 30px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
         .carrossel { display: flex; overflow-x: auto; snap-type: x mandatory; height: 320px; scrollbar-width: none; background: #f1f5f9; }
         .carrossel img { flex: 0 0 100%; height: 100%; object-fit: cover; snap-align: center; }
-        .pill { background: #F1F5F9; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; }
 
-        /* CONQUISTAS */
+        /* CONQUISTAS (BADGES) */
         .badge-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
-        .badge { text-align: center; opacity: 0.2; filter: grayscale(1); transition: 0.4s; }
-        .badge.active { opacity: 1; filter: grayscale(0); }
+        .badge { text-align: center; opacity: 0.15; filter: grayscale(1); transition: 0.4s; }
+        .badge.active { opacity: 1; filter: grayscale(0); transform: scale(1.05); }
         .b-icon { width: 60px; height: 60px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; margin: 0 auto 8px; }
 
-        /* ALERTAS CUSTOMIZADOS */
-        .modal-custom { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 5000; display: none; align-items: center; justify-content: center; }
-        .alert-box { background: white; padding: 25px; border-radius: 28px; width: 85%; max-width: 320px; text-align: center; }
+        /* MODAIS E ALERTAS (SEM GITHUB NAME) */
+        .modal-custom { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 5000; display: none; align-items: center; justify-content: center; }
+        .alert-box { background: white; padding: 25px; border-radius: 28px; width: 85%; max-width: 320px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
 
-        /* NAV */
+        /* MENU INFERIOR */
         .nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 70px; background: var(--glass); display: flex; justify-content: space-around; align-items: center; z-index: 1000; border-top: 1px solid rgba(0,0,0,0.05); }
-        .nav-item { font-size: 24px; opacity: 0.3; transition: 0.3s; }
+        .nav-item { font-size: 24px; opacity: 0.3; transition: 0.3s; cursor: pointer; }
         .nav-item.ativa { opacity: 1; color: var(--primary); transform: translateY(-5px); }
 
         #login-screen { position: fixed; inset: 0; background: var(--sky); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        
+        /* POP-UP DO MAPA */
+        #photo-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 30px; z-index: 3000; width: 90%; max-height: 80vh; display: none; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+        #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2500; display: none; backdrop-filter: blur(4px); }
     </style>
 </head>
 <body>
@@ -104,8 +86,8 @@
     <div id="modal-alerta" class="modal-custom">
         <div class="alert-box">
             <div id="alerta-icon" style="font-size: 40px; margin-bottom: 10px;">💡</div>
-            <p id="alerta-msg" style="font-weight: 700;"></p>
-            <button class="btn btn-m" onclick="fecharAlerta()">Ok!</button>
+            <p id="alerta-msg" style="font-weight: 700; color: var(--text);"></p>
+            <button class="btn btn-m" onclick="fecharAlerta()">Entendido!</button>
         </div>
     </div>
 
@@ -124,13 +106,13 @@
 
     <div class="header">
         <div class="header-title">
-            <h3>Nossa Jornada 🌍</h3>
-            <span id="info-conquistas">ESTADOS: 0</span>
+            <h3 style="font-size: 14px;">Jornada Social 🌍</h3>
+            <span id="info-conquistas" style="font-size: 8px;">CONQUISTAS: 0</span>
         </div>
         <div class="header-profile" onclick="mudarAba('perfil', document.getElementById('nav-perfil'))">
-            <div style="text-align: right; line-height: 1;">
-                <div id="h-nome" style="font-size: 12px; font-weight: 800;">Carregando...</div>
-                <div id="h-user" style="font-size: 10px; color: var(--sub);">@...</div>
+            <div class="header-info">
+                <div id="h-nome" style="font-size: 11px; font-weight: 800; color: var(--text);">Carregando...</div>
+                <div id="h-user" style="font-size: 9px; color: var(--sub);">@...</div>
             </div>
             <img id="h-avatar" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="header-avatar">
         </div>
@@ -139,26 +121,16 @@
     <div id="aba-feed" class="aba ativa"><div id="feed-container"></div></div>
 
     <div id="aba-mapa" class="aba">
-        <div class="mapa-full"><div id="svg-container"></div></div>
+        <div class="mapa-container"><div id="svg-container"></div></div>
     </div>
-
-    <div id="aba-conquistas" class="aba">
-        <div class="card">
-            <h3>🏆 Suas Medalhas</h3>
-            <div id="grid-conquistas" class="badge-grid"></div>
-        </div>
-    </div>
-
-    <div id="aba-ranking" class="aba"><div id="rank-container" class="card"></div></div>
 
     <div id="aba-registro" class="aba">
         <div class="card">
-            <h4>Nova Viagem 📍</h4>
+            <h4 style="margin-top:0;">Nova Memória 📍</h4>
             <select id="sel-uf">
-                <option value="BRSP">São Paulo</option><option value="BRRJ">Rio de Janeiro</option>
-                <option value="BRMG">Minas Gerais</option><option value="BRBA">Bahia</option>
-                <option value="BRSC">Santa Catarina</option><option value="BRPR">Paraná</option>
-                <option value="BRRS">Rio Grande do Sul</option>
+                <option value="BRSP">São Paulo</option><option value="BRRJ">Rio de Janeiro</option><option value="BRMG">Minas Gerais</option>
+                <option value="BRBA">Bahia</option><option value="BRSC">Santa Catarina</option><option value="BRPR">Paraná</option>
+                <option value="BRRS">Rio Grande do Sul</option><option value="BRGO">Goiás</option><option value="BRDF">Distrito Federal</option>
             </select>
             <input type="text" id="cidade" placeholder="Cidade">
             <input type="number" id="valor" placeholder="Gasto total (R$)">
@@ -172,14 +144,19 @@
                 <label class="exp-item"><span>🌳</span><input type="checkbox" id="chk-n"></label>
             </div>
 
-            <input type="file" id="inp-fotos" multiple accept="image/*" onchange="previaFotos(this)">
-            <div id="previa-container" style="display:flex; gap:5px; margin: 10px 0;"></div>
+            <input type="file" id="inp-fotos" multiple accept="image/*" onchange="previaFotos(this)" style="display:none">
+            <button class="btn" style="background:#f1f5f9; font-size:12px;" onclick="document.getElementById('inp-fotos').click()">📸 Adicionar até 3 fotos</button>
+            <div id="previa-container" style="display:flex; gap:8px; margin: 10px 0; justify-content:center;"></div>
             
-            <div style="background:#F8FAFC; padding:12px; border-radius:15px; margin-top:10px;">
-                <label style="font-size: 11px; margin:0;"><input type="checkbox" id="is-vip"> Permitir que Favoritos vejam o valor</label>
-            </div>
-            
-            <button class="btn btn-m" style="margin-top:15px;" onclick="postarViagem()">Salvar Memória 🚩</button>
+            <label style="font-size: 11px;"><input type="checkbox" id="is-vip"> Permitir que Favoritos vejam o valor</label>
+            <button class="btn btn-m" style="margin-top:15px;" onclick="postarViagem()">Salvar no Mapa 🚩</button>
+        </div>
+    </div>
+
+    <div id="aba-conquistas" class="aba">
+        <div class="card">
+            <h3 style="margin-top:0;">🏆 Suas Conquistas</h3>
+            <div id="grid-conquistas" class="badge-grid"></div>
         </div>
     </div>
 
@@ -187,12 +164,12 @@
         <div class="card" style="text-align: center;">
             <img id="p-img" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="avatar" style="width: 100px; height: 100px; margin-bottom: 15px;">
             <input type="file" id="f-upload" style="display:none" onchange="processarFotoPerfil(this)">
-            <button onclick="document.getElementById('f-upload').click()" class="btn" style="background:#f1f5f9; font-size:12px; margin-bottom:15px;">Mudar Foto 📸</button>
-            <input type="text" id="edit-nome" placeholder="Nome">
-            <input type="text" id="edit-user" placeholder="username">
-            <textarea id="edit-bio" placeholder="Sua biografia..."></textarea>
-            <button class="btn btn-p" onclick="salvarPerfil()">Salvar Perfil ✨</button>
-            <button onclick="auth.signOut()" style="margin-top:20px; color:red; border:none; background:none; font-weight:bold;">Sair da Conta</button>
+            <button onclick="document.getElementById('f-upload').click()" class="btn" style="background:#f1f5f9; font-size:12px; margin-bottom:15px;">Trocar Foto de Perfil 📸</button>
+            <input type="text" id="edit-nome" placeholder="Seu Nome">
+            <input type="text" id="edit-user" placeholder="seu_username">
+            <textarea id="edit-bio" placeholder="Sua bio..."></textarea>
+            <button class="btn btn-p" onclick="salvarPerfil()">Atualizar Perfil ✨</button>
+            <button onclick="auth.signOut()" style="margin-top:20px; color:red; border:none; background:none; font-weight:bold; font-size:12px;">Deslogar da Conta</button>
         </div>
     </div>
 
@@ -203,6 +180,9 @@
         <div class="nav-item" onclick="mudarAba('conquistas', this)">🏆</div>
         <div class="nav-item" id="nav-perfil" onclick="mudarAba('perfil', this)" style="display:none">👤</div>
     </nav>
+
+    <div id="overlay" onclick="fecharPopup()"></div>
+    <div id="photo-popup"></div>
 
     <script>
         // CONFIGURAÇÃO FIREBASE
@@ -226,7 +206,7 @@
         let controleMapa;
         let perfilAtual = {};
 
-        // ALERTAS CUSTOMIZADOS
+        // SISTEMA DE ALERTAS
         function customAlerta(msg, icon = '💡') {
             document.getElementById('alerta-msg').innerText = msg;
             document.getElementById('alerta-icon').innerText = icon;
@@ -260,19 +240,19 @@
             else { document.getElementById('login-screen').style.display = 'flex'; }
         });
 
-        // APP LOGIC
+        // NAVEGAÇÃO
         function mudarAba(id, el) {
             document.querySelectorAll('.aba').forEach(a => a.classList.remove('ativa'));
             document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('ativa'));
             document.getElementById('aba-' + id).classList.add('ativa');
             el.classList.add('ativa');
             if(id === 'mapa' && controleMapa) setTimeout(() => controleMapa.resize().fit().center(), 100);
-            if(id === 'ranking') renderRanking();
-            if(id === 'conquistas') renderJornada();
+            if(id === 'conquistas') renderConquistas();
+            if(id === 'feed') renderFeed();
         }
 
         async function initApp() {
-            // Escutar Perfil para o Header e Perfil
+            // Escuta Perfil (Header e Configurações)
             db.ref('usuarios/' + me.uid + '/perfil').on('value', snap => {
                 perfilAtual = snap.val() || {};
                 const foto = perfilAtual.foto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
@@ -283,7 +263,7 @@
                 document.getElementById('edit-nome').value = perfilAtual.nome || '';
                 document.getElementById('edit-user').value = perfilAtual.username || '';
                 document.getElementById('edit-bio').value = perfilAtual.bio || '';
-                document.getElementById('info-conquistas').innerText = `ESTADOS: ${perfilAtual.estados || 0}`;
+                document.getElementById('info-conquistas').innerText = `CONQUISTAS: ${perfilAtual.estados || 0}`;
             });
 
             // Mapa
@@ -294,6 +274,7 @@
             svgEl.style.width = "100%"; svgEl.style.height = "100%";
             controleMapa = svgPanZoom(svgEl, { zoomEnabled: true, controlIconsEnabled: false, fit: true, center: true });
 
+            // Pintar Mapa e Abrir Pop-up
             db.ref(`usuarios/${me.uid}/viagens`).on('value', snap => {
                 const viagens = snap.val() || {};
                 document.querySelectorAll('path').forEach(p => p.classList.remove('visitado'));
@@ -303,10 +284,15 @@
                 });
             });
 
+            svgEl.addEventListener('click', e => {
+                const path = e.target.closest('path');
+                if(path && path.id) abrirHistoricoEstado(path.id);
+            });
+
             renderFeed();
         }
 
-        // COMPACTADOR DE FOTOS
+        // FOTOS
         async function esmagarFoto(file) {
             return new Promise(resolve => {
                 const reader = new FileReader();
@@ -333,16 +319,19 @@
             for(let f of Array.from(input.files).slice(0, 3)) {
                 const b64 = await esmagarFoto(f);
                 fotosPost.push(b64);
-                container.innerHTML += `<img src="${b64}" style="width:40px; height:40px; border-radius:8px; object-fit:cover;">`;
+                container.innerHTML += `<img src="${b64}" style="width:50px; height:50px; border-radius:10px; object-fit:cover;">`;
             }
         }
 
         async function postarViagem() {
             const uf = document.getElementById('sel-uf').value;
+            const cidade = document.getElementById('cidade').value;
+            if(!cidade) return customAlerta("Digite a cidade!", "📍");
+            
             const tripID = Date.now();
             const post = {
                 id: tripID, uid: me.uid, username: perfilAtual.username, uFoto: perfilAtual.foto || '',
-                uf: uf, cidade: document.getElementById('cidade').value, fotos: fotosPost,
+                uf: uf, cidade: cidade, fotos: fotosPost,
                 exp: { h: document.getElementById('chk-h').checked, t: document.getElementById('chk-t').checked, 
                        p: document.getElementById('chk-p').checked, a: document.getElementById('chk-a').checked,
                        atr: document.getElementById('chk-atr').checked, n: document.getElementById('chk-n').checked },
@@ -356,20 +345,21 @@
                 db.ref(`usuarios/${me.uid}/perfil/estados`).set(Object.keys(s.val() || {}).length);
             });
 
-            customAlerta("Memória Salva! 📍", "✅");
+            customAlerta("Memória registrada no Mapa!", "✅");
             mudarAba('feed', document.querySelector('.nav-item'));
         }
 
+        // RENDERIZAÇÃO
         async function renderFeed() {
             const snap = await db.ref('feed_global').limitToLast(15).once('value');
             const data = snap.val() || {};
             const container = document.getElementById('feed-container');
-            container.innerHTML = "";
+            container.innerHTML = "<h3 style='margin:20px'>Feed de Viagens 🌎</h3>";
             Object.values(data).reverse().forEach(p => {
                 container.innerHTML += `
                 <div class="feed-card">
-                    <div class="user-info">
-                        <img src="${p.uFoto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" class="avatar">
+                    <div class="user-info" style="display:flex; align-items:center; gap:12px; padding:15px">
+                        <img src="${p.uFoto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" class="avatar" style="width:40px;height:40px;border-radius:50%">
                         <div><b>@${p.username}</b> <br> <small>${p.cidade} - ${p.uf.replace('BR','')}</small></div>
                     </div>
                     <div class="carrossel">${p.fotos ? p.fotos.map(f => `<img src="${f}">`).join('') : ''}</div>
@@ -380,38 +370,54 @@
             });
         }
 
-        function renderJornada() {
-            const estados = perfilAtual.estados || 0;
-            const conquistas = [
-                {n:1, t:'Início', i:'🌱'}, {n:5, t:'Explorador', i:'🏃'}, 
-                {n:10, t:'Aventureiro', i:'⭐'}, {n:20, t:'Pelo Brasil', i:'🔥'}, {n:26, t:'Mestre', i:'👑'}
-            ];
+        function renderConquistas() {
+            const n = perfilAtual.estados || 0;
+            const metas = [{n:1, t:'Início', i:'🌱'}, {n:5, t:'Explorador', i:'🏃'}, {n:10, t:'Aventureiro', i:'⭐'}, {n:20, t:'Brasil', i:'🔥'}, {n:26, t:'Rei', i:'👑'}];
             let html = '';
-            conquistas.forEach(c => {
-                const ativo = estados >= c.n;
-                html += `<div class="badge ${ativo?'active':''}">
-                    <div class="b-icon">${c.i}</div>
-                    <div style="font-size:10px; font-weight:800;">${c.t}</div>
+            metas.forEach(m => {
+                html += `<div class="badge ${n>=m.n?'active':''}">
+                    <div class="b-icon">${m.i}</div>
+                    <div style="font-size:10px; font-weight:800;">${m.t}</div>
                 </div>`;
             });
             document.getElementById('grid-conquistas').innerHTML = html;
         }
 
+        async function abrirHistoricoEstado(uf) {
+            const snap = await db.ref(`usuarios/${me.uid}/viagens/${uf}`).once('value');
+            const data = snap.val();
+            if(!data) {
+                document.getElementById('sel-uf').value = uf;
+                mudarAba('registro', document.querySelectorAll('.nav-item')[2]);
+                return;
+            }
+            let h = `<h3>Memórias de ${uf.replace('BR','')}</h3>`;
+            Object.values(data).forEach(v => {
+                h += `<div style="margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px;">
+                    <b>${v.cidade}</b> <small>${v.data}</small><br>
+                    <div style="display:flex; gap:5px; overflow-x:auto; margin:8px 0;">
+                        ${v.fotos ? v.fotos.map(f => `<img src="${f}" style="width:80px;height:80px;border-radius:8px;object-fit:cover;">`).join('') : ''}
+                    </div>
+                </div>`;
+            });
+            document.getElementById('photo-popup').innerHTML = h + `<button class="btn btn-p" onclick="fecharPopup()">Fechar</button>`;
+            document.getElementById('photo-popup').style.display = 'block';
+            document.getElementById('overlay').style.display = 'block';
+        }
+
+        function fecharPopup() { document.getElementById('photo-popup').style.display = 'none'; document.getElementById('overlay').style.display = 'none'; }
+
         async function salvarPerfil() {
-            const updates = {
-                nome: document.getElementById('edit-nome').value,
-                username: document.getElementById('edit-user').value.toLowerCase(),
-                bio: document.getElementById('edit-bio').value
-            };
+            const updates = { nome: document.getElementById('edit-nome').value, username: document.getElementById('edit-user').value.toLowerCase(), bio: document.getElementById('edit-bio').value };
             await db.ref(`usuarios/${me.uid}/perfil`).update(updates);
-            customAlerta("Perfil Atualizado! ✨", "✅");
+            customAlerta("Perfil atualizado!", "✨");
         }
 
         async function processarFotoPerfil(input) {
             if (input.files[0]) {
                 const b64 = await esmagarFoto(input.files[0]);
                 await db.ref(`usuarios/${me.uid}/perfil/foto`).set(b64);
-                customAlerta("Foto alterada!", "📸");
+                customAlerta("Foto de perfil alterada!");
             }
         }
     </script>
