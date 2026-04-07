@@ -183,32 +183,36 @@
     </div>
 
     <div id="aba-perfil" class="aba">
-    <div class="card" style="text-align: center; position: relative;">
+    <div class="card" style="text-align: center; position: relative; padding-top: 50px;">
         
-        <button onclick="toggleEdicaoPerfil()" style="position: absolute; right: 20px; top: 20px; background: none; border: none; font-size: 20px; cursor: pointer;">⚙️</button>
+        <div onclick="toggleModoPerfil()" style="position: absolute; right: 25px; top: 25px; font-size: 22px; cursor: pointer; opacity: 0.7;">⚙️</div>
 
-        <div id="perfil-view">
-            <img id="p-img-view" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="avatar" style="width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary); margin-bottom: 15px;">
-            <h2 id="p-nome-view" style="margin: 0; font-size: 22px;">Viajante</h2>
-            <p id="p-user-view" style="color: var(--sub); margin: 5px 0 15px;">@user814</p>
-            <p id="p-bio-view" style="font-size: 14px; line-height: 1.5; padding: 0 20px; color: #475569;">Sua biografia aparecerá aqui...</p>
+        <div id="perfil-modo-view">
+            <img id="p-img-view" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid white; box-shadow: 0 10px 20px rgba(0,0,0,0.1); margin-bottom: 15px;">
+            <h2 id="p-nome-view" style="margin: 0; font-size: 24px; font-weight: 800;">Carregando...</h2>
+            <p id="p-user-view" style="color: var(--primary); font-weight: 700; margin: 5px 0 15px;">@user</p>
+            <p id="p-bio-view" style="font-size: 14px; color: var(--sub); padding: 0 30px; line-height: 1.6;">Sua biografia aparecerá aqui.</p>
         </div>
 
-        <div id="perfil-edit" style="display: none;">
-            <img id="p-img-edit" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="avatar" style="width: 100px; height: 100px; margin-bottom: 15px; border-radius: 50%; object-fit: cover;">
+        <div id="perfil-modo-edit" style="display: none;">
+            <div style="position: relative; display: inline-block;">
+                <img id="p-img" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; opacity: 0.6;">
+                <button onclick="document.getElementById('f-upload').click()" style="position: absolute; inset: 0; background: none; border: none; cursor: pointer; font-size: 20px;">📸</button>
+            </div>
             <input type="file" id="f-upload" style="display:none" onchange="processarFotoPerfil(this)">
-            <button onclick="document.getElementById('f-upload').click()" class="btn" style="background:#f1f5f9; font-size:12px; margin-bottom:15px;">Mudar Foto 📸</button>
             
+            <p style="font-size: 11px; color: var(--sub); margin-bottom: 15px;">Toque na foto para alterar</p>
+
             <input type="text" id="edit-nome" placeholder="Nome">
             <input type="text" id="edit-user" placeholder="username">
-            <textarea id="edit-bio" placeholder="Sua biografia..." style="height: 100px;"></textarea>
+            <textarea id="edit-bio" placeholder="Sua biografia..." style="height: 80px; resize: none;"></textarea>
             
-            <button class="btn btn-p" onclick="salvarPerfil()">Salvar Perfil</button>
-            <button onclick="toggleEdicaoPerfil()" style="margin-top: 10px; background: none; border: none; color: var(--sub); font-size: 13px; cursor: pointer;">Cancelar</button>
+            <button class="btn btn-p" onclick="salvarPerfil()">Salvar Alterações ✨</button>
+            <button onclick="toggleModoPerfil()" style="background: none; border: none; color: var(--sub); margin-top: 15px; font-weight: 600; cursor: pointer;">Cancelar</button>
         </div>
 
-        <hr style="border: 0; border-top: 1px solid #f1f5f9; margin: 25px 0;">
-        <button onclick="auth.signOut()" style="color:#FF4B5C; border:none; background:none; font-weight:800; font-size: 14px; cursor: pointer;">Sair da Conta</button>
+        <hr style="border: 0; border-top: 1px solid #F1F5F9; margin: 30px 0;">
+        <button onclick="auth.signOut()" style="color: #FF4B5C; border: none; background: none; font-weight: 800; font-size: 14px; cursor: pointer;">Sair da Conta</button>
     </div>
 </div>
 
@@ -257,6 +261,18 @@
             document.getElementById('btn-auth-main').innerText = isLogin ? "Entrar" : "Cadastrar";
         }
 
+        function toggleModoPerfil() {
+        const view = document.getElementById('perfil-modo-view');
+        const edit = document.getElementById('perfil-modo-edit');
+        
+        if (view.style.display === 'none') {
+            view.style.display = 'block';
+            edit.style.display = 'none';
+        } else {
+            view.style.display = 'none';
+            edit.style.display = 'block';
+        }
+    }
         async function handleAuth() {
             const e = document.getElementById('email').value;
             const p = document.getElementById('pass').value;
@@ -287,20 +303,46 @@
             if(id === 'conquistas') renderJornada();
         }
 
+        function toggleEdicaoPerfil() {
+    const viewDiv = document.getElementById('perfil-view');
+    const editDiv = document.getElementById('perfil-edit');
+    
+    if (viewDiv.style.display === 'none') {
+        viewDiv.style.display = 'block';
+        editDiv.style.display = 'none';
+    } else {
+        viewDiv.style.display = 'none';
+        editDiv.style.display = 'block';
+        // Preencher os inputs com o que já está salvo
+        document.getElementById('edit-nome').value = perfilAtual.nome || '';
+        document.getElementById('edit-user').value = perfilAtual.username || '';
+        document.getElementById('edit-bio').value = perfilAtual.bio || '';
+    }
+}
         async function initApp() {
             // Escutar Perfil para o Header e Perfil
             db.ref('usuarios/' + me.uid + '/perfil').on('value', snap => {
-                perfilAtual = snap.val() || {};
-                const foto = perfilAtual.foto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
-                document.getElementById('h-avatar').src = foto;
-                document.getElementById('p-img').src = foto;
-                document.getElementById('h-nome').innerText = perfilAtual.nome || 'Viajante';
-                document.getElementById('h-user').innerText = '@' + (perfilAtual.username || 'user');
-                document.getElementById('edit-nome').value = perfilAtual.nome || '';
-                document.getElementById('edit-user').value = perfilAtual.username || '';
-                document.getElementById('edit-bio').value = perfilAtual.bio || '';
-                document.getElementById('info-conquistas').innerText = `ESTADOS: ${perfilAtual.estados || 0}`;
-            });
+        perfilAtual = snap.val() || {};
+        const foto = perfilAtual.foto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+
+        // Atualiza Header
+        document.getElementById('h-avatar').src = foto;
+        document.getElementById('h-nome').innerText = perfilAtual.nome || 'Viajante';
+        document.getElementById('h-user').innerText = '@' + (perfilAtual.username || 'user');
+        document.getElementById('info-conquistas').innerText = `ESTADOS: ${perfilAtual.estados || 0}`;
+
+        // Atualiza Visualização (Modo View)
+        document.getElementById('p-img-view').src = foto;
+        document.getElementById('p-nome-view').innerText = perfilAtual.nome || 'Viajante';
+        document.getElementById('p-user-view').innerText = '@' + (perfilAtual.username || 'user');
+        document.getElementById('p-bio-view').innerText = perfilAtual.bio || 'Bem-vindo à minha jornada!';
+
+        // Preenche Inputs (Modo Edit)
+        document.getElementById('p-img').src = foto;
+        document.getElementById('edit-nome').value = perfilAtual.nome || '';
+        document.getElementById('edit-user').value = perfilAtual.username || '';
+        document.getElementById('edit-bio').value = perfilAtual.bio || '';
+    });
 
             // Mapa
             const res = await fetch('https://raw.githubusercontent.com/talisonc00/l/main/br.svg');
@@ -414,14 +456,15 @@
         }
 
         async function salvarPerfil() {
-            const updates = {
-                nome: document.getElementById('edit-nome').value,
-                username: document.getElementById('edit-user').value.toLowerCase(),
-                bio: document.getElementById('edit-bio').value
-            };
-            await db.ref(`usuarios/${me.uid}/perfil`).update(updates);
-            customAlerta("Perfil Atualizado! ✨", "✅");
-        }
+        const updates = {
+            nome: document.getElementById('edit-nome').value,
+            username: document.getElementById('edit-user').value.toLowerCase(),
+            bio: document.getElementById('edit-bio').value
+        };
+        await db.ref(`usuarios/${me.uid}/perfil`).update(updates);
+        customAlerta("Perfil Atualizado!", "✅");
+        toggleModoPerfil(); // Volta para o modo visualização automaticamente
+    }
 
         async function processarFotoPerfil(input) {
             if (input.files[0]) {
