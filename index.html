@@ -1,1 +1,349 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Jornada Social 🌍</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
 
+    <style>
+        :root {
+            --primary: #FF4B5C;
+            --sky: #BAE6FD;
+            --money: #10B981;
+            --text: #0F172A;
+            --sub: #64748B;
+            --glass: rgba(255, 255, 255, 0.8);
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; background: var(--sky); margin: 0; color: var(--text); overflow-x: hidden; }
+
+        /* Estilo das Abas */
+        .aba { display: none; min-height: 100vh; padding-bottom: 100px; animation: slideUp 0.3s ease-out; }
+        .aba.ativa { display: block; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* UI Elements */
+        .card { background: white; margin: 15px; border-radius: 24px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        input, textarea, select { width: 100%; padding: 14px; margin: 8px 0; border: 2px solid #E2E8F0; border-radius: 14px; font-size: 16px; outline: none; transition: 0.2s; }
+        input:focus { border-color: var(--primary); }
+        .btn { width: 100%; padding: 16px; border: none; border-radius: 16px; font-weight: 800; font-size: 16px; cursor: pointer; transition: 0.2s; }
+        .btn-p { background: var(--primary); color: white; }
+        .btn:active { transform: scale(0.95); }
+
+        /* Feed & Perfil */
+        .feed-card { background: white; margin: 15px; border-radius: 30px; overflow: hidden; }
+        .user-info { display: flex; align-items: center; padding: 15px; gap: 12px; }
+        .avatar { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); }
+        .carrossel { display: flex; overflow-x: auto; snap-type: x mandatory; height: 350px; scrollbar-width: none; }
+        .carrossel img { flex: 0 0 100%; height: 100%; object-fit: cover; snap-align: center; }
+        .pills { display: flex; gap: 8px; padding: 10px 15px; overflow-x: auto; }
+        .pill { background: #F1F5F9; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+
+        /* Navigation */
+        .nav { position: fixed; bottom: 20px; left: 20px; right: 20px; height: 70px; background: var(--glass); backdrop-filter: blur(10px); border-radius: 35px; display: flex; justify-content: space-around; align-items: center; z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .nav-item { font-size: 24px; opacity: 0.3; transition: 0.3s; cursor: pointer; }
+        .nav-item.ativa { opacity: 1; transform: scale(1.2); color: var(--primary); }
+
+        /* Login Overlay */
+        #login-screen { position: fixed; inset: 0; background: var(--sky); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        
+        /* Ranking */
+        .rank-row { display: flex; align-items: center; gap: 12px; padding: 12px; border-bottom: 1px solid #F1F5F9; }
+        .medal { font-weight: 900; width: 25px; color: var(--sub); }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen">
+        <div class="card" style="width: 100%; max-width: 360px; text-align: center;">
+            <div style="font-size: 50px;">🌍</div>
+            <h2 id="log-title">Bem-vindo(a)</h2>
+            <input type="email" id="email" placeholder="E-mail">
+            <input type="password" id="pass" placeholder="Senha (8+ caracteres)">
+            <button class="btn btn-p" onclick="handleAuth()">Entrar no Mapa</button>
+            <p style="font-size: 13px; color: var(--sub); margin-top: 15px;" onclick="toggleAuthMode()">
+                Não tem conta? <b id="auth-link" style="color: var(--primary)">Criar Jornada</b>
+            </p>
+        </div>
+    </div>
+
+    <div id="aba-feed" class="aba ativa">
+        <div style="padding: 20px 20px 0;"><h2>Explorar 🌍</h2></div>
+        <div id="feed-container"></div>
+    </div>
+
+    <div id="aba-mapa" class="aba">
+        <div class="card" style="text-align: center;">
+            <h3>Seu Mapa do Brasil</h3>
+            <div id="br-map" style="width: 100%; height: 300px; background: #eee; border-radius: 15px;">
+                </div>
+        </div>
+        <div class="card">
+            <h4>Nova Conquista 📍</h4>
+            <select id="uf"><option value="RJ">Rio de Janeiro</option><option value="SP">São Paulo</option></select>
+            <input type="text" id="cidade" placeholder="Cidade">
+            <input type="number" id="valor" placeholder="Gasto total (R$)">
+            <div style="display: flex; gap: 10px; margin: 10px 0;">
+                <label><input type="checkbox" id="c-h"> 🏨</label>
+                <label><input type="checkbox" id="c-t"> 🚗</label>
+                <label><input type="checkbox" id="c-p"> 🏖️</label>
+            </div>
+            <input type="file" id="fotos" multiple accept="image/*" onchange="previewImages(this)">
+            <div id="pre-view" style="display: flex; gap: 5px; margin: 10px 0;"></div>
+            <label style="font-size: 12px;"><input type="checkbox" id="is-vip"> Permitir que Favoritos vejam o valor real</label>
+            <button class="btn btn-p" style="margin-top: 15px;" onclick="postarViagem()">Publicar Viagem 🚀</button>
+        </div>
+    </div>
+
+    <div id="aba-ranking" class="aba">
+        <div style="padding: 20px;"><h2>Ranking 👑</h2></div>
+        <div id="rank-container" class="card"></div>
+    </div>
+
+    <div id="aba-perfil" class="aba">
+        <div class="card" style="text-align: center;">
+            <div style="position: relative; display: inline-block;">
+                <img id="p-img" src="https://via.placeholder.com/100" class="avatar" style="width: 100px; height: 100px;">
+                <input type="file" id="p-upload" style="display:none" onchange="uploadAvatar(this)">
+                <button onclick="document.getElementById('p-upload').click()" style="position: absolute; bottom: 0; right: 0; border: none; background: var(--primary); color: white; border-radius: 50%; width: 30px; height: 30px;">📸</button>
+            </div>
+            <input type="text" id="p-nome" placeholder="Nome Completo">
+            <div style="position: relative;">
+                <input type="text" id="p-user" placeholder="@username" oninput="checkUser(this.value)">
+                <span id="user-status" style="position: absolute; right: 10px; top: 22px; font-size: 10px;"></span>
+            </div>
+            <textarea id="p-bio" placeholder="Sua biografia..."></textarea>
+            <button class="btn btn-p" onclick="saveProfile()">Salvar Perfil ✨</button>
+            <button onclick="firebase.auth().signOut()" style="margin-top: 15px; background: none; border: none; color: red; font-weight: bold;">Sair da Conta</button>
+        </div>
+        <div class="card">
+            <h4>Seus Favoritos (VIPs) ⭐</h4>
+            <div id="vips-list"></div>
+        </div>
+    </div>
+
+    <nav class="nav">
+        <div class="nav-item ativa" onclick="nav('feed', this)">🏠</div>
+        <div class="nav-item" onclick="nav('mapa', this)">📍</div>
+        <div class="nav-item" onclick="nav('ranking', this)">🏆</div>
+        <div class="nav-item" onclick="nav('perfil', this)">👤</div>
+    </nav>
+
+    <script>
+        // CONFIGURAÇÃO FIREBASE
+         const firebaseConfig = {
+    apiKey: "AIzaSyC6C5dJZeRF6Ylx4x-eWex6s2WGdRiMqbg",
+    authDomain: "pjrsddinst-00.firebaseapp.com",
+    projectId: "pjrsddinst-00",
+    storageBucket: "pjrsddinst-00.firebasestorage.app",
+    messagingSenderId: "500429246053",
+    appId: "1:500429246053:web:0af4090351346a0513808c",
+    measurementId: "G-VH8388NG81"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const auth = firebase.auth();
+
+        let me = null;
+        let isLogin = true;
+        let selectedPhotos = [];
+
+        // AUTH LOGIC
+        function toggleAuthMode() {
+            isLogin = !isLogin;
+            document.getElementById('log-title').innerText = isLogin ? "Bem-vindo(a)" : "Criar Conta";
+            document.getElementById('auth-link').innerText = isLogin ? "Criar Jornada" : "Já tenho conta";
+        }
+
+        async function handleAuth() {
+            const e = document.getElementById('email').value;
+            const p = document.getElementById('pass').value;
+            if(p.length < 8) return alert("Senha muito curta!");
+
+            try {
+                if(isLogin) await auth.signInWithEmailAndPassword(e, p);
+                else {
+                    const res = await auth.createUserWithEmailAndPassword(e, p);
+                    await db.ref('usuarios/' + res.user.uid + '/perfil').set({
+                        nome: "Novo Viajante",
+                        username: "user" + Math.floor(Math.random()*9999),
+                        bio: "Explorando o Brasil!",
+                        estados: 0
+                    });
+                }
+            } catch(err) { alert(err.message); }
+        }
+
+        auth.onAuthStateChanged(user => {
+            if(user) {
+                me = user;
+                document.getElementById('login-screen').style.display = 'none';
+                initApp();
+            } else {
+                document.getElementById('login-screen').style.display = 'flex';
+            }
+        });
+
+        // NAVEGAÇÃO
+        function nav(id, el) {
+            document.querySelectorAll('.aba').forEach(a => a.classList.remove('ativa'));
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('ativa'));
+            document.getElementById('aba-' + id).classList.add('ativa');
+            el.classList.add('ativa');
+            if(id === 'feed') renderFeed();
+            if(id === 'ranking') renderRanking();
+        }
+
+        // PERFIL & USERNAME CHECK
+        async function checkUser(val) {
+            const user = val.toLowerCase().trim().replace(/[^a-z0-9]/g, '');
+            const status = document.getElementById('user-status');
+            if(user.length < 3) return status.innerText = "";
+            
+            const snap = await db.ref('usernames/' + user).once('value');
+            if(snap.exists() && snap.val() !== me.uid) {
+                status.innerText = "Ocupado ❌"; status.style.color = "red";
+            } else {
+                status.innerText = "Livre ✅"; status.style.color = "green";
+            }
+        }
+
+        async function saveProfile() {
+            const user = document.getElementById('p-user').value.toLowerCase().trim();
+            const updates = {};
+            updates[`usuarios/${me.uid}/perfil/nome`] = document.getElementById('p-nome').value;
+            updates[`usuarios/${me.uid}/perfil/username`] = user;
+            updates[`usuarios/${me.uid}/perfil/bio`] = document.getElementById('p-bio').value;
+            updates[`usernames/${user}`] = me.uid;
+            await db.ref().update(updates);
+            alert("Perfil Salvo!");
+        }
+
+        // POSTAGEM & FOTOS
+        function previewImages(input) {
+            const files = Array.from(input.files).slice(0, 3);
+            selectedPhotos = [];
+            document.getElementById('pre-view').innerHTML = "";
+            files.forEach(f => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    selectedPhotos.push(e.target.result);
+                    document.getElementById('pre-view').innerHTML += `<img src="${e.target.result}" style="width:50px; height:50px; border-radius:8px; object-fit:cover;">`;
+                }
+                reader.readAsDataURL(f);
+            });
+        }
+
+        async function postarViagem() {
+            const tripID = Date.now();
+            const uf = document.getElementById('uf').value;
+            const post = {
+                id: tripID, uid: me.uid,
+                cidade: document.getElementById('cidade').value,
+                uf: uf,
+                fotos: selectedPhotos,
+                exp: { h: document.getElementById('c-h').checked, t: document.getElementById('c-t').checked, p: document.getElementById('c-p').checked },
+                isVip: document.getElementById('is-vip').checked,
+                username: (await db.ref(`usuarios/${me.uid}/perfil/username`).once('value')).val(),
+                uFoto: (await db.ref(`usuarios/${me.uid}/perfil/foto`).once('value')).val() || ''
+            };
+
+            await db.ref('feed_global/' + tripID).set(post);
+            await db.ref(`usuarios/${me.uid}/viagens/${uf}/${tripID}`).set({...post, valor: document.getElementById('valor').value});
+            
+            // Incrementa contador de estados
+            const countRef = db.ref(`usuarios/${me.uid}/perfil/estados`);
+            countRef.transaction(curr => (curr || 0) + 1);
+            
+            alert("Viagem Conquistada! 🚀");
+            nav('feed', document.querySelector('.nav-item'));
+        }
+
+        // FEED RENDER (O MAIS IMPORTANTE)
+        async function renderFeed() {
+            const snap = await db.ref('feed_global').limitToLast(20).once('value');
+            const data = snap.val();
+            const container = document.getElementById('feed-container');
+            container.innerHTML = "";
+            
+            if(!data) return container.innerHTML = "<p style='text-align:center'>Nenhuma viagem ainda...</p>";
+
+            const posts = Object.values(data).reverse();
+            for(let p of posts) {
+                let valorHtml = `<div class="pill">💰 Custo Oculto</div>`;
+                
+                // LÓGICA DE PRIVACIDADE VIP
+                if(p.uid === me.uid) {
+                    const v = await db.ref(`usuarios/${me.uid}/viagens/${p.uf}/${p.id}/valor`).once('value');
+                    valorHtml = `<div class="pill" style="color:var(--money)">💰 Seu gasto: R$ ${v.val()}</div>`;
+                } else if(p.isVip) {
+                    const souFav = (await db.ref(`usuarios/${p.uid}/favoritos/${me.uid}`).once('value')).exists();
+                    if(souFav) {
+                        const v = await db.ref(`usuarios/${p.uid}/viagens/${p.uf}/${p.id}/valor`).once('value');
+                        valorHtml = `<div class="pill" style="color:var(--money)">⭐ VIP: R$ ${v.val()}</div>`;
+                    }
+                }
+
+                container.innerHTML += `
+                <div class="feed-card">
+                    <div class="user-info">
+                        <img src="${p.uFoto || 'https://via.placeholder.com/50'}" class="avatar">
+                        <div><b>@${p.username}</b> <br> <small>${p.cidade} - ${p.uf}</small></div>
+                    </div>
+                    <div class="carrossel">
+                        ${p.fotos.map(f => `<img src="${f}">`).join('')}
+                    </div>
+                    <div class="pills">
+                        ${p.exp.h ? '<span>🏨</span>' : ''} ${p.exp.t ? '<span>🚗</span>' : ''} ${p.exp.p ? '<span>🏖️</span>' : ''}
+                        ${valorHtml}
+                    </div>
+                    <div style="padding: 0 15px 15px;">
+                        <button onclick="reagir('${p.id}', '🔥')" style="border:none; background:none; font-size:20px;">🔥</button>
+                        <button onclick="reagir('${p.id}', '✈️')" style="border:none; background:none; font-size:20px;">✈️</button>
+                    </div>
+                </div>`;
+            }
+        }
+
+        // RANKING LÓGICA
+        async function renderRanking() {
+            const snap = await db.ref('usuarios').once('value');
+            const users = Object.values(snap.val() || {});
+            users.sort((a,b) => (b.perfil.estados || 0) - (a.perfil.estados || 0));
+            
+            const container = document.getElementById('rank-container');
+            container.innerHTML = "";
+            users.forEach((u, i) => {
+                container.innerHTML += `
+                <div class="rank-row">
+                    <div class="medal">${i+1}</div>
+                    <img src="${u.perfil.foto || 'https://via.placeholder.com/30'}" class="avatar" style="width:30px; height:30px;">
+                    <div style="flex:1"><b>@${u.perfil.username}</b></div>
+                    <div style="font-weight:bold; color:var(--primary)">${u.perfil.estados || 0} Est.</div>
+                </div>`;
+            });
+        }
+
+        function initApp() {
+            db.ref(`usuarios/${me.uid}/perfil`).on('value', snap => {
+                const p = snap.val();
+                if(p) {
+                    document.getElementById('p-nome').value = p.nome;
+                    document.getElementById('p-user').value = p.username;
+                    document.getElementById('p-bio').value = p.bio;
+                    document.getElementById('p-img').src = p.foto || 'https://via.placeholder.com/100';
+                    document.getElementById('my-nome').innerText = p.nome;
+                    document.getElementById('my-user').innerText = '@' + p.username;
+                    document.getElementById('my-bio').innerText = p.bio;
+                }
+            });
+            renderFeed();
+        }
+    </script>
+</body>
+</html>
