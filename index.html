@@ -8,53 +8,60 @@
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js"></script>
 
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
         :root {
-            --primary: #FF4B5C;
-            --sky: #BAE6FD;
-            --money: #10B981;
-            --text: #0F172A;
-            --sub: #64748B;
-            --glass: rgba(255, 255, 255, 0.8);
+            --primary: #FF4B5C; --sky: #BAE6FD; --money: #10B981;
+            --text: #1E293B; --sub: #64748B; --glass: rgba(255, 255, 255, 0.9);
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Inter', sans-serif; background: var(--sky); margin: 0; color: var(--text); overflow-x: hidden; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--sky); margin: 0; color: var(--text); overflow-x: hidden; }
 
-        /* Estilo das Abas */
-        .aba { display: none; min-height: 100vh; padding-bottom: 100px; animation: slideUp 0.3s ease-out; }
+        /* HEADER FIXO */
+        .header { background: #fff; padding: 15px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.03); position: sticky; top: 0; z-index: 1000; }
+        .header h3 { margin: 0; font-size: 18px; color: var(--primary); font-weight: 800; }
+        #info-conquistas { font-size: 10px; font-weight: 800; color: var(--sub); text-transform: uppercase; margin-top: 4px; display: block; }
+
+        /* TELAS */
+        .aba { display: none; min-height: calc(100vh - 130px); padding-bottom: 80px; animation: slideUp 0.3s ease-out; }
         .aba.ativa { display: block; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* UI Elements */
-        .card { background: white; margin: 15px; border-radius: 24px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-        input, textarea, select { width: 100%; padding: 14px; margin: 8px 0; border: 2px solid #E2E8F0; border-radius: 14px; font-size: 16px; outline: none; transition: 0.2s; }
-        input:focus { border-color: var(--primary); }
-        .btn { width: 100%; padding: 16px; border: none; border-radius: 16px; font-weight: 800; font-size: 16px; cursor: pointer; transition: 0.2s; }
+        /* UI ELEMENTS */
+        .card { background: white; margin: 15px; border-radius: 28px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        input, textarea, select { width: 100%; padding: 14px; margin: 8px 0; border: 1.5px solid #F1F5F9; border-radius: 14px; font-size: 15px; outline: none; background: #F8FAFC; }
+        .btn { width: 100%; padding: 16px; border: none; border-radius: 18px; font-weight: 800; font-size: 16px; cursor: pointer; transition: 0.2s; }
         .btn-p { background: var(--primary); color: white; }
-        .btn:active { transform: scale(0.95); }
+        .btn-m { background: var(--money); color: white; }
 
-        /* Feed & Perfil */
-        .feed-card { background: white; margin: 15px; border-radius: 30px; overflow: hidden; }
+        /* MAPA */
+        .mapa-card { height: 400px; position: relative; overflow: hidden; background: white; border-radius: 28px; margin: 15px; display: flex; align-items: center; justify-content: center; }
+        #svg-container { width: 100%; height: 100%; }
+        path { fill: #F1F5F9; stroke: #fff; stroke-width: 0.8; transition: 0.5s; cursor: pointer; }
+        .visitado { fill: var(--primary) !important; }
+
+        /* FEED & RANKING */
+        .feed-card { background: white; margin: 15px; border-radius: 30px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
         .user-info { display: flex; align-items: center; padding: 15px; gap: 12px; }
         .avatar { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); }
-        .carrossel { display: flex; overflow-x: auto; snap-type: x mandatory; height: 350px; scrollbar-width: none; }
+        .carrossel { display: flex; overflow-x: auto; snap-type: x mandatory; height: 300px; scrollbar-width: none; background: #eee; }
         .carrossel img { flex: 0 0 100%; height: 100%; object-fit: cover; snap-align: center; }
-        .pills { display: flex; gap: 8px; padding: 10px 15px; overflow-x: auto; }
-        .pill { background: #F1F5F9; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; white-space: nowrap; }
 
-        /* Navigation */
-        .nav { position: fixed; bottom: 20px; left: 20px; right: 20px; height: 70px; background: var(--glass); backdrop-filter: blur(10px); border-radius: 35px; display: flex; justify-content: space-around; align-items: center; z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        .nav-item { font-size: 24px; opacity: 0.3; transition: 0.3s; cursor: pointer; }
-        .nav-item.ativa { opacity: 1; transform: scale(1.2); color: var(--primary); }
+        /* NAV MENU */
+        .nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 70px; background: var(--glass); backdrop-filter: blur(10px); display: flex; justify-content: space-around; align-items: center; z-index: 2000; border-top: 1px solid rgba(0,0,0,0.05); }
+        .nav-item { font-size: 22px; opacity: 0.3; transition: 0.3s; cursor: pointer; }
+        .nav-item.ativa { opacity: 1; transform: translateY(-5px); color: var(--primary); }
 
-        /* Login Overlay */
+        /* LOGIN */
         #login-screen { position: fixed; inset: 0; background: var(--sky); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        
-        /* Ranking */
-        .rank-row { display: flex; align-items: center; gap: 12px; padding: 12px; border-bottom: 1px solid #F1F5F9; }
-        .medal { font-weight: 900; width: 25px; color: var(--sub); }
+
+        /* MODAIS */
+        #photo-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 30px; z-index: 3000; width: 90%; max-height: 80vh; display: none; overflow-y: auto; }
+        #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2500; display: none; backdrop-filter: blur(4px); }
     </style>
 </head>
 <body>
@@ -65,176 +72,134 @@
             <h2 id="log-title">Bem-vindo(a)</h2>
             <input type="email" id="email" placeholder="E-mail">
             <input type="password" id="pass" placeholder="Senha (8+ caracteres)">
-            <button class="btn btn-p" onclick="handleAuth()">Entrar no Mapa</button>
+            <button class="btn btn-p" onclick="handleAuth()" id="btn-auth-main">Entrar no Mapa</button>
             <p style="font-size: 13px; color: var(--sub); margin-top: 15px;" onclick="toggleAuthMode()">
                 Não tem conta? <b id="auth-link" style="color: var(--primary)">Criar Jornada</b>
             </p>
         </div>
     </div>
 
+    <div class="header">
+        <h3>Nossa Jornada 🌍</h3>
+        <span id="info-conquistas">CONQUISTAS: 0</span>
+    </div>
+
     <div id="aba-feed" class="aba ativa">
-        <div style="padding: 20px 20px 0;"><h2>Explorar 🌍</h2></div>
         <div id="feed-container"></div>
     </div>
 
     <div id="aba-mapa" class="aba">
-        <div class="card" style="text-align: center;">
-            <h3>Seu Mapa do Brasil</h3>
-            <div id="br-map" style="width: 100%; height: 300px; background: #eee; border-radius: 15px;">
-                </div>
+        <div class="mapa-card">
+            <div id="svg-container"></div>
         </div>
         <div class="card">
             <h4>Nova Conquista 📍</h4>
-            <select id="uf"><option value="RJ">Rio de Janeiro</option><option value="SP">São Paulo</option></select>
+            <select id="sel-uf">
+                <option value="BRSP">São Paulo</option><option value="BRRJ">Rio de Janeiro</option>
+                <option value="BRMG">Minas Gerais</option><option value="BRBA">Bahia</option>
+                <option value="BRPR">Paraná</option><option value="BRSC">Santa Catarina</option>
+                <option value="BRRS">Rio Grande do Sul</option>
+            </select>
             <input type="text" id="cidade" placeholder="Cidade">
             <input type="number" id="valor" placeholder="Gasto total (R$)">
             <div style="display: flex; gap: 10px; margin: 10px 0;">
-                <label><input type="checkbox" id="c-h"> 🏨</label>
-                <label><input type="checkbox" id="c-t"> 🚗</label>
-                <label><input type="checkbox" id="c-p"> 🏖️</label>
+                <label><input type="checkbox" id="chk-h"> 🏨</label>
+                <label><input type="checkbox" id="chk-t"> 🚗</label>
+                <label><input type="checkbox" id="chk-p"> 🏖️</label>
             </div>
-            <input type="file" id="fotos" multiple accept="image/*" onchange="previewImages(this)">
-            <div id="pre-view" style="display: flex; gap: 5px; margin: 10px 0;"></div>
-            <label style="font-size: 12px;"><input type="checkbox" id="is-vip"> Permitir que Favoritos vejam o valor real</label>
-            <button class="btn btn-p" style="margin-top: 15px;" onclick="postarViagem()">Publicar Viagem 🚀</button>
+            <input type="file" id="inp-fotos" multiple accept="image/*" onchange="previaFotos(this)">
+            <div id="previa-container" style="display:flex; gap:5px; margin: 10px 0;"></div>
+            <label style="font-size: 11px;"><input type="checkbox" id="is-vip"> Permitir que Favoritos vejam o valor</label>
+            <button class="btn btn-m" onclick="postarViagem()">Salvar Memória 🚩</button>
         </div>
     </div>
 
     <div id="aba-ranking" class="aba">
-        <div style="padding: 20px;"><h2>Ranking 👑</h2></div>
         <div id="rank-container" class="card"></div>
     </div>
 
     <div id="aba-perfil" class="aba">
-        <div class="card" style="text-align: center;">
-            <div style="position: relative; display: inline-block;">
-                <img id="p-img" src="https://via.placeholder.com/100" class="avatar" style="width: 100px; height: 100px;">
-                <input type="file" id="p-upload" style="display:none" onchange="uploadAvatar(this)">
-                <button onclick="document.getElementById('p-upload').click()" style="position: absolute; bottom: 0; right: 0; border: none; background: var(--primary); color: white; border-radius: 50%; width: 30px; height: 30px;">📸</button>
+        <div class="card" style="text-align: center; position: relative;">
+            <button onclick="toggleEdicao()" style="position: absolute; right: 20px; top: 20px; border:none; background:none; font-size:20px;">⚙️</button>
+            
+            <img id="p-img" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="avatar" style="width: 100px; height: 100px; margin-bottom: 10px;">
+            
+            <div id="perfil-view">
+                <h2 id="view-nome" style="margin:0;">Nome do Viajante</h2>
+                <p id="view-user" style="color:var(--sub); margin:5px 0;">@username</p>
+                <p id="view-bio" style="font-size:14px;">Minha bio de viagens...</p>
             </div>
-            <input type="text" id="p-nome" placeholder="Nome Completo">
-            <div style="position: relative;">
-                <input type="text" id="p-user" placeholder="@username" oninput="checkUser(this.value)">
-                <span id="user-status" style="position: absolute; right: 10px; top: 22px; font-size: 10px;"></span>
+
+            <div id="perfil-edit" style="display: none; border-top: 1px solid #eee; padding-top: 20px; margin-top: 10px;">
+                <input type="file" id="f-upload" style="display:none" onchange="processarFotoPerfil(this)">
+                <button onclick="document.getElementById('f-upload').click()" class="btn" style="background:#f1f5f9; font-size:12px; margin-bottom:10px;">Mudar Foto 📸</button>
+                <input type="text" id="edit-nome" placeholder="Nome">
+                <input type="text" id="edit-user" placeholder="username">
+                <textarea id="edit-bio" placeholder="Bio"></textarea>
+                <button class="btn btn-p" onclick="salvarPerfil()">Salvar Alterações</button>
             </div>
-            <textarea id="p-bio" placeholder="Sua biografia..."></textarea>
-            <button class="btn btn-p" onclick="saveProfile()">Salvar Perfil ✨</button>
-            <button onclick="firebase.auth().signOut()" style="margin-top: 15px; background: none; border: none; color: red; font-weight: bold;">Sair da Conta</button>
-        </div>
-        <div class="card">
-            <h4>Seus Favoritos (VIPs) ⭐</h4>
-            <div id="vips-list"></div>
+
+            <button onclick="auth.signOut()" style="margin-top:20px; color:red; border:none; background:none; font-weight:bold;">Sair da Conta</button>
         </div>
     </div>
 
     <nav class="nav">
-        <div class="nav-item ativa" onclick="nav('feed', this)">🏠</div>
-        <div class="nav-item" onclick="nav('mapa', this)">📍</div>
-        <div class="nav-item" onclick="nav('ranking', this)">🏆</div>
-        <div class="nav-item" onclick="nav('perfil', this)">👤</div>
+        <div class="nav-item ativa" onclick="mudarAba('feed', this)">🏠</div>
+        <div class="nav-item" onclick="mudarAba('mapa', this)">📍</div>
+        <div class="nav-item" onclick="mudarAba('ranking', this)">🏆</div>
+        <div class="nav-item" onclick="mudarAba('perfil', this)">👤</div>
     </nav>
 
+    <div id="overlay" onclick="fecharPopup()"></div>
+    <div id="photo-popup"></div>
+
     <script>
-        // CONFIGURAÇÃO FIREBASE
-         const firebaseConfig = {
-    apiKey: "AIzaSyC6C5dJZeRF6Ylx4x-eWex6s2WGdRiMqbg",
-    authDomain: "pjrsddinst-00.firebaseapp.com",
-    projectId: "pjrsddinst-00",
-    storageBucket: "pjrsddinst-00.firebasestorage.app",
-    messagingSenderId: "500429246053",
-    appId: "1:500429246053:web:0af4090351346a0513808c",
-    measurementId: "G-VH8388NG81"
+        // CONFIGURAÇÃO DO SEU FIREBASE (PJRS)
+        const firebaseConfig = {
+            apiKey: "AIzaSyC6C5dJZeRF6Ylx4x-eWex6s2WGdRiMqbg",
+            authDomain: "pjrsddinst-00.firebaseapp.com",
+            projectId: "pjrsddinst-00",
+            storageBucket: "pjrsddinst-00.firebasestorage.app",
+            messagingSenderId: "500429246053",
+            appId: "1:500429246053:web:0af4090351346a0513808c",
+            databaseURL: "https://pjrsddinst-00-default-rtdb.firebaseio.com"
         };
+
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         const auth = firebase.auth();
 
         let me = null;
         let isLogin = true;
-        let selectedPhotos = [];
+        let fotosPost = [];
+        let controleMapa;
+        let dbGlobal = {};
+        let editando = false;
 
-        // AUTH LOGIC
+        // --- AUTH & PERFIL ---
         function toggleAuthMode() {
-    isLogin = !isLogin;
-    const btn = document.getElementById('btn-auth-main');
-    const title = document.getElementById('log-title');
-    const link = document.getElementById('auth-link');
-
-    if (isLogin) {
-        title.innerText = "Bem-vindo(a) de volta!";
-        btn.innerText = "Entrar no Mapa";
-        btn.style.background = "var(--primary)";
-        link.innerHTML = "Não tem conta? <b style='color:var(--primary)'>Criar Jornada</b>";
-    } else {
-        title.innerText = "Começar Nova Jornada 🚀";
-        btn.innerText = "Criar Minha Conta Agora";
-        btn.style.background = "var(--money)"; // Verde para sinalizar "novo"
-        link.innerHTML = "Já é de casa? <b style='color:var(--primary)'>Fazer Login</b>";
-    }
-}
+            isLogin = !isLogin;
+            document.getElementById('log-title').innerText = isLogin ? "Bem-vindo(a)" : "Criar Jornada";
+            document.getElementById('btn-auth-main').innerText = isLogin ? "Entrar no Mapa" : "Criar Minha Conta";
+            document.getElementById('auth-link').innerText = isLogin ? "Criar Jornada" : "Fazer Login";
+        }
 
         async function handleAuth() {
-    const email = document.getElementById('email').value.trim();
-    const pass = document.getElementById('pass').value;
-
-    if (!email || !pass) {
-        return alert("Ei! Preciso do seu e-mail e senha para continuar. 🧐");
-    }
-
-    // Mostrar um "Carregando" no botão para o usuário não clicar mil vezes
-    const btn = document.querySelector('.btn-p');
-    const originalText = btn.innerText;
-    btn.innerText = "Processando...";
-    btn.disabled = true;
-
-    try {
-        if (isLogin) {
-            // FLUXO DE LOGIN
-            await auth.signInWithEmailAndPassword(email, pass);
-        } else {
-            // FLUXO DE CADASTRO
-            const userCredential = await auth.createUserWithEmailAndPassword(email, pass);
-            const uid = userCredential.user.uid;
-
-            // Criar a estrutura básica IMEDIATAMENTE após o cadastro
-            await db.ref('usuarios/' + uid + '/perfil').set({
-                nome: "Viajante " + Math.floor(Math.random() * 999),
-                username: "user_" + uid.substring(0, 5), // Username temporário seguro
-                bio: "Nova jornada começando!",
-                estados: 0,
-                cadastroEm: new Date().toLocaleDateString()
-            });
-            
-            // Registrar no cartório de usernames para evitar nulos
-            await db.ref('usernames/user_' + uid.substring(0, 5)).set(uid);
-            
-            alert("Sua conta foi criada! Agora vamos configurar seu perfil. ✨");
+            const e = document.getElementById('email').value;
+            const p = document.getElementById('pass').value;
+            try {
+                if(isLogin) await auth.signInWithEmailAndPassword(e, p);
+                else {
+                    const res = await auth.createUserWithEmailAndPassword(e, p);
+                    await db.ref('usuarios/' + res.user.uid + '/perfil').set({
+                        nome: "Novo Viajante",
+                        username: "user" + Math.floor(Math.random()*9999),
+                        bio: "Explorando o Brasil!",
+                        estados: 0
+                    });
+                }
+            } catch(err) { alert(err.message); }
         }
-    } catch (error) {
-        console.error("Erro na Autenticação:", error.code);
-        
-        // Mensagens amigáveis para erros técnicos
-        switch (error.code) {
-            case 'auth/email-already-in-use':
-                alert("Este e-mail já está em uso. Que tal fazer login?");
-                break;
-            case 'auth/weak-password':
-                alert("Essa senha está muito fácil! Use pelo menos 8 caracteres.");
-                break;
-            case 'auth/invalid-email':
-                alert("Hum, esse e-mail parece estranho. Verifique a escrita.");
-                break;
-            case 'auth/user-not-found':
-                alert("Usuário não encontrado. Criar uma conta?");
-                break;
-            default:
-                alert("Ops! Algo deu errado: " + error.message);
-        }
-    } finally {
-        btn.innerText = originalText;
-        btn.disabled = false;
-    }
-}
 
         auth.onAuthStateChanged(user => {
             if(user) {
@@ -246,161 +211,240 @@
             }
         });
 
-        // NAVEGAÇÃO
-        function nav(id, el) {
+        function escutarPerfil(uid) {
+            db.ref('usuarios/' + uid + '/perfil').on('value', snap => {
+                const p = snap.val();
+                if(p) {
+                    const foto = p.foto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+                    document.getElementById('p-img').src = foto;
+                    document.getElementById('view-nome').innerText = p.nome;
+                    document.getElementById('view-user').innerText = "@" + p.username;
+                    document.getElementById('view-bio').innerText = p.bio;
+                    document.getElementById('info-conquistas').innerText = `CONQUISTAS: ${p.estados || 0}`;
+                }
+            });
+        }
+
+        function toggleEdicao() {
+            editando = !editando;
+            document.getElementById('perfil-view').style.display = editando ? 'none' : 'block';
+            document.getElementById('perfil-edit').style.display = editando ? 'block' : 'none';
+            if(editando) {
+                document.getElementById('edit-nome').value = document.getElementById('view-nome').innerText;
+                document.getElementById('edit-user').value = document.getElementById('view-user').innerText.replace('@', '');
+                document.getElementById('edit-bio').value = document.getElementById('view-bio').innerText;
+            }
+        }
+
+        async function salvarPerfil() {
+            const user = document.getElementById('edit-user').value.trim().toLowerCase();
+            const updates = {
+                nome: document.getElementById('edit-nome').value,
+                username: user,
+                bio: document.getElementById('edit-bio').value
+            };
+            await db.ref(`usuarios/${me.uid}/perfil`).update(updates);
+            await db.ref(`usernames/${user}`).set(me.uid);
+            toggleEdicao();
+        }
+
+        async function processarFotoPerfil(input) {
+            if (input.files && input.files[0]) {
+                const base64 = await esmagarFoto(input.files[0]);
+                await db.ref(`usuarios/${me.uid}/perfil/foto`).set(base64);
+            }
+        }
+
+        // --- MAPA E POSTAGEM ---
+        function mudarAba(id, el) {
             document.querySelectorAll('.aba').forEach(a => a.classList.remove('ativa'));
             document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('ativa'));
             document.getElementById('aba-' + id).classList.add('ativa');
             el.classList.add('ativa');
             if(id === 'feed') renderFeed();
             if(id === 'ranking') renderRanking();
+            if(id === 'mapa') setTimeout(() => controleMapa.resize().fit().center(), 100);
         }
 
-        // PERFIL & USERNAME CHECK
-        async function checkUser(val) {
-            const user = val.toLowerCase().trim().replace(/[^a-z0-9]/g, '');
-            const status = document.getElementById('user-status');
-            if(user.length < 3) return status.innerText = "";
-            
-            const snap = await db.ref('usernames/' + user).once('value');
-            if(snap.exists() && snap.val() !== me.uid) {
-                status.innerText = "Ocupado ❌"; status.style.color = "red";
-            } else {
-                status.innerText = "Livre ✅"; status.style.color = "green";
-            }
-        }
-
-        async function saveProfile() {
-            const user = document.getElementById('p-user').value.toLowerCase().trim();
-            const updates = {};
-            updates[`usuarios/${me.uid}/perfil/nome`] = document.getElementById('p-nome').value;
-            updates[`usuarios/${me.uid}/perfil/username`] = user;
-            updates[`usuarios/${me.uid}/perfil/bio`] = document.getElementById('p-bio').value;
-            updates[`usernames/${user}`] = me.uid;
-            await db.ref().update(updates);
-            alert("Perfil Salvo!");
-        }
-
-        // POSTAGEM & FOTOS
-        function previewImages(input) {
-            const files = Array.from(input.files).slice(0, 3);
-            selectedPhotos = [];
-            document.getElementById('pre-view').innerHTML = "";
-            files.forEach(f => {
+        async function esmagarFoto(file) {
+            return new Promise(resolve => {
                 const reader = new FileReader();
-                reader.onload = (e) => {
-                    selectedPhotos.push(e.target.result);
-                    document.getElementById('pre-view').innerHTML += `<img src="${e.target.result}" style="width:50px; height:50px; border-radius:8px; object-fit:cover;">`;
-                }
-                reader.readAsDataURL(f);
+                reader.readAsDataURL(file);
+                reader.onload = e => {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        canvas.width = 600;
+                        canvas.height = 600 * (img.height/img.width);
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        resolve(canvas.toDataURL('image/jpeg', 0.6));
+                    };
+                };
             });
         }
 
+        async function previaFotos(input) {
+            fotosPost = [];
+            const container = document.getElementById('previa-container');
+            container.innerHTML = "";
+            for(let f of Array.from(input.files).slice(0, 3)) {
+                const b64 = await esmagarFoto(f);
+                fotosPost.push(b64);
+                container.innerHTML += `<img src="${b64}" style="width:50px; height:50px; border-radius:10px; object-fit:cover;">`;
+            }
+        }
+
         async function postarViagem() {
+            const uf = document.getElementById('sel-uf').value;
             const tripID = Date.now();
-            const uf = document.getElementById('uf').value;
+            const p = (await db.ref(`usuarios/${me.uid}/perfil`).once('value')).val();
+
             const post = {
                 id: tripID, uid: me.uid,
-                cidade: document.getElementById('cidade').value,
-                uf: uf,
-                fotos: selectedPhotos,
-                exp: { h: document.getElementById('c-h').checked, t: document.getElementById('c-t').checked, p: document.getElementById('c-p').checked },
+                username: p.username, uFoto: p.foto || '',
+                uf: uf, cidade: document.getElementById('cidade').value,
+                fotos: fotosPost,
+                exp: { h: document.getElementById('chk-h').checked, t: document.getElementById('chk-t').checked, p: document.getElementById('chk-p').checked },
                 isVip: document.getElementById('is-vip').checked,
-                username: (await db.ref(`usuarios/${me.uid}/perfil/username`).once('value')).val(),
-                uFoto: (await db.ref(`usuarios/${me.uid}/perfil/foto`).once('value')).val() || ''
+                data: new Date().toLocaleDateString()
             };
 
             await db.ref('feed_global/' + tripID).set(post);
             await db.ref(`usuarios/${me.uid}/viagens/${uf}/${tripID}`).set({...post, valor: document.getElementById('valor').value});
             
-            // Incrementa contador de estados
-            const countRef = db.ref(`usuarios/${me.uid}/perfil/estados`);
-            countRef.transaction(curr => (curr || 0) + 1);
-            
-            alert("Viagem Conquistada! 🚀");
-            nav('feed', document.querySelector('.nav-item'));
+            // Atualiza estados
+            db.ref(`usuarios/${me.uid}/viagens`).once('value', s => {
+                db.ref(`usuarios/${me.uid}/perfil/estados`).set(Object.keys(s.val() || {}).length);
+            });
+
+            alert("Memória Salva! 📍");
+            mudarAba('feed', document.querySelector('.nav-item'));
         }
 
-        // FEED RENDER (O MAIS IMPORTANTE)
+        // --- RENDERIZAÇÃO ---
         async function renderFeed() {
             const snap = await db.ref('feed_global').limitToLast(20).once('value');
-            const data = snap.val();
+            const data = snap.val() || {};
             const container = document.getElementById('feed-container');
             container.innerHTML = "";
             
-            if(!data) return container.innerHTML = "<p style='text-align:center'>Nenhuma viagem ainda...</p>";
-
-            const posts = Object.values(data).reverse();
-            for(let p of posts) {
-                let valorHtml = `<div class="pill">💰 Custo Oculto</div>`;
-                
-                // LÓGICA DE PRIVACIDADE VIP
+            Object.values(data).reverse().forEach(async p => {
+                let valorUI = `<div class="pill">💰 Oculto</div>`;
                 if(p.uid === me.uid) {
                     const v = await db.ref(`usuarios/${me.uid}/viagens/${p.uf}/${p.id}/valor`).once('value');
-                    valorHtml = `<div class="pill" style="color:var(--money)">💰 Seu gasto: R$ ${v.val()}</div>`;
+                    valorUI = `<div class="pill" style="color:var(--money)">💰 R$ ${v.val()}</div>`;
                 } else if(p.isVip) {
                     const souFav = (await db.ref(`usuarios/${p.uid}/favoritos/${me.uid}`).once('value')).exists();
                     if(souFav) {
                         const v = await db.ref(`usuarios/${p.uid}/viagens/${p.uf}/${p.id}/valor`).once('value');
-                        valorHtml = `<div class="pill" style="color:var(--money)">⭐ VIP: R$ ${v.val()}</div>`;
+                        valorUI = `<div class="pill" style="color:var(--money)">⭐ VIP: R$ ${v.val()}</div>`;
                     }
                 }
 
                 container.innerHTML += `
                 <div class="feed-card">
                     <div class="user-info">
-                        <img src="${p.uFoto || 'https://via.placeholder.com/50'}" class="avatar">
-                        <div><b>@${p.username}</b> <br> <small>${p.cidade} - ${p.uf}</small></div>
+                        <img src="${p.uFoto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" class="avatar">
+                        <div><b>@${p.username}</b> <br> <small>${p.cidade} - ${p.uf.replace('BR','')}</small></div>
                     </div>
                     <div class="carrossel">
-                        ${p.fotos.map(f => `<img src="${f}">`).join('')}
+                        ${p.fotos ? p.fotos.map(f => `<img src="${f}">`).join('') : ''}
                     </div>
-                    <div class="pills">
-                        ${p.exp.h ? '<span>🏨</span>' : ''} ${p.exp.t ? '<span>🚗</span>' : ''} ${p.exp.p ? '<span>🏖️</span>' : ''}
-                        ${valorHtml}
-                    </div>
-                    <div style="padding: 0 15px 15px;">
-                        <button onclick="reagir('${p.id}', '🔥')" style="border:none; background:none; font-size:20px;">🔥</button>
-                        <button onclick="reagir('${p.id}', '✈️')" style="border:none; background:none; font-size:20px;">✈️</button>
+                    <div style="padding:15px; display:flex; gap:10px; align-items:center;">
+                        ${p.exp.h?'🏨':''} ${p.exp.t?'🚗':''} ${p.exp.p?'🏖️':''}
+                        ${valorUI}
                     </div>
                 </div>`;
-            }
+            });
         }
 
-        // RANKING LÓGICA
         async function renderRanking() {
             const snap = await db.ref('usuarios').once('value');
-            const users = Object.values(snap.val() || {});
-            users.sort((a,b) => (b.perfil.estados || 0) - (a.perfil.estados || 0));
+            const data = snap.val() || {};
+            const lista = Object.values(data).sort((a,b) => (b.perfil.estados || 0) - (a.perfil.estados || 0));
             
             const container = document.getElementById('rank-container');
-            container.innerHTML = "";
-            users.forEach((u, i) => {
+            container.innerHTML = "<h4>Líderes de Estrada 👑</h4>";
+            lista.forEach((u, i) => {
                 container.innerHTML += `
-                <div class="rank-row">
-                    <div class="medal">${i+1}</div>
-                    <img src="${u.perfil.foto || 'https://via.placeholder.com/30'}" class="avatar" style="width:30px; height:30px;">
-                    <div style="flex:1"><b>@${u.perfil.username}</b></div>
-                    <div style="font-weight:bold; color:var(--primary)">${u.perfil.estados || 0} Est.</div>
+                <div style="display:flex; align-items:center; gap:10px; padding:10px; border-bottom:1px solid #eee;">
+                    <b>${i+1}</b>
+                    <img src="${u.perfil.foto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" style="width:35px; height:35px; border-radius:50%; object-fit:cover;">
+                    <div style="flex:1">@${u.perfil.username}</div>
+                    <div style="color:var(--primary); font-weight:800;">${u.perfil.estados || 0} Est.</div>
                 </div>`;
             });
         }
 
-        function initApp() {
-            db.ref(`usuarios/${me.uid}/perfil`).on('value', snap => {
-                const p = snap.val();
-                if(p) {
-                    document.getElementById('p-nome').value = p.nome;
-                    document.getElementById('p-user').value = p.username;
-                    document.getElementById('p-bio').value = p.bio;
-                    document.getElementById('p-img').src = p.foto || 'https://via.placeholder.com/100';
-                    document.getElementById('my-nome').innerText = p.nome;
-                    document.getElementById('my-user').innerText = '@' + p.username;
-                    document.getElementById('my-bio').innerText = p.bio;
-                }
+        // --- MAPA INICIALIZAÇÃO ---
+        async function initApp() {
+            escutarPerfil(me.uid);
+            
+            // Carrega o SVG do Mapa
+            const res = await fetch('https://raw.githubusercontent.com/talisnc00/jornada/main/br.svg'); // Link do seu SVG
+            const svgText = await res.text();
+            document.getElementById('svg-container').innerHTML = svgText;
+            
+            const svgEl = document.querySelector('#svg-container svg');
+            svgEl.style.width = "100%"; svgEl.style.height = "100%";
+            
+            controleMapa = svgPanZoom(svgEl, { zoomEnabled: true, controlIconsEnabled: false, fit: true, center: true });
+
+            // Clique no estado
+            svgEl.addEventListener('click', e => {
+                const path = e.target.closest('path');
+                if(path && path.id) abrirHistoricoEstado(path.id);
             });
+
+            // Escuta viagens para pintar o mapa
+            db.ref(`usuarios/${me.uid}/viagens`).on('value', snap => {
+                const viagens = snap.val() || {};
+                document.querySelectorAll('path').forEach(p => p.classList.remove('visitado'));
+                Object.keys(viagens).forEach(uf => {
+                    const el = document.getElementById(uf);
+                    if(el) el.classList.add('visitado');
+                });
+            });
+
             renderFeed();
         }
+
+        async function abrirHistoricoEstado(uf) {
+            const snap = await db.ref(`usuarios/${me.uid}/viagens/${uf}`).once('value');
+            const data = snap.val();
+            const popup = document.getElementById('photo-popup');
+            const overlay = document.getElementById('overlay');
+
+            if(!data) {
+                document.getElementById('sel-uf').value = uf;
+                mudarAba('mapa', document.querySelectorAll('.nav-item')[1]);
+                return;
+            }
+
+            let html = `<h3>Memórias de ${uf.replace('BR','')}</h3>`;
+            Object.values(data).forEach(v => {
+                html += `
+                <div style="margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:10px;">
+                    <b>${v.cidade} - ${v.data}</b> <br>
+                    <div style="display:flex; gap:5px; margin:10px 0; overflow-x:auto;">
+                        ${v.fotos ? v.fotos.map(f => `<img src="${f}" style="width:100px; height:100px; object-fit:cover; border-radius:10px;">`).join('') : ''}
+                    </div>
+                    <small>Gasto: R$ ${v.valor}</small>
+                </div>`;
+            });
+
+            popup.innerHTML = html;
+            popup.style.display = 'block';
+            overlay.style.display = 'block';
+        }
+
+        function fecharPopup() {
+            document.getElementById('photo-popup').style.display = 'none';
+            document.getElementById('overlay').style.display = 'none';
+        }
+
     </script>
 </body>
 </html>
