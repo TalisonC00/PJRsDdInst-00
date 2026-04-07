@@ -155,29 +155,86 @@
 
         // AUTH LOGIC
         function toggleAuthMode() {
-            isLogin = !isLogin;
-            document.getElementById('log-title').innerText = isLogin ? "Bem-vindo(a)" : "Criar Conta";
-            document.getElementById('auth-link').innerText = isLogin ? "Criar Jornada" : "Já tenho conta";
-        }
+    isLogin = !isLogin;
+    const btn = document.getElementById('btn-auth-main');
+    const title = document.getElementById('log-title');
+    const link = document.getElementById('auth-link');
+
+    if (isLogin) {
+        title.innerText = "Bem-vindo(a) de volta!";
+        btn.innerText = "Entrar no Mapa";
+        btn.style.background = "var(--primary)";
+        link.innerHTML = "Não tem conta? <b style='color:var(--primary)'>Criar Jornada</b>";
+    } else {
+        title.innerText = "Começar Nova Jornada 🚀";
+        btn.innerText = "Criar Minha Conta Agora";
+        btn.style.background = "var(--money)"; // Verde para sinalizar "novo"
+        link.innerHTML = "Já é de casa? <b style='color:var(--primary)'>Fazer Login</b>";
+    }
+}
 
         async function handleAuth() {
-            const e = document.getElementById('email').value;
-            const p = document.getElementById('pass').value;
-            if(p.length < 8) return alert("Senha muito curta!");
+    const email = document.getElementById('email').value.trim();
+    const pass = document.getElementById('pass').value;
 
-            try {
-                if(isLogin) await auth.signInWithEmailAndPassword(e, p);
-                else {
-                    const res = await auth.createUserWithEmailAndPassword(e, p);
-                    await db.ref('usuarios/' + res.user.uid + '/perfil').set({
-                        nome: "Novo Viajante",
-                        username: "user" + Math.floor(Math.random()*9999),
-                        bio: "Explorando o Brasil!",
-                        estados: 0
-                    });
-                }
-            } catch(err) { alert(err.message); }
+    if (!email || !pass) {
+        return alert("Ei! Preciso do seu e-mail e senha para continuar. 🧐");
+    }
+
+    // Mostrar um "Carregando" no botão para o usuário não clicar mil vezes
+    const btn = document.querySelector('.btn-p');
+    const originalText = btn.innerText;
+    btn.innerText = "Processando...";
+    btn.disabled = true;
+
+    try {
+        if (isLogin) {
+            // FLUXO DE LOGIN
+            await auth.signInWithEmailAndPassword(email, pass);
+        } else {
+            // FLUXO DE CADASTRO
+            const userCredential = await auth.createUserWithEmailAndPassword(email, pass);
+            const uid = userCredential.user.uid;
+
+            // Criar a estrutura básica IMEDIATAMENTE após o cadastro
+            await db.ref('usuarios/' + uid + '/perfil').set({
+                nome: "Viajante " + Math.floor(Math.random() * 999),
+                username: "user_" + uid.substring(0, 5), // Username temporário seguro
+                bio: "Nova jornada começando!",
+                estados: 0,
+                cadastroEm: new Date().toLocaleDateString()
+            });
+            
+            // Registrar no cartório de usernames para evitar nulos
+            await db.ref('usernames/user_' + uid.substring(0, 5)).set(uid);
+            
+            alert("Sua conta foi criada! Agora vamos configurar seu perfil. ✨");
         }
+    } catch (error) {
+        console.error("Erro na Autenticação:", error.code);
+        
+        // Mensagens amigáveis para erros técnicos
+        switch (error.code) {
+            case 'auth/email-already-in-use':
+                alert("Este e-mail já está em uso. Que tal fazer login?");
+                break;
+            case 'auth/weak-password':
+                alert("Essa senha está muito fácil! Use pelo menos 8 caracteres.");
+                break;
+            case 'auth/invalid-email':
+                alert("Hum, esse e-mail parece estranho. Verifique a escrita.");
+                break;
+            case 'auth/user-not-found':
+                alert("Usuário não encontrado. Criar uma conta?");
+                break;
+            default:
+                alert("Ops! Algo deu errado: " + error.message);
+        }
+    } finally {
+        btn.innerText = originalText;
+        btn.disabled = false;
+    }
+}
 
         auth.onAuthStateChanged(user => {
             if(user) {
