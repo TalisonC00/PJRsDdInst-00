@@ -127,14 +127,20 @@
     </div>
 
     <div id="aba-mapa" class="aba">
-        <div class="mapa-frame">
-            <div style="position: absolute; top: 15px; left: 15px; z-index: 10; display:flex; gap:5px;">
-                <div id="map-owner-tag" style="background:var(--primary); color:white; padding:5px 12px; border-radius:12px; font-size:11px; font-weight:800; box-shadow:0 4px 10px rgba(0,0,0,0.1);">Meu Mapa</div>
-            </div>
-            <button onclick="resetarZoomMapa()" style="position: absolute; top: 15px; right: 15px; z-index: 10; background: #fff; border: none; padding: 10px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); cursor:pointer">🔄</button>
-            <div id="svg-container"></div>
+    <div class="mapa-frame" style="height: 80vh; width: 100%; position: relative;">
+        <div style="position: absolute; top: 15px; left: 15px; z-index: 10; display:flex; gap:5px;">
+            <div id="map-owner-tag" style="background:var(--primary); color:white; padding:5px 12px; border-radius:12px; font-size:11px; font-weight:800; box-shadow:0 4px 10px rgba(0,0,0,0.1);">Meu Mapa</div>
+        </div>
+        <button onclick="resetarZoomMapa()" style="position: absolute; top: 15px; right: 15px; z-index: 10; background: #fff; border: none; padding: 10px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); cursor:pointer">🔄</button>
+        <div id="svg-container" style="width: 100%; height: 100%;">
+            <svg id="mapa-svg-real" xmlns="http://www.w3.org/2000/svg" viewBox="-75 -35 42 35" style="width:100%; height:100%; background:#BAE6FD;">
+                 <g transform="scale(1, -1)">
+                    <path id="BRAC" class="estado" d="..." />
+                    </g>
+            </svg>
         </div>
     </div>
+</div>
 
     <div id="aba-registro" class="aba">
         <div class="card">
@@ -325,28 +331,56 @@ auth.onAuthStateChanged(user => {
 
 // --- INICIALIZAÇÃO ---
 async function initApp() {
+    // 1. Escuta em tempo real os dados do perfil do usuário logado
     db.ref(`usuarios/${eu.uid}/perfil`).on('value', snap => {
         meuPerfil = snap.val() || {};
-        document.getElementById('h-nome').innerText = meuPerfil.nome;
-        document.getElementById('h-user').innerText = '@' + meuPerfil.username;
+        document.getElementById('h-nome').innerText = meuPerfil.nome || "Viajante";
+        document.getElementById('h-user').innerText = '@' + (meuPerfil.username || "user");
         document.getElementById('h-avatar').src = meuPerfil.foto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+        
+        // Se não estivermos visitando o perfil de outra pessoa, carrega os dados do nosso na UI
         if(!targetUid) carregarPerfilUI(eu.uid);
     });
 
-    const res = await fetch('br.svg');
-    const svgText = await res.text();
-    document.getElementById('svg-container').innerHTML = svgText;
-    const svgEl = document.querySelector('#svg-container svg');
-    setTimeout(() => {
-        mapaZoom = svgPanZoom(svgEl, { zoomEnabled: true, controlIconsEnabled: false, fit: true, center: true });
-        pintarMapa(eu.uid);
-    }, 500);
+    // 2. Injeta o seu código SVG diretamente no container (Substituindo o fetch que dava erro)
+    // Nota: Usei o viewBox que você enviou para garantir o enquadramento perfeito.
+    const meuMapaSVG = `
+    <svg id="mapa-svg-real" xmlns="http://www.w3.org/2000/svg" viewBox="-75 -35 42 35" style="width:100%; height:100%; background:#BAE6FD;">
+        <style>
+            .estado { fill: #f9f9f9; stroke: #333; stroke-width: 0.08; transition: fill 0.2s; cursor: pointer; }
+            .visitado { fill: #FF4B5C !important; }
+        </style>
+        <g transform="scale(1, -1)">
+            <path id="BRAC" class="estado" d="M -73.608178,-7.201942 L -72.86963,-7.528509 L -72.663035,-7.622899 L -72.660926,-7.623753 L -72.658816,-7.624607 L -72.189139,-7.720115 L -72.180896,-7.721791 L -72.172652,-7.723466 L -72.004612,-7.77447 L -71.512459,-7.886919 L -71.241081,-7.949829 L -70.936887,-8.018713 L -70.57532,-8.09556 L -70.368997,-8.141024 L -69.760758,-8.465852 L -69.552806,-8.577996 L -69.435256,-8.641215 L -69.177713,-8.767576 L -68.989072,-8.866179 L -68.784481,-8.972206 L -68.727521,-8.999689 L -68.620055,-9.047748 L -68.188419,-9.232315 L -67.939822,-9.336832 L -67.496119,-9.524192 L -67.327502,-9.594168 L -67.133347,-9.676444 L -67.105347,-9.687724 L -66.805966,-9.814127 L -66.689262,-9.862459 L -66.619301,-9.893602 L -66.622305,-9.896706 L -66.625906,-9.900375 L -66.623938,-9.906718 L -66.628579,-9.909211 L -66.63389,-9.913566 L -66.629792,-9.917826 L -66.630788,-9.922687 L -66.633443,-9.927309 L -66.631417,-9.928347 L -66.62707,-9.930572 L -66.626959,-9.935258 L -66.629883,-9.936321 L -66.632825,-9.937122 L -66.634258,-9.940488 L -66.635621,-9.94448 L -66.637944,-9.949046 L -66.642218,-9.948916 L -66.650033,-9.945058 L -66.650858,-9.941727 L -66.65193,-9.937394 L -66.655266,-9.940942 L -66.657149,-9.935893 L -66.662987,-9.940187 L -66.66656,-9.945882 L -66.663996,-9.948916 L -66.665647,-9.951662 L -66.666984,-9.953884 L -66.670893,-9.956723 L -66.674314,-9.957231 L -66.676078,-9.957493 L -66.676137,-9.958402 L -66.676298,-9.960907 L -66.675894,-9.964119 L -66.675809,-9.967702 L -66.678834,-9.967665 L -66.690304,-9.967506 L -66.695178,-9.967438 L -66.694511,-9.969565 L -66.694093,-9.970897 L -66.701736,-9.973638 L -66.706376,-9.975514 L -66.7114,-9.97722 L -66.714748,-9.978307 L -66.715103,-9.977867 L -66.717791,-9.974531 L -66.72065,-9.978118 L -66.721061,-9.980443 L -66.721462,-9.982712 L -66.723881,-9.982174 L -66.727459,-9.981378 L -66.731183,-9.980383 L -66.733589,-9.983136 L -66.734093,-9.988175 L -66.734544,-9.988717 L -66.739185,-9.994288 L -66.741502,-9.996387 L -66.74565,-9.995532 L -66.746772,-9.995301 L -66.750381,-9.994455 L -66.752756,-9.997069 L -66.755602,-9.999962 L -66.762183,-9.999667 L -66.764063,-10.006256 L -66.767463,-10.008149 L -66.770869,-10.010077 L -66.771382,-10.012649 L -66.7713,-10.014 z" />
+            </g>
+    </svg>`;
 
+    document.getElementById('svg-container').innerHTML = meuMapaSVG;
+
+    // 3. Inicializa o Zoom no elemento recém injetado
+    setTimeout(() => {
+        const svgEl = document.getElementById('mapa-svg-real');
+        if (svgEl) {
+            mapaZoom = svgPanZoom(svgEl, {
+                zoomEnabled: true,
+                controlIconsEnabled: false,
+                fit: true,
+                center: true,
+                minZoom: 0.1,
+                maxZoom: 50
+            });
+            // Pinta o mapa com as viagens do usuário (ou do alvo visitado)
+            pintarMapa(targetUid || eu.uid);
+        }
+    }, 800);
+
+    // 4. Configura o clique para abrir as memórias (Filtrando pela classe .estado)
     document.getElementById('svg-container').addEventListener('click', (e) => {
-        const path = e.target.closest('path');
+        const path = e.target.closest('.estado');
         if(path && path.id) gerenciarCliqueEstado(path.id);
     });
 
+    // 5. Inicia o restante dos componentes sociais
     renderFeed();
     ouvirConvites();
 }
@@ -553,7 +587,10 @@ async function toggleLike(postId) {
 function pintarMapa(uid) {
     db.ref(`usuarios/${uid}/viagens`).once('value', snap => {
         const viagens = snap.val() || {};
-        document.querySelectorAll('path').forEach(p => p.classList.remove('visitado'));
+        // Remove a cor de todos os estados primeiro
+        document.querySelectorAll('.estado').forEach(p => p.classList.remove('visitado'));
+        
+        // Pinta apenas os visitados
         Object.values(viagens).forEach(v => {
             const el = document.getElementById(v.uf);
             if(el) el.classList.add('visitado');
