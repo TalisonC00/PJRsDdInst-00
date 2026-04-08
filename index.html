@@ -399,30 +399,6 @@
         document.getElementById('edit-bio').value = perfilAtual.bio || '';
     }
 }
-        async function initApp() {
-            // Escutar Perfil para o Header e Perfil
-            db.ref('usuarios/' + me.uid + '/perfil').on('value', snap => {
-        perfilAtual = snap.val() || {};
-        const foto = perfilAtual.foto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
-
-        // Atualiza Header
-        document.getElementById('h-avatar').src = foto;
-        document.getElementById('h-nome').innerText = perfilAtual.nome || 'Viajante';
-        document.getElementById('h-user').innerText = '@' + (perfilAtual.username || 'user');
-        document.getElementById('info-conquistas').innerText = `ESTADOS: ${perfilAtual.estados || 0}`;
-
-        // Atualiza Visualização (Modo View)
-        document.getElementById('p-img-view').src = foto;
-        document.getElementById('p-nome-view').innerText = perfilAtual.nome || 'Viajante';
-        document.getElementById('p-user-view').innerText = '@' + (perfilAtual.username || 'user');
-        document.getElementById('p-bio-view').innerText = perfilAtual.bio || 'Bem-vindo à minha jornada!';
-
-        // Preenche Inputs (Modo Edit)
-        document.getElementById('p-img').src = foto;
-        document.getElementById('edit-nome').value = perfilAtual.nome || '';
-        document.getElementById('edit-user').value = perfilAtual.username || '';
-        document.getElementById('edit-bio').value = perfilAtual.bio || '';
-    });
 
             // Adicione esta função ao seu <script>
 async function buscarUsuario() {
@@ -752,6 +728,79 @@ async function temPermissaoParaVerGasto(uidDoDono doPost) {
                 customAlerta("Foto alterada!", "📸");
             }
         }
+
+        async function initApp() {
+    // 1. ESCUTAR PERFIL (Header e Tela de Perfil)
+    db.ref('usuarios/' + me.uid + '/perfil').on('value', snap => {
+        perfilAtual = snap.val() || {};
+        const foto = perfilAtual.foto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+
+        document.getElementById('h-avatar').src = foto;
+        document.getElementById('h-nome').innerText = perfilAtual.nome || 'Viajante';
+        document.getElementById('h-user').innerText = '@' + (perfilAtual.username || 'user');
+        document.getElementById('info-conquistas').innerText = `ESTADOS: ${perfilAtual.estados || 0}`;
+
+        document.getElementById('p-img-view').src = foto;
+        document.getElementById('p-nome-view').innerText = perfilAtual.nome || 'Viajante';
+        document.getElementById('p-user-view').innerText = '@' + (perfilAtual.username || 'user');
+        document.getElementById('p-bio-view').innerText = perfilAtual.bio || 'Bem-vindo à minha jornada!';
+        
+        document.getElementById('p-img').src = foto;
+    });
+
+    // 2. CARREGAR E CONFIGURAR O MAPA SVG
+    try {
+        const res = await fetch('br.svg');
+        const svgText = await res.text();
+        const container = document.getElementById('svg-container');
+        
+        // Inserimos o SVG no container
+        container.innerHTML = svgText;
+
+        const svgEl = container.querySelector('svg');
+        if (svgEl) {
+            // Ajustes de estilo forçados para garantir visibilidade
+            svgEl.style.width = "100%";
+            svgEl.style.height = "100%";
+            svgEl.style.display = "block";
+
+            // Inicializa a biblioteca de Zoom
+            // Usamos um pequeno delay para garantir que o navegador calculou o tamanho do SVG
+            setTimeout(() => {
+                controleMapa = svgPanZoom(svgEl, {
+                    zoomEnabled: true,
+                    controlIconsEnabled: false,
+                    fit: true,
+                    center: true,
+                    minZoom: 0.5,
+                    maxZoom: 10
+                });
+            }, 300);
+        }
+    } catch (err) {
+        console.error("Erro ao carregar o arquivo br.svg:", err);
+    }
+
+    // 3. ESCUTAR VIAGENS PARA PINTAR O MAPA
+    // Usamos o UID do usuário logado para garantir que ele veja o mapa DELE
+    db.ref(`usuarios/${me.uid}/viagens`).on('value', snap => {
+        const viagens = snap.val() || {};
+        
+        // Primeiro, limpamos todos os estados (removemos a classe visitado)
+        document.querySelectorAll('path').forEach(p => p.classList.remove('visitado'));
+        
+        // Pintamos os estados que possuem registros de viagem
+        // Importante: No seu código de casal, os dados eram agrupados por UF.
+        // Aqui garantimos que ele pegue as chaves ou o campo 'uf' do post.
+        Object.values(viagens).forEach(trip => {
+            const el = document.getElementById(trip.uf);
+            if (el) el.classList.add('visitado');
+        });
+    });
+
+    // 4. CARREGAR O FEED INICIAL
+    renderFeed();
+}
     </script>
 </body>
 </html>
