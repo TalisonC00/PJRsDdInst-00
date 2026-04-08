@@ -719,7 +719,17 @@ async function publicarViagem() {
     // Atualiza o contador de estados conquistados
     atualizarContagemEstados();
 
-    toast("Memória publicada com sucesso!", "✨");
+    toast("Memória publicada com sucesso!", "📸");
+    document.getElementById('reg-cidade').value = "";
+    document.getElementById('reg-h').value = "";
+    document.getElementById('reg-t').value = "";
+    document.getElementById('reg-al').value = "";
+    document.getElementById('reg-at').value = "";
+    document.getElementById('reg-p').checked = false;
+    document.getElementById('reg-n').checked = false;
+    document.getElementById('reg-fotos').value = "";
+    document.getElementById('previa-post').innerHTML = "";
+    fotosPost = []; // Limpa o array de imagens
     trocarAba('feed', document.querySelectorAll('.nav-item')[0]);
     
     // Limpa o formulário
@@ -807,16 +817,10 @@ function renderFeed() {
         const posts = Object.values(snap.val() || {}).reverse();
         
         for(let p of posts) {
-            // Lógica de Reações (Likes)
-            const reacoesSnap = await db.ref(`likes/${p.id}`).once('value');
-            const reacoesData = reacoesSnap.val() || {};
-            const totalReacoes = Object.keys(reacoesData).length;
-            const minhaReacao = reacoesData[eu.uid] || null; // Pega o emoji que eu usei
-
-            // Card de Conquista (Badge)
+            // 1. CARD DE CONQUISTA (BADGE)
             if (p.isBadge) {
                 container.innerHTML += `
-                    <div class="feed-card" style="border: 2px solid var(--primary); background: linear-gradient(135deg, #fff 0%, #fff5f5 100%);">
+                    <div class="feed-card" style="border: 2px solid var(--primary); background: linear-gradient(135deg, #fff 0%, #fff5f5 100%); margin-bottom: 25px;">
                         <div style="padding: 15px; display: flex; align-items: center; gap: 10px;">
                             <img src="${p.fotoUser || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" style="width:30px; height:30px; border-radius:50%; object-fit:cover;">
                             <b onclick="irParaPerfil('${p.uid}')" style="cursor:pointer; font-size:14px;">@${p.user}</b>
@@ -830,7 +834,7 @@ function renderFeed() {
                 continue;
             }
 
-            // Card de Viagem
+            // 2. CARD DE VIAGEM (Lógica VIP)
             const isVIP = (p.uid === eu.uid) || (await db.ref(`usuarios/${p.uid}/vips/${eu.uid}`).once('value')).exists();
             let tagsHtml = "";
             if(p.praia) tagsHtml += `<span style="background:#E0F2FE; color:#0369A1; padding:4px 8px; border-radius:8px; font-size:10px; font-weight:800; margin-left:5px;">🏖️ PRAIA</span>`;
@@ -846,6 +850,7 @@ function renderFeed() {
                 gastosHtml = `<span style="font-size:10px; font-weight:800; color:var(--text-sub); opacity:0.6;">🔒 GASTOS VIP</span>`;
             }
 
+            // 3. RENDERIZAÇÃO DO CARD
             container.innerHTML += `
                 <div class="feed-card" style="margin-bottom: 25px; position:relative;">
                     <div style="padding:15px; display:flex; align-items:center; justify-content:space-between;">
@@ -872,8 +877,8 @@ function renderFeed() {
 
                     <div style="padding:15px; display:flex; justify-content:space-between; align-items:center;">
                         <button class="like-btn" onclick="abrirMenuReacao('${p.id}')" style="border:none; background:none; padding:0; display:flex; align-items:center; gap:6px;">
-                            <span style="font-size:24px;">${minhaReacao || '🤍'}</span> 
-                            <span style="font-size:15px; font-weight:800; color:var(--text-main)">${totalReacoes}</span>
+                            <span id="btn-emoji-${p.id}" style="font-size:24px;">🤍</span> 
+                            <span id="btn-count-${p.id}" style="font-size:15px; font-weight:800; color:var(--text-main)">0</span>
                         </button>
 
                         <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; max-width: 70%;">
@@ -882,6 +887,19 @@ function renderFeed() {
                     </div>
                 </div>
             `;
+
+            // 4. LÓGICA DE ESCUTA EM TEMPO REAL PARA CADA POST
+            db.ref(`likes/${p.id}`).on('value', s => {
+                const reacoes = s.val() || {};
+                const total = Object.keys(reacoes).length;
+                const minha = reacoes[eu.uid] || '🤍';
+                
+                const elEmoji = document.getElementById(`btn-emoji-${p.id}`);
+                const elCount = document.getElementById(`btn-count-${p.id}`);
+                
+                if(elEmoji) elEmoji.innerText = minha;
+                if(elCount) elCount.innerText = total;
+            });
         }
     });
 }
@@ -1034,44 +1052,52 @@ function fecharModal() { document.getElementById('modal-global').style.display =
 function renderRelatorioGastos() {
     db.ref(`usuarios/${eu.uid}/viagens`).on('value', snap => {
         const viagens = Object.values(snap.val() || {});
-        let total = 0;
-        const ufs = {};
+        const container = document.getElementById('lista-gastos-uf');
+        container.innerHTML = "";
         
+        let totalGeral = 0;
         viagens.forEach(v => {
-            total += v.total;
-            ufs[v.uf] = (ufs[v.uf] || 0) + v.total;
+            totalGeral += (v.total || 0);
+            container.innerHTML += `
+                <div style="padding:10px; border-bottom:1px solid #eee;">
+                    <div style="display:flex; justify-content:space-between;">
+                        <b>🚩 ${v.cidade} (${v.uf.replace('BR','')})</b>
+                        <span style="color:var(--money)">R$ ${v.total}</span>
+                    </div>
+                    <small style="font-size:10px; color:#999;">🏨 ${v.h} | 🚗 ${v.t} | 🍴 ${v.al} | 🎡 ${v.at}</small>
+                </div>`;
         });
-
-        document.getElementById('valor-total-brasil').innerText = total.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
-        
-        let html = '';
-        for(let uf in ufs) {
-            html += `<div style="display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid #F1F5F9;">
-                        <b>🚩 ${uf.replace('BR','')}</b>
-                        <span style="color:var(--money); font-weight:800;">${ufs[uf].toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}</span>
-                     </div>`;
-        }
-        document.getElementById('lista-gastos-uf').innerHTML = html || '<p style="text-align:center; color:var(--text-sub)">Nenhum gasto registrado.</p>';
+        document.getElementById('valor-total-brasil').innerText = "R$ " + totalGeral.toLocaleString();
     });
 }
 
 function renderConquistas(uid) {
-    db.ref(`usuarios/${uid}/perfil/estados`).on('value', snap => {
-        const n = snap.val() || 0;
-        const conquistas = [
-            {n:1, t:'Início', i:'🌱'}, {n:5, t:'Explorador', i:'🏃'}, {n:10, t:'Aventureiro', i:'⭐'}, 
-            {n:20, t:'Viajante Raiz', i:'🔥'}, {n:26, t:'Mestre do Brasil', i:'👑'}
-        ];
-        let h = '';
-        conquistas.forEach(c => {
-            const ativa = n >= c.n;
-            h += `<div class="badge ${ativa?'active':''}">
-                    <div class="b-icon">${c.i}</div>
-                    <div style="font-size:10px; font-weight:800;">${c.t}</div>
-                  </div>`;
+    db.ref(`usuarios/${uid}/conquistas`).on('value', snap => {
+        const conquistadas = snap.val() || {};
+        const container = document.getElementById('lista-conquistas');
+        container.innerHTML = "";
+
+        // Renderiza Regiões do objeto REGIOES
+        for (let id in REGIOES) {
+            const ativa = conquistadas[id];
+            container.innerHTML += `
+                <div class="badge ${ativa ? 'active' : ''}" onclick="toast('${REGIOES[id].nomes.join(', ')}', '${REGIOES[id].icon}')">
+                    <div class="b-icon">${REGIOES[id].icon}</div>
+                    <div class="badge-name">${id}</div>
+                </div>`;
+        }
+        
+        // Renderiza Metas de Amigos
+        const metas = ['amigo_1', 'amigo_100', 'amigo_1000'];
+        metas.forEach(m => {
+            if(conquistadas[m]) {
+                container.innerHTML += `
+                <div class="badge active">
+                    <div class="b-icon">${conquistadas[m].icone}</div>
+                    <div class="badge-name">${conquistadas[m].nome}</div>
+                </div>`;
+            }
         });
-        document.getElementById('lista-conquistas').innerHTML = h;
-        document.getElementById('count-conquistas').innerText = conquistas.filter(c => n >= c.n).length;
     });
 }
 
@@ -1079,17 +1105,26 @@ function renderTimeline(uid) {
     db.ref(`usuarios/${uid}/viagens`).on('value', snap => {
         const container = document.getElementById('perfil-timeline');
         const trips = Object.values(snap.val() || {}).reverse();
-        container.innerHTML = trips.length ? "" : "<p style='color:var(--text-sub); font-size:13px;'>Nenhuma viagem registrada.</p>";
+        container.innerHTML = "";
+
         trips.forEach(t => {
             container.innerHTML += `
-                <div style="border-left:3px solid var(--primary); padding-left:15px; margin-bottom:15px; position:relative;">
-                    <div style="width:12px; height:12px; background:var(--primary); border-radius:50%; position:absolute; left:-7.5px; top:0;"></div>
-                    <b style="font-size:14px;">${t.cidade} - ${t.uf.replace('BR','')}</b><br>
-                    <small style="color:var(--text-sub)">${t.data}</small>
-                </div>
-            `;
+                <div class="timeline-item" style="position:relative; margin-bottom:20px; border-left:2px solid var(--primary); padding-left:15px;">
+                    ${uid === eu.uid ? `<button onclick="apagarPost('${t.id}')" style="position:absolute; right:0; top:0; border:none; background:none;">🗑️</button>` : ''}
+                    <img src="${t.fotos ? t.fotos[0] : ''}" style="width:100%; border-radius:15px; height:150px; object-fit:cover;">
+                    <b>${t.cidade} - ${t.uf.replace('BR','')}</b><br>
+                    <span style="color:var(--money); font-weight:800;">R$ ${t.total}</span>
+                </div>`;
         });
     });
+}
+
+async function apagarPost(id) {
+    if(!confirm("Deseja apagar esta memória? ela sumirá do feed global também.")) return;
+    await db.ref(`usuarios/${eu.uid}/viagens/${id}`).remove();
+    await db.ref(`feed_global/${id}`).remove();
+    await db.ref(`likes/${id}`).remove();
+    toast("Post removido", "🗑️");
 }
 
 // Configurações
