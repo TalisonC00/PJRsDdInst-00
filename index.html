@@ -88,18 +88,23 @@
 <body>
 
     <div id="auth-screen">
-        <div class="card" style="width: 100%; max-width: 360px; text-align: center;">
-            <div style="font-size: 50px; margin-bottom: 10px;">🌍</div>
-            <h2 id="auth-title">Minha Jornada</h2>
-            <div id="auth-form">
-                <input type="email" id="auth-email" placeholder="Seu melhor e-mail">
-                <input type="password" id="auth-pass" placeholder="Sua senha">
-                <button class="btn-acao" onclick="handleAuth()" id="btn-auth-main">Entrar</button>
-            </div>
-            <p id="auth-toggle" style="margin-top: 20px; font-size: 13px; color: var(--text-sub);" onclick="toggleAuth()">Ainda não tem conta? <b style="color:var(--primary)">Cadastrar</b></p>
-            <p style="margin-top: 10px; font-size: 12px; color: var(--text-sub); cursor:pointer" onclick="resetarSenha()">Esqueci minha senha</p>
-        </div>
+    <div class="card" style="width: 100%; max-width: 360px; text-align: center;">
+        <div style="font-size: 50px; margin-bottom: 10px;">🌍</div>
+        <h2 id="auth-title">Minha Jornada</h2>
+        
+        <input type="email" id="auth-email" placeholder="E-mail" autocomplete="email">
+        <input type="password" id="auth-pass" placeholder="Senha">
+        
+        <button class="btn-acao" onclick="handleAuth()" id="btn-auth-main" style="display: block; margin-top: 10px;">Entrar</button>
+        
+        <p style="margin-top: 20px; font-size: 13px; color: var(--text-sub);">
+            <span id="auth-text-toggle">Ainda não tem conta?</span> 
+            <b id="auth-btn-toggle" style="color:var(--primary); cursor: pointer;" onclick="toggleAuthMode()">Cadastrar</b>
+        </p>
+        
+        <p style="margin-top: 10px; font-size: 12px; color: var(--text-sub); cursor:pointer" onclick="resetarSenha()">Esqueci minha senha</p>
     </div>
+</div>
 
     <div class="header">
         <div>
@@ -286,27 +291,42 @@ let mapaZoom = null;
 
 // --- FUNÇÃO DE AUTENTICAÇÃO (LOGIN / CADASTRO) ---
 async function handleAuth() {
-    const email = document.getElementById('auth-email').value.trim();
-    const pass = document.getElementById('auth-pass').value;
+    // Captura os elementos
+    const emailInp = document.getElementById('auth-email');
+    const passInp = document.getElementById('auth-pass');
     const btn = document.getElementById('btn-auth-main');
 
-    if (!email || !pass) return toast("Por favor, preencha e-mail e senha.", "⚠️");
-    if (pass.length < 6) return toast("A senha deve ter no mínimo 6 caracteres.", "🔑");
+    // Validações básicas antes de chamar o Firebase
+    const email = emailInp.value.trim();
+    const pass = passInp.value;
 
+    if (!email || !pass) {
+        return toast("Por favor, preencha todos os campos.", "⚠️");
+    }
+
+    if (pass.length < 6) {
+        return toast("A senha deve ter no mínimo 6 caracteres.", "🔑");
+    }
+
+    // Bloqueia o botão para evitar cliques múltiplos
     btn.disabled = true;
+    const textoOriginal = btn.innerText;
     btn.innerText = "Processando...";
 
     try {
         if (isLoginMode) {
-            // Lógica de Login
+            // --- LÓGICA DE LOGIN ---
             await auth.signInWithEmailAndPassword(email, pass);
+            // O onAuthStateChanged cuidará do redirecionamento
         } else {
-            // Lógica de Cadastro
+            // --- LÓGICA DE CADASTRO ---
             const res = await auth.createUserWithEmailAndPassword(email, pass);
             const uid = res.user.uid;
+            
+            // Gerar um username temporário
             const defaultUser = "viajante_" + Math.floor(Math.random() * 99999);
             
-            // Criar perfil inicial no Banco de Dados
+            // 1. Cria o perfil no Banco de Dados
             await db.ref(`usuarios/${uid}/perfil`).set({
                 nome: "Novo Viajante",
                 username: defaultUser,
@@ -315,23 +335,44 @@ async function handleAuth() {
                 estados: 0
             });
             
-            // Registrar username para busca
+            // 2. Reserva o username no índice global
             await db.ref(`usernames/${defaultUser}`).set(uid);
             
-            toast("Conta criada com sucesso! Bem-vindo.", "🌍");
+            toast("Conta criada! Bem-vindo(a).", "🌍");
         }
     } catch (error) {
-        console.error(error);
-        let msg = "Erro na autenticação.";
-        if (error.code === "auth/email-already-in-use") msg = "Este e-mail já está em uso.";
-        if (error.code === "auth/invalid-email") msg = "E-mail inválido.";
-        if (error.code === "auth/user-not-found" || error.code === "auth/wrong-password") msg = "E-mail ou senha incorretos.";
-        if (error.code === "auth/network-request-failed") msg = "Sem conexão com a internet.";
+        console.error("Erro de Autenticação:", error.code, error.message);
+        
+        let msg = "Erro ao processar. Tente novamente.";
+        
+        // Tradução de erros comuns do Firebase para o usuário
+        switch (error.code) {
+            case 'auth/email-already-in-use':
+                msg = "Este e-mail já está sendo usado por outra conta.";
+                break;
+            case 'auth/invalid-email':
+                msg = "O formato do e-mail é inválido.";
+                break;
+            case 'auth/user-disabled':
+                msg = "Esta conta foi desativada.";
+                break;
+            case 'auth/user-not-found':
+            case 'auth/wrong-password':
+                msg = "E-mail ou senha incorretos.";
+                break;
+            case 'auth/network-request-failed':
+                msg = "Falha na conexão. Verifique sua internet.";
+                break;
+            case 'auth/weak-password':
+                msg = "A senha escolhida é muito fraca.";
+                break;
+        }
         
         toast(msg, "❌");
-    } finally {
+        
+        // Destrava o botão apenas em caso de erro para o usuário tentar de novo
         btn.disabled = false;
-        btn.innerText = isLoginMode ? "Entrar" : "Criar Conta";
+        btn.innerText = textoOriginal;
     }
 }
 
