@@ -55,14 +55,26 @@
         .carrossel::-webkit-scrollbar { display: none; }
         .carrossel img { flex: 0 0 100%; height: 100%; object-fit: cover; snap-align: center; }
         .feed-actions { padding: 15px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #F1F5F9; }
+        .reacoes-menu { display: none; position: absolute; bottom: 50px; left: 15px; background: white; padding: 8px 12px; border-radius: 25px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); gap: 12px; z-index: 100; animation: popIn 0.2s ease-out; }
+        .reacoes-menu span { font-size: 24px; cursor: pointer; transition: 0.2s; }
+        .reacoes-menu span:hover { transform: scale(1.3); }
+        @keyframes popIn { from { opacity: 0; transform: translateY(10px) scale(0.9); } to { opacity: 1; transform: translateY(0) scale(1); }}
+
+        .like-btn { position: relative; }
         .like-btn { background: none; border: none; font-size: 22px; cursor: pointer; display: flex; align-items: center; gap: 5px; color: var(--text-sub); font-weight: 700; }
         .like-btn.active { color: var(--primary); }
 
         /* MAPA */
-        .mapa-frame { background: #fff; height: calc(100vh - 180px); margin: 12px; border-radius: 30px; position: relative; overflow: hidden; }
-        #svg-container { width: 100%; height: 100%; }
-        path { fill: #F1F5F9; stroke: #fff; stroke-width: 0.8; transition: 0.4s; cursor: pointer; }
-        .visitado { fill: var(--primary) !important; }
+        .mapa-card { background: var(--card); margin: 16px; border-radius: 28px; height: calc(100% - 32px); display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+        #svg-container { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #fff; touch-action: auto !important; }
+        path { fill: #F1F5F9; stroke: #fff; stroke-width: 0.8; transition: 0.5s; cursor: pointer; }
+
+         /* Cores Regiões */
+        .visitado[id^="BRAC"], .visitado[id^="BRAM"], .visitado[id^="BRRR"], .visitado[id^="BRRO"], .visitado[id^="BRPA"], .visitado[id^="BRAP"], .visitado[id^="BRTO"] { fill: #22C55E !important; }
+        .visitado[id^="BRMA"], .visitado[id^="BRPI"], .visitado[id^="BRCE"], .visitado[id^="BRRN"], .visitado[id^="BRPB"], .visitado[id^="BRPE"], .visitado[id^="BRAL"], .visitado[id^="BRSE"], .visitado[id^="BRBA"] { fill: #FACC15 !important; }
+        .visitado[id^="BRMT"], .visitado[id^="BRMS"], .visitado[id^="BRGO"], .visitado[id^="BRDF"] { fill: #FB923C !important; }
+        .visitado[id^="BRMG"], .visitado[id^="BRSP"], .visitado[id^="BRRJ"], .visitado[id^="BRES"] { fill: #EC4899 !important; }
+        .visitado[id^="BRPR"], .visitado[id^="BRSC"], .visitado[id^="BRRS"] { fill: #A855F7 !important; }
 
         /* CONQUISTAS */
         .badge-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px; }
@@ -289,6 +301,13 @@ let targetUid = null;
 let isLoginMode = true;
 let mapaZoom = null;
 
+const REGIOES = {
+    'NORTE': { icon: '🌳', color: '#22C55E', UFs: ['BRAC','BRAM','BRRR','BRRO','BRPA','BRAP','BRTO'], nomes: ['Acre','Amazonas','Roraima','Rondônia','Pará','Amapá','Tocantins'] },
+    'NORDESTE': { icon: '🌵', color: '#FACC15', UFs: ['BRMA','BRPI','BRCE','BRRN','BRPB','BRPE','BRAL','BRSE','BRBA'], nomes: ['Maranhão','Piauí','Ceará','Rio Grande do Norte','Paraíba','Pernambuco','Alagoas','Sergipe','Bahia'] },
+    'CENTRO': { icon: '☀️', color: '#FB923C', UFs: ['BRMT','BRMS','BRGO','BRDF'], nomes: ['Mato Grosso','Mato Grosso do Sul','Goiás','Distrito Federal'] },
+    'SUDESTE': { icon: '🏢', color: '#EC4899', UFs: ['BRMG','BRSP','BRRJ','BRES'], nomes: ['Minas Gerais','São Paulo','Rio de Janeiro','Espírito Santo'] },
+    'SUL': { icon: '❄️', color: '#A855F7', UFs: ['BRPR','BRSC','BRRS'], nomes: ['Paraná','Santa Catarina','Rio Grande do Sul'] }
+};
 // --- FUNÇÃO DE AUTENTICAÇÃO (LOGIN / CADASTRO) ---
 
     // 1. ALTERNAR ENTRE LOGIN E CADASTRO
@@ -446,6 +465,7 @@ async function initApp() {
 
     renderFeed();
     ouvirConvites();
+    verificarConquistas();
 }
 
 // --- FUNÇÃO ESQUECI SENHA ---
@@ -612,6 +632,72 @@ async function publicarViagem() {
     trocarAba('feed', document.querySelectorAll('.nav-item')[0]);
 }
 
+    async function verificarConquistas() {
+    if (!eu) return;
+
+    const snapshot = await db.ref(`usuarios/${eu.uid}`).once('value');
+    const dados = snapshot.val() || {};
+    const viagens = dados.viagens || {};
+    const amigos = dados.amigos || {};
+    const conquistasSalvas = dados.conquistas || {};
+    
+    const ufsVisitadas = new Set(Object.values(viagens).map(v => v.uf));
+    const qtdAmigos = Object.keys(amigos).length;
+
+    // 1. Checar Metas de Amigos
+    const metasAmigos = [
+        { id: 'amigo_1', qtd: 1, nome: 'Primeiro Contato', icon: '🤝' },
+        { id: 'amigo_100', qtd: 100, nome: 'Influenciador', icon: '📣' },
+        { id: 'amigo_500', qtd: 500, nome: 'Popular', icon: '🌟' },
+        { id: 'amigo_1000', qtd: 1000, nome: 'Embaixador', icon: '👑' },
+        { id: 'amigo_5000', qtd: 5000, nome: 'Lenda', icon: '💎' },
+        { id: 'amigo_10000', qtd: 10000, nome: 'Fenômeno', icon: '🔥' }
+    ];
+
+    metasAmigos.forEach(meta => {
+        if (qtdAmigos >= meta.qtd && !conquistasSalvas[meta.id]) {
+            dispararAlertaConquista(meta.id, meta.nome, meta.icon);
+        }
+    });
+
+    // 2. Checar Regiões Completas
+    for (let reg in REGIOES) {
+        const info = REGIOES[reg];
+        const completou = info.UFs.every(uf => ufsVisitadas.has(uf));
+        
+        if (completou && !conquistasSalvas[reg]) {
+            dispararAlertaConquista(reg, `Mestre do ${reg}`, info.icon);
+        }
+    }
+}
+
+async function dispararAlertaConquista(id, nome, icone) {
+    // Trava no banco para não repetir
+    await db.ref(`usuarios/${eu.uid}/conquistas/${id}`).set({ nome, icone, data: Date.now() });
+
+    const html = `
+        <div style="text-align:center;">
+            <div style="font-size:60px; margin-bottom:10px; animation: bounce 1s infinite;">${icone}</div>
+            <h2 style="color:var(--primary); margin:0;">NOVA CONQUISTA!</h2>
+            <p style="font-weight:800; font-size:20px; margin:10px 0;">${nome}</p>
+            <button class="btn-acao" onclick="postarConquistaFeed('${nome}', '${icone}')" style="margin-bottom:10px;">Compartilhar no Feed</button>
+        </div>
+    `;
+    
+    document.getElementById('modal-content').innerHTML = html;
+    document.getElementById('modal-global').style.display = 'flex';
+}
+
+async function postarConquistaFeed(nome, icone) {
+    const id = "badge_" + Date.now();
+    const post = {
+        id, uid: eu.uid, user: meuPerfil.username, fotoUser: meuPerfil.foto || "",
+        isBadge: true, nomeBadge: nome, iconeBadge: icone, timestamp: Date.now()
+    };
+    await db.ref(`feed_global/${id}`).set(post);
+    fecharModal();
+    toast("Conquista compartilhada!", "🚀");
+}
 // --- FEED E INTERAÇÃO (LIKES) ---
 function renderFeed() {
     db.ref('feed_global').limitToLast(20).on('value', async snap => {
@@ -620,28 +706,78 @@ function renderFeed() {
         const posts = Object.values(snap.val() || {}).reverse();
         
         for(let p of posts) {
+            // Lógica de Reações (Likes)
+            const reacoesSnap = await db.ref(`likes/${p.id}`).once('value');
+            const reacoesData = reacoesSnap.val() || {};
+            const totalReacoes = Object.keys(reacoesData).length;
+            const minhaReacao = reacoesData[eu.uid] || null; // Pega o emoji que eu usei
+
+            // Card de Conquista (Badge)
+            if (p.isBadge) {
+                container.innerHTML += `
+                    <div class="feed-card" style="border: 2px solid var(--primary); background: linear-gradient(135deg, #fff 0%, #fff5f5 100%);">
+                        <div style="padding: 15px; display: flex; align-items: center; gap: 10px;">
+                            <img src="${p.fotoUser || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" style="width:30px; height:30px; border-radius:50%; object-fit:cover;">
+                            <b onclick="irParaPerfil('${p.uid}')" style="cursor:pointer; font-size:14px;">@${p.user}</b>
+                        </div>
+                        <div style="padding: 30px 20px; text-align: center;">
+                            <div style="font-size: 60px; margin-bottom: 10px; animation: bounce 2s infinite;">${p.iconeBadge}</div>
+                            <b style="font-size: 18px; color: var(--primary); display: block;">${p.nomeBadge}</b>
+                            <p style="font-size: 12px; color: var(--text-sub);">Nova conquista desbloqueada!</p>
+                        </div>
+                    </div>`;
+                continue;
+            }
+
+            // Card de Viagem
             const isVIP = (p.uid === eu.uid) || (await db.ref(`usuarios/${p.uid}/vips/${eu.uid}`).once('value')).exists();
-            const likesSnap = await db.ref(`likes/${p.id}`).once('value');
-            const numLikes = Object.keys(likesSnap.val() || {}).length;
-            const euCurti = likesSnap.child(eu.uid).exists();
+            let tagsHtml = "";
+            if(p.praia) tagsHtml += `<span style="background:#E0F2FE; color:#0369A1; padding:4px 8px; border-radius:8px; font-size:10px; font-weight:800; margin-left:5px;">🏖️ PRAIA</span>`;
+            if(p.natureza) tagsHtml += `<span style="background:#DCFCE7; color:#15803D; padding:4px 8px; border-radius:8px; font-size:10px; font-weight:800; margin-left:5px;">🌳 NATUREZA</span>`;
+
+            let gastosHtml = "";
+            if (isVIP) {
+                if(p.h > 0) gastosHtml += `<span style="background:#F1F5F9; padding:4px 8px; border-radius:8px; font-size:11px; font-weight:700;">🏨 R$ ${p.h}</span>`;
+                if(p.t > 0) gastosHtml += `<span style="background:#F1F5F9; padding:4px 8px; border-radius:8px; font-size:11px; font-weight:700;">🚗 R$ ${p.t}</span>`;
+                if(p.al > 0) gastosHtml += `<span style="background:#F1F5F9; padding:4px 8px; border-radius:8px; font-size:11px; font-weight:700;">🍴 R$ ${p.al}</span>`;
+                if(p.at > 0) gastosHtml += `<span style="background:#F1F5F9; padding:4px 8px; border-radius:8px; font-size:11px; font-weight:700;">🎡 R$ ${p.at}</span>`;
+            } else {
+                gastosHtml = `<span style="font-size:10px; font-weight:800; color:var(--text-sub); opacity:0.6;">🔒 GASTOS VIP</span>`;
+            }
 
             container.innerHTML += `
-                <div class="feed-card">
-                    <div style="padding:15px; display:flex; align-items:center; gap:12px;">
-                        <img src="${p.fotoUser || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" style="width:35px; height:35px; border-radius:50%">
-                        <div>
-                            <b onclick="irParaPerfil('${p.uid}')" style="cursor:pointer">@${p.user}</b><br>
-                            <small style="color:var(--text-sub)">${p.cidade} - ${p.uf.replace('BR','')}</small>
+                <div class="feed-card" style="margin-bottom: 25px; position:relative;">
+                    <div style="padding:15px; display:flex; align-items:center; justify-content:space-between;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <img src="${p.fotoUser || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" style="width:35px; height:35px; border-radius:50%; object-fit:cover;">
+                            <div>
+                                <b onclick="irParaPerfil('${p.uid}')" style="cursor:pointer; font-size:14px;">@${p.user}</b><br>
+                                <small style="color:var(--text-sub); font-size:11px;">${p.cidade} - ${p.uf.replace('BR','')}</small>
+                            </div>
                         </div>
+                        <div>${tagsHtml}</div>
                     </div>
-                    <div class="carrossel">
-                        ${p.fotos ? p.fotos.map(f => `<img src="${f}">`).join('') : '<div style="width:100%; display:flex; align-items:center; justify-content:center; background:#F1F5F9; color:#cbd5e1;">🖼️ Sem fotos</div>'}
+
+                    <div class="carrossel" onscroll="atualizarPontinhos(this, '${p.id}')">
+                        ${p.fotos ? p.fotos.map(f => `<img src="${f}">`).join('') : '<div style="width:100%; height:320px; background:#F8FAFC;"></div>'}
                     </div>
-                    <div class="feed-actions">
-                        <button class="like-btn ${euCurti?'active':''}" onclick="toggleLike('${p.id}')">
-                            ${euCurti?'❤️':'🤍'} <span>${numLikes}</span>
+
+                    <div class="reacoes-menu" id="menu-${p.id}">
+                        <span onclick="reagir('${p.id}', '❤️')">❤️</span>
+                        <span onclick="reagir('${p.id}', '🔥')">🔥</span>
+                        <span onclick="reagir('${p.id}', '💙')">💙</span>
+                        <span onclick="reagir('${p.id}', '✈️')">✈️</span>
+                    </div>
+
+                    <div style="padding:15px; display:flex; justify-content:space-between; align-items:center;">
+                        <button class="like-btn" onclick="abrirMenuReacao('${p.id}')" style="border:none; background:none; padding:0; display:flex; align-items:center; gap:6px;">
+                            <span style="font-size:24px;">${minhaReacao || '🤍'}</span> 
+                            <span style="font-size:15px; font-weight:800; color:var(--text-main)">${totalReacoes}</span>
                         </button>
-                        <b style="color:var(--money); font-size:15px;">${isVIP ? 'R$ '+p.total.toLocaleString() : '🔒 VIP'}</b>
+
+                        <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; max-width: 70%;">
+                            ${gastosHtml}
+                        </div>
                     </div>
                 </div>
             `;
@@ -649,7 +785,40 @@ function renderFeed() {
     });
 }
 
-async function toggleLike(postId) {
+    // Abre o menu de emojis
+    function abrirMenuReacao(postId) {
+    const menu = document.getElementById(`menu-${postId}`);
+    // Fecha outros menus abertos
+    document.querySelectorAll('.reacoes-menu').forEach(m => {
+        if(m.id !== `menu-${postId}`) m.style.display = 'none';
+    });
+    // Alterna o atual
+    menu.style.display = (menu.style.display === 'flex') ? 'none' : 'flex';
+}
+   // Salva a reação no Firebase
+async function reagir(postId, emoji) {
+    const ref = db.ref(`likes/${postId}/${eu.uid}`);
+    const snap = await ref.once('value');
+
+    if (snap.val() === emoji) {
+        // Se clicar no mesmo emoji, remove a curtida
+        await ref.remove();
+    } else {
+        // Salva ou troca o emoji
+        await ref.set(emoji);
+    }
+    
+    document.getElementById(`menu-${postId}`).style.display = 'none';
+}
+
+// Fecha menus ao clicar fora
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.like-btn') && !e.target.closest('.reacoes-menu')) {
+        document.querySelectorAll('.reacoes-menu').forEach(m => m.style.display = 'none');
+    }
+});
+    
+    async function toggleLike(postId) {
     const ref = db.ref(`likes/${postId}/${eu.uid}`);
     const snap = await ref.once('value');
     if(snap.exists()) await ref.remove();
@@ -657,7 +826,8 @@ async function toggleLike(postId) {
 }
 
 // --- MAPA E PRIVACIDADE ---
-function pintarMapa(uid) {
+
+    function pintarMapa(uid) {
     db.ref(`usuarios/${uid}/viagens`).once('value', snap => {
         const viagens = snap.val() || {};
         // Remove a cor de todos os estados primeiro
