@@ -64,7 +64,7 @@
 
         /* MAPA FULL */
         .mapa-full { height: calc(100vh - 145px); width: 100vw; background: white; position: relative; overflow: hidden; }
-        #svg-container { width: 100%; height: 100%; }
+        #svg-container svg { width: 100% !important; height: 100% !important; display: block;}
         path { fill: #F1F5F9; stroke: #fff; stroke-width: 0.8; transition: 0.5s; cursor: pointer; }
         .visitado { fill: var(--primary) !important; }
 
@@ -152,29 +152,24 @@
 
     <div id="aba-registro" class="aba">
     <div class="card">
-        <h4>Nova Viagem 📍</h4>
-        <select id="sel-uf">
-            <option value="BRSP" selected>São Paulo</option><option value="BRRJ">Rio de Janeiro</option><option value="BRMG">Minas Gerais</option><option value="BRBA">Bahia</option><option value="BRSC">Santa Catarina</option><option value="BRPR">Paraná</option><option value="BRRS">Rio Grande do Sul</option><option value="BRGO">Goiás</option><option value="BRDF">Distrito Federal</option><option value="BRES">Espírito Santo</option><option value="BRCE">Ceará</option><option value="BRPE">Pernambuco</option><option value="BRRN">Rio Grande do Norte</option><option value="BRPB">Paraíba</option><option value="BRAL">Alagoas</option><option value="BRSE">Sergipe</option><option value="BRMA">Maranhão</option><option value="BRPI">Piauí</option><option value="BRMT">Mato Grosso</option><option value="BRMS">Mato Grosso do Sul</option><option value="BRTO">Tocantins</option><option value="BRPA">Pará</option><option value="BRAM">Amazonas</option><option value="BRRO">Rondônia</option><option value="BRAC">Acre</option><option value="BRRR">Roraima</option><option value="BRAP">Amapá</option>
-            </select>
-        <input type="text" id="txt-cidade" placeholder="Cidade">
-        <input type="date" id="txt-data">
+    <h4>Nova Viagem 📍</h4>
+    <input type="text" id="txt-cidade" placeholder="Cidade">
+    <input type="date" id="txt-data">
 
-        <label style="font-size: 11px; color: var(--sub); margin: 10px 0 5px;">Detalhamento de Gastos (R$):</label>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-            <input type="number" id="v-hosp" placeholder="🏨 Hotel">
-            <input type="number" id="v-trans" placeholder="🚗 Transp.">
-            <input type="number" id="v-alime" placeholder="🍴 Aliment.">
-            <input type="number" id="v-atrac" placeholder="🎡 Atrações">
-        </div>
-        
-        <div class="exp-group">
-            <label class="exp-item"><span>🏨</span><input type="checkbox" id="chk-h"></label>
-            <label class="exp-item"><span>🚗</span><input type="checkbox" id="chk-t"></label>
-            <label class="exp-item"><span>🏖️</span><input type="checkbox" id="chk-p"></label>
-            <label class="exp-item"><span>🍴</span><input type="checkbox" id="chk-a"></label>
-            <label class="exp-item"><span>🎡</span><input type="checkbox" id="chk-atr"></label>
-            <label class="exp-item"><span>🌳</span><input type="checkbox" id="chk-n"></label>
-        </div>
+    <label style="font-size: 11px; color: var(--sub); margin: 10px 0 5px;">Gastos (R$):</label>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+        <input type="number" id="v-hosp" placeholder="🏨 Hotel">
+        <input type="number" id="v-trans" placeholder="🚗 Transp.">
+        <input type="number" id="v-alime" placeholder="🍴 Aliment.">
+        <input type="number" id="v-atrac" placeholder="🎡 Atrações">
+    </div>
+    
+    <label style="font-size: 11px; color: var(--sub); margin: 15px 0 5px;">Tipo de Destino:</label>
+    <div class="exp-group" style="grid-template-columns: 1fr 1fr;">
+        <label class="exp-item"><span>🏖️</span> Praia?<input type="checkbox" id="chk-p"></label>
+        <label class="exp-item"><span>🌳</span> Natureza?<input type="checkbox" id="chk-n"></label>
+    </div>
+    </div>
 
         <input type="file" id="inp-fotos" multiple accept="image/*" onchange="previaFotos(this)">
         <div id="previa-container" style="display:flex; gap:5px; margin: 10px 0;"></div>
@@ -300,28 +295,37 @@
             edit.style.display = 'block';
         }
     }
+        
         async function handleAuth() {
     const e = document.getElementById('email').value.trim();
     const p = document.getElementById('pass').value;
     const btn = document.getElementById('btn-auth-main');
 
-    if (!e || !p) return customAlerta("Preenche todos os campos!", "⚠️");
+    // 1. Validação básica de campos vazios
+    if (!e || !p) {
+        return customAlerta("Por favor, preencha o e-mail e a senha!", "⚠️");
+    }
 
-    // Bloqueia o botão para evitar cliques repetidos
+    // Bloqueia o botão e mostra que está a processar
     btn.disabled = true;
+    const textoOriginal = btn.innerText;
     btn.innerText = "A processar...";
 
     try {
         if (isLogin) {
-            // LOGIN
+            // --- LÓGICA DE LOGIN ---
             await auth.signInWithEmailAndPassword(e, p);
+            // O Firebase disparará o onAuthStateChanged automaticamente se for bem-sucedido
+            
         } else {
-            // CADASTRO
+            // --- LÓGICA DE CADASTRO ---
+            // Criar o utilizador no Firebase Auth
             const res = await auth.createUserWithEmailAndPassword(e, p);
             
-            // Criamos o perfil inicial básico
-            const idTemporario = "user_" + Math.floor(Math.random() * 9999);
+            // Criar um username temporário baseado no tempo para garantir que é único
+            const idTemporario = "viajante" + Math.floor(Math.random() * 9999);
             
+            // Criar o nó do Perfil do utilizador
             await db.ref('usuarios/' + res.user.uid + '/perfil').set({
                 nome: "Novo Viajante",
                 username: idTemporario,
@@ -330,20 +334,24 @@
                 bio: "Comecei a minha jornada! 🌍"
             });
 
-            // Regista o username temporário no nosso índice
+            // Registar este username no nosso índice global para busca e permissões
             await db.ref(`usernames/${idTemporario}`).set(res.user.uid);
+            
+            customAlerta("Jornada criada com sucesso! 🌍", "✅");
         }
     } catch (err) {
-        customAlerta(traduzirErro(err.code), '❌');
+        // --- TRATAMENTO DE ERRO ---
+        console.error("Erro Firebase:", err.code);
+        
+        // Traduz o código de erro para uma mensagem que o utilizador entenda
+        const mensagemAmigavel = traduzirErro(err.code);
+        customAlerta(mensagemAmigavel, "❌");
+
+        // Liberta o botão para nova tentativa
         btn.disabled = false;
-        btn.innerText = isLogin ? "Entrar" : "Cadastrar";
+        btn.innerText = textoOriginal;
     }
 }
-
-        auth.onAuthStateChanged(user => {
-            if(user) { me = user; document.getElementById('login-screen').style.display = 'none'; initApp(); }
-            else { document.getElementById('login-screen').style.display = 'flex'; }
-        });
 
         function recuperarSenha() {
     const email = document.getElementById('email').value;
@@ -450,50 +458,93 @@ async function abrirPerfilVisitante(uidVisitado) {
         }
 
         async function postarViagem() {
+    // 1. Captura dos campos básicos
     const uf = document.getElementById('sel-uf').value;
-    const tripID = Date.now();
+    const cidade = document.getElementById('txt-cidade').value.trim();
+    const dataViagem = document.getElementById('txt-data').value;
     
-    // Pegamos os valores dos gastos
-    const gastos = {
-        h: parseFloat(document.getElementById('v-hosp').value) || 0,
-        t: parseFloat(document.getElementById('v-trans').value) || 0,
-        al: parseFloat(document.getElementById('v-alime').value) || 0,
-        at: parseFloat(document.getElementById('v-atrac').value) || 0
-    };
-    const total = gastos.h + gastos.t + gastos.al + gastos.at;
+    // Validação simples para não salvar campos vazios
+    if (!uf || !cidade || !dataViagem) {
+        return customAlerta("Por favor, preencha o estado, cidade e data!", "⚠️");
+    }
 
-    const novaViagem = {
+    // 2. Captura e Cálculo de Gastos
+    const vHosp = parseFloat(document.getElementById('v-hosp').value) || 0;
+    const vTrans = parseFloat(document.getElementById('v-trans').value) || 0;
+    const vAlime = parseFloat(document.getElementById('v-alime').value) || 0;
+    const vAtrac = parseFloat(document.getElementById('v-atrac').value) || 0;
+    
+    const totalGasto = vHosp + vTrans + vAlime + vAtrac;
+    const tripID = Date.now();
+
+    // 3. Lógica Inteligente de Experiências (Automático + Manual)
+    const post = {
         id: tripID,
         uid: me.uid,
         username: perfilAtual.username,
         uFoto: perfilAtual.foto || '',
         uf: uf,
-        cidade: document.getElementById('txt-cidade').value,
-        data: document.getElementById('txt-data').value,
-        fotos: fotosPost, // Array de base64
-        gastos: gastos,
-        total: total,
-        isVip: document.getElementById('is-vip').checked // Se true, só VIPs vêm o 'total'
+        cidade: cidade,
+        data: new Date(dataViagem).toLocaleDateString('pt-BR'),
+        rawDate: dataViagem,
+        fotos: fotosPost, // Array de base64 vindo da função previaFotos
+        total: totalGasto,
+        isVip: document.getElementById('is-vip').checked,
+        // Aqui a mágica acontece: true se o valor for > 0
+        exp: { 
+            h: vHosp > 0, 
+            t: vTrans > 0, 
+            a: vAlime > 0,
+            atr: vAtrac > 0,
+            p: document.getElementById('chk-p').checked, // Checkbox de Praia
+            n: document.getElementById('chk-n').checked  // Checkbox de Natureza
+        },
+        // Guardamos os valores individuais para o Relatório Privado
+        detalhes: {
+            hotel: vHosp,
+            transporte: vTrans,
+            alimentacao: vAlime,
+            atracoes: vAtrac
+        }
     };
 
-    // 1. Salva no perfil do usuário (Privado/Completo)
-    await db.ref(`usuarios/${me.uid}/viagens/${tripID}`).set(novaViagem);
+    try {
+        // 4. Salvar no Banco de Dados
+        // Salva no Feed Global (Público)
+        await db.ref('feed_global/' + tripID).set(post);
+        
+        // Salva no Histórico do Usuário (Privado/Completo)
+        await db.ref(`usuarios/${me.uid}/viagens/${tripID}`).set(post);
+        
+        // 5. Atualizar contador de estados no perfil
+        db.ref(`usuarios/${me.uid}/viagens`).once('value', snap => {
+            const viagens = snap.val() || {};
+            // Filtra UFs únicas para o contador
+            const estadosVisitados = [...new Set(Object.values(viagens).map(v => v.uf))].length;
+            db.ref(`usuarios/${me.uid}/perfil/estados`).set(estadosVisitados);
+        });
 
-    // 2. Salva no Feed Global (Público - sem os gastos detalhados por segurança)
-    const postPublico = { ...novaViagem };
-    if (!novaViagem.isVip) delete postPublico.gastos; // Remove gastos se não for público
-    
-    await db.ref('feed_global/' + tripID).set(postPublico);
+        // 6. Finalização
+        customAlerta("Memória Salva com Sucesso! 📍", "✅");
+        
+        // Limpar formulário
+        document.getElementById('txt-cidade').value = "";
+        document.getElementById('v-hosp').value = "";
+        document.getElementById('v-trans').value = "";
+        document.getElementById('v-alime').value = "";
+        document.getElementById('v-atrac').value = "";
+        document.getElementById('chk-p').checked = false;
+        document.getElementById('chk-n').checked = false;
+        document.getElementById('previa-container').innerHTML = "";
+        fotosPost = [];
 
-    // 3. Atualiza contador de estados
-    db.ref(`usuarios/${me.uid}/viagens`).once('value', s => {
-        const viagens = s.val() || {};
-        const estadosUnicos = [...new Set(Object.values(viagens).map(v => v.uf))].length;
-        db.ref(`usuarios/${me.uid}/perfil/estados`).set(estadosUnicos);
-    });
+        // Voltar para o Feed
+        mudarAba('feed', document.querySelector('.nav-item'));
 
-    customAlerta("Viagem publicada no Feed! 🌍", "✅");
-    mudarAba('feed', document.querySelector('.nav-item'));
+    } catch (err) {
+        console.error("Erro ao salvar viagem:", err);
+        customAlerta("Erro ao salvar. Tente novamente.", "❌");
+    }
 }
 
         // --- FUNÇÃO CORRIGIDA ---
