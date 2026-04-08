@@ -154,10 +154,7 @@
     <div class="card">
         <h4>Nova Viagem 📍</h4>
         <select id="sel-uf">
-            <option value="BRSP">São Paulo</option><option value="BRRJ">Rio de Janeiro</option>
-            <option value="BRMG">Minas Gerais</option><option value="BRBA">Bahia</option>
-            <option value="BRSC">Santa Catarina</option><option value="BRPR">Paraná</option>
-            <option value="BRRS">Rio Grande do Sul</option>
+            <option value="BRSP" selected>São Paulo</option><option value="BRRJ">Rio de Janeiro</option><option value="BRMG">Minas Gerais</option><option value="BRBA">Bahia</option><option value="BRSC">Santa Catarina</option><option value="BRPR">Paraná</option><option value="BRRS">Rio Grande do Sul</option><option value="BRGO">Goiás</option><option value="BRDF">Distrito Federal</option><option value="BRES">Espírito Santo</option><option value="BRCE">Ceará</option><option value="BRPE">Pernambuco</option><option value="BRRN">Rio Grande do Norte</option><option value="BRPB">Paraíba</option><option value="BRAL">Alagoas</option><option value="BRSE">Sergipe</option><option value="BRMA">Maranhão</option><option value="BRPI">Piauí</option><option value="BRMT">Mato Grosso</option><option value="BRMS">Mato Grosso do Sul</option><option value="BRTO">Tocantins</option><option value="BRPA">Pará</option><option value="BRAM">Amazonas</option><option value="BRRO">Rondônia</option><option value="BRAC">Acre</option><option value="BRRR">Roraima</option><option value="BRAP">Amapá</option>
             </select>
         <input type="text" id="txt-cidade" placeholder="Cidade">
         <input type="date" id="txt-data">
@@ -510,37 +507,47 @@ async function abrirPerfilVisitante(uidVisitado) {
     mudarAba('feed', document.querySelector('.nav-item'));
 }
 
-        async function renderFeed() {
-    const snap = await db.ref('feed_global').limitToLast(15).once('value');
-    const posts = snap.val() || {};
-    const container = document.getElementById('feed-container');
-    container.innerHTML = "";
+        // --- FUNÇÃO CORRIGIDA ---
+async function temPermissaoParaVerGasto(uidDoDono, doPost) { // Adicionada a vírgula aqui
+    if (!me) return false;
+    if (me.uid === uidDoDono) return true; 
 
-    for (let id in posts) {
-        const p = posts[id];
-        
-        // Chamamos a nossa função de permissão
-        const podeVer = await temPermissaoParaVerGasto(p.uid);
-        
-        // Definimos o que será exibido no campo de valor
-        const valorTexto = podeVer 
-            ? `R$ ${parseFloat(p.total).toLocaleString('pt-BR')}` 
-            : "🔒 Conteúdo VIP";
+    const vipsSnap = await db.ref(`usuarios/${uidDoDono}/vips/${me.uid}`).once('value');
+    return vipsSnap.exists();
+}
 
-        container.innerHTML += `
-            <div class="feed-card">
-                <div class="user-info">
-                    <img src="${p.uFoto || 'link_padrao'}" class="avatar">
-                    <span><b>@${p.username}</b> em ${p.cidade}</span>
-                </div>
-                <div class="carrossel">${p.fotos ? p.fotos.map(f => `<img src="${f}">`).join('') : ''}</div>
-                <div style="padding:15px; display:flex; justify-content:space-between; align-items:center;">
-                    <div class="pills-exp">${p.exp.h?'🏨':''} ${p.exp.a?'🍴':''}</div>
-                    <span style="font-weight:800; color:var(--money); font-size:14px;">
-                        ${valorTexto}
-                    </span>
-                </div>
-            </div>`;
+// --- VERIFICAÇÃO DE SEGURANÇA NO RENDERFEED ---
+async function renderFeed() {
+    try {
+        const snap = await db.ref('feed_global').limitToLast(15).once('value');
+        const posts = snap.val() || {};
+        const container = document.getElementById('feed-container');
+        container.innerHTML = "";
+
+        for (let id in posts) {
+            const p = posts[id];
+            // Passamos os dois argumentos corretamente
+            const podeVer = await temPermissaoParaVerGasto(p.uid, p);
+            
+            const valorTexto = podeVer 
+                ? `R$ ${parseFloat(p.total || 0).toLocaleString('pt-BR')}` 
+                : "🔒 Conteúdo VIP";
+
+            container.innerHTML += `
+                <div class="feed-card">
+                    <div style="display:flex; align-items:center; gap:10px; padding:15px;">
+                        <img src="${p.uFoto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" style="width:30px; height:30px; border-radius:50%;">
+                        <span><b>@${p.username}</b> em ${p.cidade}</span>
+                    </div>
+                    <div class="carrossel">${p.fotos ? p.fotos.map(f => `<img src="${f}">`).join('') : ''}</div>
+                    <div style="padding:15px; display:flex; justify-content:space-between; align-items:center;">
+                        <div class="pills-exp">${p.exp.h?'🏨':''} ${p.exp.a?'🍴':''}</div>
+                        <span style="font-weight:800; color:var(--money); font-size:14px;">${valorTexto}</span>
+                    </div>
+                </div>`;
+        }
+    } catch (e) {
+        console.error("Erro ao carregar feed:", e);
     }
 }
 
@@ -588,10 +595,10 @@ async function abrirPerfilVisitante(uidVisitado) {
 }
 
         // Verifica se eu posso ver os gastos de um determinado post
-async function temPermissaoParaVerGasto(uidDoDono doPost) {
-    if (me.uid === uidDoDono) return true; // Eu sempre vejo os meus gastos
+async function temPermissaoParaVerGasto(uidDoDono, doPost) { // Adicionada a vírgula aqui
+    if (!me) return false;
+    if (me.uid === uidDoDono) return true; 
 
-    // Verifica se estou na lista VIP do dono do post
     const vipsSnap = await db.ref(`usuarios/${uidDoDono}/vips/${me.uid}`).once('value');
     return vipsSnap.exists();
 }
