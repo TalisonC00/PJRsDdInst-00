@@ -301,55 +301,45 @@
     const p = document.getElementById('pass').value;
     const btn = document.getElementById('btn-auth-main');
 
-    // 1. Validação básica de campos vazios
     if (!e || !p) {
-        return customAlerta("Por favor, preencha o e-mail e a senha!", "⚠️");
+        return customAlerta("Preenche todos os campos!", "⚠️");
     }
 
-    // Bloqueia o botão e mostra que está a processar
+    // Trava o botão para evitar cliques múltiplos
     btn.disabled = true;
-    const textoOriginal = btn.innerText;
     btn.innerText = "A processar...";
 
     try {
         if (isLogin) {
-            // --- LÓGICA DE LOGIN ---
+            // TENTATIVA DE LOGIN
             await auth.signInWithEmailAndPassword(e, p);
-            // O Firebase disparará o onAuthStateChanged automaticamente se for bem-sucedido
-            
         } else {
-            // --- LÓGICA DE CADASTRO ---
-            // Criar o utilizador no Firebase Auth
+            // TENTATIVA DE CADASTRO
             const res = await auth.createUserWithEmailAndPassword(e, p);
+            const idTemp = "user_" + Math.floor(Math.random() * 9999);
             
-            // Criar um username temporário baseado no tempo para garantir que é único
-            const idTemporario = "viajante" + Math.floor(Math.random() * 9999);
-            
-            // Criar o nó do Perfil do utilizador
             await db.ref('usuarios/' + res.user.uid + '/perfil').set({
                 nome: "Novo Viajante",
-                username: idTemporario,
+                username: idTemp,
                 estados: 0,
                 foto: 'https://cdn-icons-png.flaticon.com/512/149/149071.png',
-                bio: "Comecei a minha jornada! 🌍"
+                bio: "Minha jornada começou! 🌍"
             });
-
-            // Registar este username no nosso índice global para busca e permissões
-            await db.ref(`usernames/${idTemporario}`).set(res.user.uid);
-            
-            customAlerta("Jornada criada com sucesso! 🌍", "✅");
+            await db.ref(`usernames/${idTemp}`).set(res.user.uid);
         }
     } catch (err) {
-        // --- TRATAMENTO DE ERRO ---
-        console.error("Erro Firebase:", err.code);
-        
-        // Traduz o código de erro para uma mensagem que o utilizador entenda
-        const mensagemAmigavel = traduzirErro(err.code);
-        customAlerta(mensagemAmigavel, "❌");
+        // AQUI ESTÁ O SEGREDO: Console.log para sabermos o erro real
+        console.error("ERRO FIREBASE:", err.code, err.message);
 
-        // Liberta o botão para nova tentativa
+        // Se a função traduzirErro falhar, usamos a mensagem original do Firebase
+        let mensagem = (typeof traduzirErro === 'function') ? traduzirErro(err.code) : err.message;
+        
+        customAlerta(mensagem, '❌');
+    } finally {
+        // O bloco FINALLY roda SEMPRE, dando certo ou errado.
+        // Isso garante que o botão NUNCA fique travado em "A processar..."
         btn.disabled = false;
-        btn.innerText = textoOriginal;
+        btn.innerText = isLogin ? "Entrar no Mapa" : "Criar Jornada";
     }
 }
 
