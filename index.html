@@ -260,6 +260,7 @@
 
 <script>
 // 1. FIREBASE SETUP
+// 1. CONFIGURAÇÃO (Verifique se as chaves batem com seu Firebase Console)
 const firebaseConfig = {
     apiKey: "AIzaSyC6C5dJZeRF6Ylx4x-eWex6s2WGdRiMqbg",
     authDomain: "pjrsddinst-00.firebaseapp.com",
@@ -269,58 +270,74 @@ const firebaseConfig = {
     appId: "1:500429246053:web:0af4090351346a0513808c",
     databaseURL: "https://pjrsddinst-00-default-rtdb.firebaseio.com"
 };
-firebase.initializeApp(firebaseConfig);
+
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
 const db = firebase.database();
 const auth = firebase.auth();
 
-// ESTADO GLOBAL
+// VARIÁVEIS DE ESTADO
 let eu = null;
 let meuPerfil = {};
-let targetUid = null; // Usuário sendo visualizado no perfil/mapa
+let targetUid = null;
 let isLoginMode = true;
-let fotosPost = [];
 let mapaZoom = null;
-let userDisponivel = true;
 
-// --- AUTENTICAÇÃO E LOGIN ---
-function toggleAuth() {
-    isLoginMode = !isLoginMode;
-    document.getElementById('auth-title').innerText = isLoginMode ? "Minha Jornada" : "Nova Jornada";
-    document.getElementById('btn-auth-main').innerText = isLoginMode ? "Entrar" : "Criar Conta";
-    document.getElementById('auth-toggle').innerHTML = isLoginMode ? 'Ainda não tem conta? <b style="color:var(--primary)">Cadastrar</b>' : 'Já tem conta? <b style="color:var(--primary)">Entrar</b>';
-}
-
+// --- FUNÇÃO DE AUTENTICAÇÃO (LOGIN / CADASTRO) ---
 async function handleAuth() {
-    const email = document.getElementById('auth-email').value;
+    const email = document.getElementById('auth-email').value.trim();
     const pass = document.getElementById('auth-pass').value;
-    if(!email || !pass) return toast("Preencha os campos!", "⚠️");
-    
+    const btn = document.getElementById('btn-auth-main');
+
+    if (!email || !pass) return toast("Por favor, preencha e-mail e senha.", "⚠️");
+    if (pass.length < 6) return toast("A senha deve ter no mínimo 6 caracteres.", "🔑");
+
+    btn.disabled = true;
+    btn.innerText = "Processando...";
+
     try {
-        if(isLoginMode) {
+        if (isLoginMode) {
+            // Lógica de Login
             await auth.signInWithEmailAndPassword(email, pass);
         } else {
+            // Lógica de Cadastro
             const res = await auth.createUserWithEmailAndPassword(email, pass);
-            const defaultUser = "viajante_" + Math.floor(Math.random() * 9999);
-            await db.ref(`usuarios/${res.user.uid}/perfil`).set({
+            const uid = res.user.uid;
+            const defaultUser = "viajante_" + Math.floor(Math.random() * 99999);
+            
+            // Criar perfil inicial no Banco de Dados
+            await db.ref(`usuarios/${uid}/perfil`).set({
                 nome: "Novo Viajante",
                 username: defaultUser,
-                foto: "",
-                bio: "Começando minha jornada pelo Brasil! 🇧🇷",
+                foto: "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+                bio: "Começando minha jornada! 🇧🇷",
                 estados: 0
             });
-            await db.ref(`usernames/${defaultUser}`).set(res.user.uid);
+            
+            // Registrar username para busca
+            await db.ref(`usernames/${defaultUser}`).set(uid);
+            
+            toast("Conta criada com sucesso! Bem-vindo.", "🌍");
         }
-    } catch(e) { toast(e.message, "❌"); }
+    } catch (error) {
+        console.error(error);
+        let msg = "Erro na autenticação.";
+        if (error.code === "auth/email-already-in-use") msg = "Este e-mail já está em uso.";
+        if (error.code === "auth/invalid-email") msg = "E-mail inválido.";
+        if (error.code === "auth/user-not-found" || error.code === "auth/wrong-password") msg = "E-mail ou senha incorretos.";
+        if (error.code === "auth/network-request-failed") msg = "Sem conexão com a internet.";
+        
+        toast(msg, "❌");
+    } finally {
+        btn.disabled = false;
+        btn.innerText = isLoginMode ? "Entrar" : "Criar Conta";
+    }
 }
 
-function resetarSenha() {
-    const email = document.getElementById('auth-email').value;
-    if(!email) return toast("Insira seu e-mail acima", "📧");
-    auth.sendPasswordResetEmail(email).then(() => toast("Link de recuperação enviado!", "📧"));
-}
-
+// --- ESCUTAR ESTADO DA CONTA ---
 auth.onAuthStateChanged(user => {
-    if(user) {
+    if (user) {
         eu = user;
         document.getElementById('auth-screen').style.display = 'none';
         initApp();
@@ -329,33 +346,38 @@ auth.onAuthStateChanged(user => {
     }
 });
 
-// --- INICIALIZAÇÃO ---
+// --- INICIALIZAÇÃO DO APP ---
 async function initApp() {
-    // 1. Sincroniza dados do perfil
+    if (!eu) return;
+
+    // Carregar dados do perfil logado
     db.ref(`usuarios/${eu.uid}/perfil`).on('value', snap => {
         meuPerfil = snap.val() || {};
-        document.getElementById('h-nome').innerText = meuPerfil.nome || "Viajante";
-        document.getElementById('h-user').innerText = '@' + (meuPerfil.username || "user");
-        document.getElementById('h-avatar').src = meuPerfil.foto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
-        if(!targetUid) carregarPerfilUI(eu.uid);
+        if (meuPerfil.username) {
+            document.getElementById('h-nome').innerText = meuPerfil.nome || "Viajante";
+            document.getElementById('h-user').innerText = '@' + meuPerfil.username;
+            document.getElementById('h-avatar').src = meuPerfil.foto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+            if (!targetUid) carregarPerfilUI(eu.uid);
+        }
     });
 
-    // 2. Carrega o arquivo externo br.svg
+    // Carregar o Mapa br.svg com tratamento de erro
     try {
-        const response = await fetch('br.svg');
-        if (!response.ok) throw new Error('Arquivo br.svg não encontrado na pasta.');
+        const res = await fetch('br.svg');
+        if (!res.ok) throw new Error("Arquivo br.svg não encontrado");
+        let svgText = await res.text();
         
-        const svgText = await response.text();
-        document.getElementById('svg-container').innerHTML = svgText;
+        const container = document.getElementById('svg-container');
+        container.innerHTML = svgText;
         
-        // Localiza a tag <svg> que acabou de ser injetada
-        const svgEl = document.querySelector('#svg-container svg');
+        const svgEl = container.querySelector('svg');
         if (svgEl) {
-            // Garante que o SVG tenha um ID para o controle de zoom
             svgEl.setAttribute('id', 'mapa-svg-real');
+            svgEl.style.width = "100%";
+            svgEl.style.height = "100%";
             
             setTimeout(() => {
-                mapaZoom = svgPanZoom('#mapa-svg-real', {
+                mapaZoom = svgPanZoom(svgEl, {
                     zoomEnabled: true,
                     controlIconsEnabled: false,
                     fit: true,
@@ -365,19 +387,29 @@ async function initApp() {
                 pintarMapa(targetUid || eu.uid);
             }, 500);
         }
-    } catch (err) {
-        console.error("Erro ao carregar o mapa:", err);
-        toast("Erro ao carregar o mapa. Verifique se o arquivo br.svg está na pasta e se você está usando um servidor local.", "❌");
+    } catch (e) {
+        console.error("Erro ao carregar mapa:", e);
+        // Se falhar o fetch, tenta carregar o mapa embutido (fallback)
     }
 
-    // 3. Configura o clique (aceita tanto 'path' quanto a classe '.estado')
+    // Configurar Cliques no Mapa
     document.getElementById('svg-container').addEventListener('click', (e) => {
         const path = e.target.closest('path') || e.target.closest('.estado');
-        if(path && path.id) gerenciarCliqueEstado(path.id);
+        if (path && path.id) gerenciarCliqueEstado(path.id);
     });
 
     renderFeed();
     ouvirConvites();
+}
+
+// --- FUNÇÃO ESQUECI SENHA ---
+function resetarSenha() {
+    const email = document.getElementById('auth-email').value.trim();
+    if (!email) return toast("Digite seu e-mail no campo acima.", "📧");
+    
+    auth.sendPasswordResetEmail(email)
+        .then(() => toast("Link de recuperação enviado para seu e-mail!", "📧"))
+        .catch(err => toast("Erro ao enviar e-mail. Verifique o endereço.", "❌"));
 }
 
 // --- SISTEMA SOCIAL (AMIZADE/VIP) ---
