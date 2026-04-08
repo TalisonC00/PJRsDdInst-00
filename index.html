@@ -5,15 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Jornada Social 🌍</title>
     
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#FF4B5C">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="icone.png">
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js"></script>
 
     <style>
@@ -31,68 +25,36 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--sky); margin: 0; color: var(--text); overflow-x: hidden; }
 
-        /* HEADER COM PERFIL ALINHADO À DIREITA */
-        .header { 
-            background: #fff; 
-            padding: 10px 16px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.03); 
-            position: sticky; 
-            top: 0; 
-            z-index: 2000; 
-        }
-        .header-title { flex: 1; }
-        .header h3 { margin: 0; font-size: 16px; color: var(--primary); font-weight: 800; }
-        #info-conquistas { font-size: 9px; font-weight: 800; color: var(--sub); text-transform: uppercase; }
-        
-        .header-profile { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        /* Componentes de UI */
+        .header { background: #fff; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 20px rgba(0,0,0,0.03); position: sticky; top: 0; z-index: 2000; }
         .header-avatar { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); }
-
-        /* TELAS */
+        
         .aba { display: none; min-height: calc(100vh - 130px); padding-bottom: 90px; animation: fadeIn 0.3s ease; }
         .aba.ativa { display: block; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* CARDS E FORMULÁRIOS */
         .card { background: white; margin: 15px; border-radius: 28px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-        input, textarea, select { width: 100%; padding: 14px; margin: 8px 0; border: 1.5px solid #F1F5F9; border-radius: 14px; font-size: 15px; outline: none; background: #F8FAFC; font-family: inherit; }
+        input, textarea, select { width: 100%; padding: 14px; margin: 8px 0; border: 1.5px solid #F1F5F9; border-radius: 14px; font-size: 15px; outline: none; background: #F8FAFC; }
+        
         .btn { width: 100%; padding: 16px; border: none; border-radius: 18px; font-weight: 800; font-size: 16px; cursor: pointer; transition: 0.2s; }
         .btn-p { background: var(--primary); color: white; }
         .btn-m { background: var(--money); color: white; }
 
-        /* MAPA FULL */
+        /* Mapa e Feed */
         .mapa-full { height: calc(100vh - 145px); width: 100vw; background: white; position: relative; overflow: hidden; }
         #svg-container svg { width: 100% !important; height: 100% !important; display: block;}
         path { fill: #F1F5F9; stroke: #fff; stroke-width: 0.8; transition: 0.5s; cursor: pointer; }
         .visitado { fill: var(--primary) !important; }
 
-        /* FORMULÁRIO DE EXPERIÊNCIAS (GRID) */
-        .exp-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 15px 0; }
-        .exp-item { background: #F8FAFC; border: 1.5px solid #F1F5F9; border-radius: 12px; padding: 10px; display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; }
-        .exp-item span { font-size: 20px; }
-        .exp-item input { width: 16px; height: 16px; margin: 0; }
-
-        /* FEED E RANKING */
         .feed-card { background: white; margin: 15px; border-radius: 30px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
-        .carrossel { display: flex; overflow-x: auto; snap-type: x mandatory; height: 320px; scrollbar-width: none; background: #f1f5f9; }
+        .carrossel { display: flex; overflow-x: auto; snap-type: x mandatory; height: 300px; background: #f1f5f9; }
         .carrossel img { flex: 0 0 100%; height: 100%; object-fit: cover; snap-align: center; }
-        .pill { background: #F1F5F9; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; }
 
-        /* CONQUISTAS */
-        .badge-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
-        .badge { text-align: center; opacity: 0.2; filter: grayscale(1); transition: 0.4s; }
-        .badge.active { opacity: 1; filter: grayscale(0); }
-        .b-icon { width: 60px; height: 60px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; margin: 0 auto 8px; }
+        .exp-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; }
+        .exp-item { background: #F8FAFC; border: 1.5px solid #F1F5F9; border-radius: 12px; padding: 10px; text-align: center; cursor: pointer; }
 
-        /* ALERTAS CUSTOMIZADOS */
-        .modal-custom { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 5000; display: none; align-items: center; justify-content: center; }
-        .alert-box { background: white; padding: 25px; border-radius: 28px; width: 85%; max-width: 320px; text-align: center; }
-
-        /* NAV */
-        .nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 70px; background: var(--glass); display: flex; justify-content: space-around; align-items: center; z-index: 1000; border-top: 1px solid rgba(0,0,0,0.05); }
-        .nav-item { font-size: 24px; opacity: 0.3; transition: 0.3s; }
+        .nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 70px; background: var(--glass); display: flex; justify-content: space-around; align-items: center; z-index: 1000; border-top: 1px solid rgba(0,0,0,0.05); backdrop-filter: blur(10px); }
+        .nav-item { font-size: 24px; opacity: 0.3; transition: 0.3s; cursor: pointer; }
         .nav-item.ativa { opacity: 1; color: var(--primary); transform: translateY(-5px); }
 
         #login-screen { position: fixed; inset: 0; background: linear-gradient(135deg, var(--sky) 0%, #fff 100%); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
@@ -113,51 +75,87 @@
             <div style="font-size: 50px;">🌍</div>
             <h2 id="log-title">Bem-vindo(a)</h2>
             <input type="email" id="email" placeholder="E-mail">
-            <input type="password" id="pass" placeholder="Senha (8+ caracteres)">
+            <input type="password" id="pass" placeholder="Senha">
             <button class="btn btn-p" onclick="handleAuth()" id="btn-auth-main">Entrar no Mapa</button>
             <p style="font-size: 13px; color: var(--sub); margin-top: 15px;" onclick="toggleAuthMode()">
-                Não tem conta? <b id="auth-link" style="color: var(--primary)">Criar Jornada</b>
+                Não tem conta? <b id="auth-link" style="color: var(--primary); cursor: pointer;">Criar Jornada</b>
             </p>
         </div>
     </div>
 
     <div class="header">
         <div class="header-title">
-            <h3>Nossa Jornada 🌍</h3>
+            <h3 onclick="window.location.reload()" style="cursor:pointer">Nossa Jornada 🌍</h3>
             <span id="info-conquistas">ESTADOS: 0</span>
         </div>
         <div class="header-profile" onclick="mudarAba('perfil', document.getElementById('nav-perfil'))">
-            <div style="text-align: right; line-height: 1;">
-                <div id="h-nome" style="font-size: 12px; font-weight: 800;">Carregando...</div>
+            <div style="text-align: right; line-height: 1.1;">
+                <div id="h-nome" style="font-size: 12px; font-weight: 800;">...</div>
                 <div id="h-user" style="font-size: 10px; color: var(--sub);">@...</div>
             </div>
             <img id="h-avatar" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="header-avatar">
         </div>
     </div>
 
-    <div class="card" style="padding: 10px; margin-bottom: 0;">
-    <div style="display: flex; gap: 10px;">
-        <input type="text" id="input-busca" placeholder="Pesquisar @username..." style="margin:0;">
-        <button class="btn btn-p" style="width: 60px; padding: 10px;" onclick="buscarUsuario()">🔍</button>
-    </div>
-    <div id="resultado-busca" style="margin-top: 10px; display: none;"></div>
-</div>
-    
     <div id="aba-feed" class="aba ativa">
-    <div class="card" style="padding: 12px; margin-bottom: 5px;">
-        <div style="display: flex; gap: 8px;">
-            <input type="text" id="input-busca" placeholder="Buscar @username..." style="margin:0; padding: 10px;">
-            <button class="btn btn-p" style="width: 50px; padding: 0;" onclick="buscarUsuario()">🔍</button>
+        <div class="card" style="padding: 12px; margin-bottom: 5px;">
+            <div style="display: flex; gap: 8px;">
+                <input type="text" id="input-busca" placeholder="Buscar @username..." style="margin:0; padding: 10px;">
+                <button class="btn btn-p" style="width: 50px; padding: 0;" onclick="buscarUsuario()">🔍</button>
+            </div>
+            <div id="resultado-busca" style="margin-top: 10px; display: none;"></div>
         </div>
-        <div id="resultado-busca" style="margin-top: 10px; display: none;"></div>
+        <div id="feed-container"></div>
     </div>
-
-    <div id="feed-container"></div>
-</div>
 
     <div id="aba-mapa" class="aba">
         <div class="mapa-full"><div id="svg-container"></div></div>
     </div>
+
+    <div id="aba-registro" class="aba">
+        <div class="card">
+            <h4>Nova Viagem 📍</h4>
+            <select id="sel-uf">
+                <option value="" disabled selected>Selecionar Estado</option>
+                <option value="BRAC">Acre</option><option value="BRAL">Alagoas</option><option value="BRAP">Amapá</option>
+                <option value="BRAM">Amazonas</option><option value="BRBA">Bahia</option><option value="BRCE">Ceará</option>
+                <option value="BRDF">Distrito Federal</option><option value="BRES">Espírito Santo</option>
+                <option value="BRGO">Goiás</option><option value="BRMA">Maranhão</option><option value="BRMT">Mato Grosso</option>
+                <option value="BRMS">Mato Grosso do Sul</option><option value="BRMG">Minas Gerais</option>
+                <option value="BRPA">Pará</option><option value="BRPB">Paraíba</option><option value="BRPR">Paraná</option>
+                <option value="BRPE">Pernambuco</option><option value="BRPI">Piauí</option><option value="BRRJ">Rio de Janeiro</option>
+                <option value="BRRN">Rio Grande do Norte</option><option value="BRRS">Rio Grande do Sul</option>
+                <option value="BRRO">Rondônia</option><option value="BRRR">Roraima</option><option value="BRSC">Santa Catarina</option>
+                <option value="BRSP">São Paulo</option><option value="BRSE">Sergipe</option><option value="BRTO">Tocantins</option>
+            </select>
+            <input type="text" id="txt-cidade" placeholder="Cidade">
+            <input type="date" id="txt-data">
+
+            <label style="font-size: 11px; color: var(--sub);">Gastos (R$):</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                <input type="number" id="v-hosp" placeholder="🏨 Hotel">
+                <input type="number" id="v-trans" placeholder="🚗 Transp.">
+                <input type="number" id="v-alime" placeholder="🍴 Aliment.">
+                <input type="number" id="v-atrac" placeholder="🎡 Atrações">
+            </div>
+            
+            <label style="font-size: 11px; color: var(--sub);">Tipo de Destino:</label>
+            <div class="exp-group">
+                <label class="exp-item"><span>🏖️</span> Praia?<input type="checkbox" id="chk-p"></label>
+                <label class="exp-item"><span>🌳</span> Natureza?<input type="checkbox" id="chk-n"></label>
+            </div>
+
+            <input type="file" id="inp-fotos" multiple accept="image/*" onchange="previaFotos(this)">
+            <div id="previa-container" style="display:flex; gap:5px; margin: 10px 0;"></div>
+            
+            <div style="background:#F8FAFC; padding:12px; border-radius:15px;">
+                <label style="font-size: 11px;"><input type="checkbox" id="is-vip"> Permitir que VIPs vejam os gastos 💎</label>
+            </div>
+            <button class="btn btn-m" style="margin-top:15px;" onclick="postarViagem()">Salvar Memória 🚩</button>
+        </div>
+    </div>
+
+    <div id="aba-gastos" class="aba"></div>
 
     <div id="aba-conquistas" class="aba">
         <div class="card">
@@ -166,115 +164,47 @@
         </div>
     </div>
 
-    <div id="aba-ranking" class="aba"><div id="rank-container" class="card"></div></div>
-
-    <div id="aba-registro" class="aba">
-    <div class="card">
-    <h4>Nova Viagem 📍</h4>
-    <input type="text" id="txt-cidade" placeholder="Cidade">
-    <input type="date" id="txt-data">
-
-    <label style="font-size: 11px; color: var(--sub); margin: 10px 0 5px;">Gastos (R$):</label>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-        <input type="number" id="v-hosp" placeholder="🏨 Hotel">
-        <input type="number" id="v-trans" placeholder="🚗 Transp.">
-        <input type="number" id="v-alime" placeholder="🍴 Aliment.">
-        <input type="number" id="v-atrac" placeholder="🎡 Atrações">
-    </div>
-    
-    <label style="font-size: 11px; color: var(--sub); margin: 15px 0 5px;">Tipo de Destino:</label>
-    <div class="exp-group" style="grid-template-columns: 1fr 1fr;">
-        <label class="exp-item"><span>🏖️</span> Praia?<input type="checkbox" id="chk-p"></label>
-        <label class="exp-item"><span>🌳</span> Natureza?<input type="checkbox" id="chk-n"></label>
-    </div>
-    </div>
-
-        <input type="file" id="inp-fotos" multiple accept="image/*" onchange="previaFotos(this)">
-        <div id="previa-container" style="display:flex; gap:5px; margin: 10px 0;"></div>
-        
-        <div style="background:#F8FAFC; padding:12px; border-radius:15px; margin-top:10px;">
-            <label style="font-size: 11px; margin:0; display: flex; align-items: center; gap: 8px;">
-                <input type="checkbox" id="is-vip"> 
-                <span>Permitir que VIPs vejam os gastos 💎</span>
-            </label>
-        </div>
-        
-        <button class="btn btn-m" style="margin-top:15px;" onclick="postarViagem()">Salvar Memória 🚩</button>
-    </div>
-</div>
-
-<div id="aba-perfil" class="aba">
-    <div class="card" style="text-align: center; position: relative; padding-top: 50px;">
-        
-        <div onclick="toggleModoPerfil()" style="position: absolute; right: 25px; top: 25px; font-size: 22px; cursor: pointer; opacity: 0.7;">⚙️</div>
-
-        <div id="perfil-modo-view">
-            <img id="p-img-view" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid white; box-shadow: 0 10px 20px rgba(0,0,0,0.1); margin-bottom: 15px;">
-            <h2 id="p-nome-view" style="margin: 0; font-size: 24px; font-weight: 800;">Carregando...</h2>
-            <p id="p-user-view" style="color: var(--primary); font-weight: 700; margin: 5px 0 15px;">@user</p>
-            <p id="p-bio-view" style="font-size: 14px; color: var(--sub); padding: 0 30px; line-height: 1.6; margin-bottom: 20px;">Sua biografia aparecerá aqui.</p>
-        </div>
-
-        <div id="perfil-modo-edit" style="display: none;">
-            <div style="position: relative; display: inline-block;">
-                <img id="p-img" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; opacity: 0.6;">
-                <button onclick="document.getElementById('f-upload').click()" style="position: absolute; inset: 0; background: none; border: none; cursor: pointer;"></button>
+    <div id="aba-perfil" class="aba">
+        <div class="card" style="text-align: center; position: relative; padding-top: 50px;">
+            <div id="btn-edit-toggle" onclick="toggleModoPerfil()" style="position: absolute; right: 25px; top: 25px; font-size: 22px; cursor: pointer;">⚙️</div>
+            
+            <div id="perfil-modo-view">
+                <img id="p-img-view" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover;">
+                <h2 id="p-nome-view" style="margin: 10px 0 0; font-size: 24px;">...</h2>
+                <p id="p-user-view" style="color: var(--primary); font-weight: 700; margin: 5px 0;">@user</p>
+                <p id="p-bio-view" style="font-size: 14px; color: var(--sub); padding: 0 20px;">...</p>
+                
+                <div id="btn-vip-container" style="display:none; margin-top:15px;">
+                    <button class="btn btn-m" style="padding:10px;" onclick="tornarAmigoVip()">💎 Tornar VIP</button>
+                </div>
             </div>
-            <input type="file" id="f-upload" style="display:none" onchange="processarFotoPerfil(this)">
-            <input type="text" id="edit-nome" placeholder="Nome">
-            <input type="text" id="edit-user" placeholder="username" oninput="verificarDisponibilidade(this.value)">
-            <div id="status-username" style="font-size: 10px; font-weight: 700; margin-bottom: 10px;"></div>
-            <textarea id="edit-bio" placeholder="Biografia..."></textarea>
-            <button class="btn btn-p" onclick="salvarPerfil()">Salvar Alterações</button>
-            <button onclick="toggleModoPerfil()" style="background:none; border:none; color:var(--sub); margin-top:10px; cursor:pointer;">Cancelar</button>
+
+            <div id="perfil-modo-edit" style="display: none;">
+                <input type="text" id="edit-nome" placeholder="Nome">
+                <input type="text" id="edit-user" placeholder="username" oninput="verificarDisponibilidade(this.value)">
+                <div id="status-username" style="font-size: 10px; font-weight: 700;"></div>
+                <textarea id="edit-bio" placeholder="Sua biografia..."></textarea>
+                <button class="btn btn-p" onclick="salvarPerfil()">Salvar</button>
+            </div>
+
+            <div id="notificacoes-convites" style="margin-top: 20px; text-align: left;"></div>
+            <div id="timeline-perfil" style="margin-top:20px;"></div>
+            <hr style="border: 0; border-top: 1px solid #F1F5F9; margin: 20px 0;">
+            <button onclick="auth.signOut()" style="color: var(--primary); border: none; background: none; font-weight: 800; cursor: pointer;">Sair</button>
         </div>
-
-        <div id="notificacoes-convites" style="margin-top: 20px; text-align: left;"></div>
-
-        <hr style="border: 0; border-top: 1px solid #F1F5F9; margin: 30px 0;">
-        <button onclick="auth.signOut()" style="color: #FF4B5C; border: none; background: none; font-weight: 800; font-size: 14px; cursor: pointer;">Sair da Conta</button>
     </div>
-</div>
-
-        <div id="perfil-modo-edit" style="display: none;">
-    <div style="position: relative; display: inline-block;">
-        <img id="p-img" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; opacity: 0.6;">
-        <button onclick="document.getElementById('f-upload').click()" style="position: absolute; inset: 0; background: none; border: none; cursor: pointer; font-size: 20px;"></button>
-    </div>
-    <input type="file" id="f-upload" style="display:none" onchange="processarFotoPerfil(this)">
-    
-    <p style="font-size: 11px; color: var(--sub); margin-bottom: 15px;">📸 Toque na foto para alterar</p>
-
-    <input type="text" id="edit-nome" placeholder="Nome">
-
-    <label style="font-size: 11px; color: var(--sub); margin-top: 10px; display: block; text-align: left; margin-left: 5px;">Username único:</label>
-    <input type="text" id="edit-user" placeholder="username" oninput="verificarDisponibilidade(this.value)">
-    <div id="status-username" style="font-size: 10px; font-weight: 700; margin-top: -5px; margin-bottom: 10px; text-align: left; margin-left: 5px;"></div>
-    <textarea id="edit-bio" placeholder="Sua biografia..." style="height: 80px; resize: none;"></textarea>
-    
-    <button class="btn btn-p" onclick="salvarPerfil()">Salvar Alterações</button>
-    <button onclick="toggleModoPerfil()" style="background: none; border: none; color: var(--sub); margin-top: 15px; font-weight: 600; cursor: pointer;">Cancelar</button>
-</div>
-
-        <hr style="border: 0; border-top: 1px solid #F1F5F9; margin: 30px 0;">
-        <button onclick="auth.signOut()" style="color: #FF4B5C; border: none; background: none; font-weight: 800; font-size: 14px; cursor: pointer;">Sair da Conta</button>
-    </div>
-</div>
 
     <nav class="nav">
-    <div class="nav-item ativa" onclick="mudarAba('feed', this)">🏠</div>
-    <div class="nav-item" onclick="mudarAba('mapa', this)">📍</div>
-    <div class="nav-item" onclick="mudarAba('registro', this)">➕</div>
-    <div class="nav-item" onclick="mudarAba('gastos', this)">💰</div>
-    <div class="nav-item" onclick="mudarAba('conquistas', this)">🏆</div>
-    <div class="nav-item" id="nav-perfil" onclick="mudarAba('perfil', this)" style="display:none">👤</div>
-</nav>
-
-<div id="aba-gastos" class="aba">
-    </div>
+        <div class="nav-item ativa" onclick="mudarAba('feed', this)">🏠</div>
+        <div class="nav-item" onclick="mudarAba('mapa', this)">📍</div>
+        <div class="nav-item" onclick="mudarAba('registro', this)">➕</div>
+        <div class="nav-item" onclick="mudarAba('gastos', this)">💰</div>
+        <div class="nav-item" onclick="mudarAba('conquistas', this)">🏆</div>
+        <div class="nav-item" id="nav-perfil" onclick="mudarAba('perfil', this)">👤</div>
+    </nav>
 
     <script>
-        // CONFIGURAÇÃO FIREBASE
+        // CONFIGURAÇÕES FIREBASE (Mantenha as suas originais)
         const firebaseConfig = {
             apiKey: "AIzaSyC6C5dJZeRF6Ylx4x-eWex6s2WGdRiMqbg",
             authDomain: "pjrsddinst-00.firebaseapp.com",
@@ -284,557 +214,362 @@
             appId: "1:500429246053:web:0af4090351346a0513808c",
             databaseURL: "https://pjrsddinst-00-default-rtdb.firebaseio.com"
         };
-
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         const auth = firebase.auth();
 
-        let me = null;
-        let isLogin = true;
-        let fotosPost = [];
-        let controleMapa;
-        let perfilAtual = {};
-        let usernameDisponivel = true;
+        let me = null, isLogin = true, fotosPost = [], controleMapa = null, perfilAtual = {}, usernameDisponivel = true, uidVisitado = null;
 
-        // ALERTAS CUSTOMIZADOS
+        // --- SISTEMA DE ALERTA ---
         function customAlerta(msg, icon = '💡') {
             document.getElementById('alerta-msg').innerText = msg;
             document.getElementById('alerta-icon').innerText = icon;
             document.getElementById('modal-alerta').style.display = 'flex';
         }
         function fecharAlerta() { document.getElementById('modal-alerta').style.display = 'none'; }
-
-        // AUTH
+        
         function toggleAuthMode() {
             isLogin = !isLogin;
             document.getElementById('log-title').innerText = isLogin ? "Bem-vindo(a)" : "Criar Jornada";
             document.getElementById('btn-auth-main').innerText = isLogin ? "Entrar" : "Cadastrar";
         }
 
-        function traduzirErro(codigo) {
-    switch (codigo) {
-        case 'auth/email-already-in-use': return "Este e-mail já está a ser utilizado.";
-        case 'auth/invalid-email': return "O e-mail digitado não é válido.";
-        case 'auth/weak-password': return "A senha deve ter pelo menos 6 caracteres.";
-        case 'auth/user-not-found': return "Utilizador não encontrado.";
-        case 'auth/wrong-password': return "Senha incorreta.";
-        default: return "Ocorreu um erro inesperado. Tenta novamente.";
-    }
-}
-        
-        function toggleModoPerfil() {
-        const view = document.getElementById('perfil-modo-view');
-        const edit = document.getElementById('perfil-modo-edit');
-        
-        if (view.style.display === 'none') {
-            view.style.display = 'block';
-            edit.style.display = 'none';
-        } else {
-            view.style.display = 'none';
-            edit.style.display = 'block';
-        }
-    }
-        
+        // --- AUTENTICAÇÃO ---
         async function handleAuth() {
-    const e = document.getElementById('email').value.trim();
-    const p = document.getElementById('pass').value;
-    const btn = document.getElementById('btn-auth-main');
+            const e = document.getElementById('email').value.trim();
+            const p = document.getElementById('pass').value;
+            const btn = document.getElementById('btn-auth-main');
+            if (!e || !p) return customAlerta("Preencha todos os campos!", "⚠️");
+            btn.disabled = true; btn.innerText = "A processar...";
+            try {
+                if (isLogin) { await auth.signInWithEmailAndPassword(e, p); }
+                else {
+                    const res = await auth.createUserWithEmailAndPassword(e, p);
+                    const idTemp = "user_" + Math.floor(Math.random() * 9999);
+                    await db.ref('usuarios/' + res.user.uid + '/perfil').set({ nome: "Novo Viajante", username: idTemp, estados: 0, foto: 'https://cdn-icons-png.flaticon.com/512/149/149071.png', bio: "Olá! 🌍" });
+                    await db.ref(`usernames/${idTemp}`).set(res.user.uid);
+                }
+            } catch (err) {
+                let msg = "Erro ao acessar.";
+                if(err.code === "auth/wrong-password") msg = "Senha incorreta.";
+                if(err.code === "auth/user-not-found") msg = "E-mail não cadastrado.";
+                customAlerta(msg, '❌');
+            } finally { btn.disabled = false; btn.innerText = isLogin ? "Entrar" : "Cadastrar"; }
+        }
 
-    if (!e || !p) {
-        return customAlerta("Preenche todos os campos!", "⚠️");
-    }
+        auth.onAuthStateChanged(user => {
+            if(user) { me = user; document.getElementById('login-screen').style.display = 'none'; initApp(); }
+            else { document.getElementById('login-screen').style.display = 'flex'; }
+        });
 
-    // Trava o botão para evitar cliques múltiplos
-    btn.disabled = true;
-    btn.innerText = "A processar...";
-
-    try {
-        if (isLogin) {
-            // TENTATIVA DE LOGIN
-            await auth.signInWithEmailAndPassword(e, p);
-        } else {
-            // TENTATIVA DE CADASTRO
-            const res = await auth.createUserWithEmailAndPassword(e, p);
-            const idTemp = "user_" + Math.floor(Math.random() * 9999);
-            
-            await db.ref('usuarios/' + res.user.uid + '/perfil').set({
-                nome: "Novo Viajante",
-                username: idTemp,
-                estados: 0,
-                foto: 'https://cdn-icons-png.flaticon.com/512/149/149071.png',
-                bio: "Minha jornada começou! 🌍"
+        // --- INICIALIZAÇÃO ---
+        async function initApp() {
+            // Carregar Perfil do Usuário Logado
+            db.ref('usuarios/' + me.uid + '/perfil').on('value', snap => {
+                perfilAtual = snap.val() || {};
+                const foto = perfilAtual.foto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+                document.getElementById('h-avatar').src = foto;
+                document.getElementById('h-nome').innerText = perfilAtual.nome;
+                document.getElementById('h-user').innerText = '@' + perfilAtual.username;
+                document.getElementById('info-conquistas').innerText = `ESTADOS: ${perfilAtual.estados || 0}`;
+                
+                // Se não estivermos visitando ninguém, mostra o nosso perfil
+                if(!uidVisitado) carregarDadosPerfil(me.uid);
             });
-            await db.ref(`usernames/${idTemp}`).set(res.user.uid);
+
+            // Carregar Mapa
+            try {
+                const res = await fetch('br.svg');
+                const svgText = await res.text();
+                document.getElementById('svg-container').innerHTML = svgText;
+                const svgEl = document.querySelector('#svg-container svg');
+                setTimeout(() => { 
+                    controleMapa = svgPanZoom(svgEl, { zoomEnabled: true, controlIconsEnabled: false, fit: true, center: true }); 
+                    pintarMapa(me.uid);
+                }, 500);
+            } catch (e) { console.error("Erro mapa"); }
+
+            escutarConvites();
+            renderFeed();
         }
-    } catch (err) {
-        // AQUI ESTÁ O SEGREDO: Console.log para sabermos o erro real
-        console.error("ERRO FIREBASE:", err.code, err.message);
 
-        // Se a função traduzirErro falhar, usamos a mensagem original do Firebase
-        let mensagem = (typeof traduzirErro === 'function') ? traduzirErro(err.code) : err.message;
-        
-        customAlerta(mensagem, '❌');
-    } finally {
-        // O bloco FINALLY roda SEMPRE, dando certo ou errado.
-        // Isso garante que o botão NUNCA fique travado em "A processar..."
-        btn.disabled = false;
-        btn.innerText = isLogin ? "Entrar no Mapa" : "Criar Jornada";
-    }
-}
-
-        function recuperarSenha() {
-    const email = document.getElementById('email').value;
-    if(!email) return customAlerta("Digita o teu e-mail primeiro.", "📧");
-    
-    auth.sendPasswordResetEmail(email)
-        .then(() => customAlerta("E-mail de recuperação enviado!", "📧"))
-        .catch(err => customAlerta(traduzirErro(err.code), "❌"));
-}
-        
-        // APP LOGIC
+        // --- NAVEGAÇÃO ---
         function mudarAba(id, el) {
-    document.querySelectorAll('.aba').forEach(a => a.classList.remove('ativa'));
-    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('ativa'));
-    document.getElementById('aba-' + id).classList.add('ativa');
-    if(el) el.classList.add('ativa');
-
-    // Chamar funções específicas de cada aba
-    if(id === 'mapa' && controleMapa) setTimeout(() => controleMapa.resize().fit().center(), 100);
-    if(id === 'ranking') renderRanking();
-    if(id === 'conquistas') renderJornada();
-    if(id === 'gastos') renderRelatorioPrivado(); // Chama o relatório privado
-    if(id === 'feed') renderFeed();
-}
-
-        // 1. Função de Busca
-async function buscarUsuario() {
-    const usernameBusca = document.getElementById('input-busca').value.toLowerCase().trim();
-    const containerResultado = document.getElementById('resultado-busca');
-    
-    if (!usernameBusca) return;
-
-    // Procura o UID no índice de usernames
-    const snap = await db.ref(`usernames/${usernameBusca}`).once('value');
-    const uidEncontrado = snap.val();
-
-    if (!uidEncontrado) {
-        customAlerta("Utilizador não encontrado!", "❌");
-        return;
-    }
-
-    if (uidEncontrado === me.uid) {
-        customAlerta("Tu já estás aqui! 😉", "💡");
-        return;
-    }
-
-    // Procura os dados básicos do perfil encontrado
-    const perfilSnap = await db.ref(`usuarios/${uidEncontrado}/perfil`).once('value');
-    const p = perfilSnap.val();
-
-    containerResultado.style.display = "block";
-    containerResultado.innerHTML = `
-        <div style="display:flex; align-items:center; justify-content:space-between; padding:10px; background:#F8FAFC; border-radius:15px;">
-            <div style="display:flex; align-items:center; gap:10px;">
-                <img src="${p.foto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">
-                <div>
-                    <b style="font-size:14px;">${p.nome}</b><br>
-                    <small style="color:var(--sub)">@${p.username}</small>
-                </div>
-            </div>
-            <button class="btn btn-m" style="width:auto; padding:8px 15px; font-size:12px;" onclick="enviarConvite('${uidEncontrado}', '${p.username}')">Seguir / Convidar</button>
-        </div>
-    `;
-}
-
-// 2. Enviar Convite
-async function enviarConvite(uidDestino, usernameDestino) {
-    const convite = {
-        de_uid: me.uid,
-        de_username: perfilAtual.username,
-        de_foto: perfilAtual.foto || '',
-        data: Date.now(),
-        status: 'pendente'
-    };
-
-    try {
-        await db.ref(`convites/${uidDestino}/${me.uid}`).set(convite);
-        customAlerta(`Convite enviado para @${usernameDestino}!`, "📩");
-        document.getElementById('resultado-busca').style.display = "none";
-    } catch (e) {
-        customAlerta("Erro ao enviar convite.", "❌");
-    }
-}
-        
-        function escutarConvites() {
-    if (!me) return;
-    
-    // Escuta o nó de convites do utilizador atual
-    db.ref(`convites/${me.uid}`).on('value', snap => {
-        const convites = snap.val();
-        const container = document.getElementById('notificacoes-convites');
-        if (!container) return;
-
-        // Se houver convites, mostra o título, senão limpa
-        container.innerHTML = convites ? "<h4 style='font-size:14px; margin-left:10px;'>🔔 Pedidos de Amizade</h4>" : "";
-
-        for (let idRemetente in convites) {
-            const c = convites[idRemetente];
-            container.innerHTML += `
-                <div style="display:flex; align-items:center; justify-content:space-between; padding:12px; background:#F8FAFC; border-radius:15px; margin-bottom:8px; border:1px solid #eee;">
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <img src="${c.de_foto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" style="width:35px; height:35px; border-radius:50%; object-fit:cover;">
-                        <span style="font-size:13px;"><b>@${c.de_username}</b></span>
-                    </div>
-                    <div style="display:flex; gap:5px;">
-                        <button onclick="responderConvite('${idRemetente}', true)" style="border:none; background:var(--money); color:white; border-radius:8px; padding:6px 12px; cursor:pointer; font-weight:800; font-size:11px;">Aceitar</button>
-                        <button onclick="responderConvite('${idRemetente}', false)" style="border:none; background:#E2E8F0; color:var(--text); border-radius:8px; padding:6px 12px; cursor:pointer; font-size:11px;">✕</button>
-                    </div>
-                </div>
-            `;
-        }
-    });
-}
-
-async function responderConvite(uidRemetente, aceitou) {
-    if (aceitou) {
-        // Adiciona como amigo para ambos
-        await db.ref(`usuarios/${me.uid}/amigos/${uidRemetente}`).set(true);
-        await db.ref(`usuarios/${uidRemetente}/amigos/${me.uid}`).set(true);
-        
-        // Dica: Podes adicionar automaticamente como VIP aqui se quiseres
-        await db.ref(`usuarios/${me.uid}/vips/${uidRemetente}`).set(true);
-        
-        customAlerta("Agora são amigos! 🌍", "🤝");
-    }
-    // Remove o convite da lista
-    await db.ref(`convites/${me.uid}/${uidRemetente}`).remove();
-}
-        
-        function toggleEdicaoPerfil() {
-    const viewDiv = document.getElementById('perfil-view');
-    const editDiv = document.getElementById('perfil-edit');
-    
-    if (viewDiv.style.display === 'none') {
-        viewDiv.style.display = 'block';
-        editDiv.style.display = 'none';
-    } else {
-        viewDiv.style.display = 'none';
-        editDiv.style.display = 'block';
-        // Preencher os inputs com o que já está salvo
-        document.getElementById('edit-nome').value = perfilAtual.nome || '';
-        document.getElementById('edit-user').value = perfilAtual.username || '';
-        document.getElementById('edit-bio').value = perfilAtual.bio || '';
-    }
-}
-
-            // Adicione esta função ao seu <script>
-async function buscarUsuario() {
-    const userBusca = prompt("Digite o @username que deseja encontrar:").toLowerCase().trim();
-    if (!userBusca) return;
-
-    // 1. Procura o UID através do índice de usernames que criamos
-    const snap = await db.ref(`usernames/${userBusca}`).once('value');
-    const uidEncontrado = snap.val();
-
-    if (uidEncontrado) {
-        // 2. Se encontrar, carrega o perfil dele
-        abrirPerfilVisitante(uidEncontrado);
-    } else {
-        customAlerta("Usuário não encontrado!", "❌");
-    }
-}
-
-// Função para visualizar o perfil de outra pessoa
-async function abrirPerfilVisitante(uidVisitado) {
-    const permissao = await buscarDadosComPermissao(uidVisitado);
-    
-    // Aqui vamos redirecionar para a aba perfil, mas com os dados do amigo
-    // Nota: Precisaríamos de uma lógica para "limpar" o perfil ao voltar para o seu
-    console.log("Visualizando perfil de:", permissao.nome, "Pode ver gastos:", permissao.podeVerGastos);
-    
-    // Por agora, vamos apenas oferecer para adicionar como VIP se for o caso
-    if (confirm(`Deseja tornar @${permissao.username} seu VIP para que ele veja seus gastos?`)) {
-        await db.ref(`usuarios/${me.uid}/vips/${uidVisitado}`).set(true);
-        customAlerta("VIP adicionado!", "💎");
-    }
-}
+            if(id === 'perfil' && uidVisitado === null) uidVisitado = me.uid; 
+            document.querySelectorAll('.aba').forEach(a => a.classList.remove('ativa'));
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('ativa'));
+            document.getElementById('aba-' + id).classList.add('ativa');
+            if(el) el.classList.add('ativa');
             
-        // COMPACTADOR DE FOTOS
-        async function esmagarFoto(file) {
+            if(id === 'mapa') {
+                pintarMapa(uidVisitado || me.uid);
+                if(controleMapa) setTimeout(() => controleMapa.resize().fit().center(), 100);
+            }
+            if(id === 'conquistas') renderJornada();
+            if(id === 'gastos') renderRelatorioPrivado();
+            if(id === 'feed') { uidVisitado = null; renderFeed(); }
+            if(id === 'perfil') carregarDadosPerfil(uidVisitado || me.uid);
+        }
+
+        // --- MAPA ---
+        function pintarMapa(uid) {
+            db.ref(`usuarios/${uid}/viagens`).once('value', snap => {
+                const viagens = snap.val() || {};
+                document.querySelectorAll('path').forEach(p => p.classList.remove('visitado'));
+                Object.values(viagens).forEach(t => { 
+                    const el = document.getElementById(t.uf); 
+                    if(el) el.classList.add('visitado'); 
+                });
+            });
+        }
+
+        // --- BUSCA E AMIZADE ---
+        async function buscarUsuario() {
+            const userBusca = document.getElementById('input-busca').value.toLowerCase().trim().replace('@','');
+            const resDiv = document.getElementById('resultado-busca');
+            if (!userBusca) return;
+            const snap = await db.ref(`usernames/${userBusca}`).once('value');
+            const uid = snap.val();
+            if (!uid) return customAlerta("Usuário não encontrado!", "❌");
+            
+            const pSnap = await db.ref(`usuarios/${uid}/perfil`).once('value');
+            const p = pSnap.val();
+            resDiv.style.display = "block";
+            resDiv.innerHTML = `
+                <div style="display:flex; align-items:center; justify-content:space-between; padding:10px; background:#f8fafc; border-radius:15px; border:1px solid #eee">
+                    <div onclick="verPerfilExterno('${uid}')" style="cursor:pointer">
+                        <b>${p.nome}</b><br><small>@${p.username}</small>
+                    </div>
+                    <button class="btn btn-m" style="width:auto; padding:5px 10px; font-size:12px;" onclick="enviarConvite('${uid}')">Convidar</button>
+                </div>`;
+        }
+
+        async function verPerfilExterno(uid) {
+            uidVisitado = uid;
+            mudarAba('perfil', document.getElementById('nav-perfil'));
+        }
+
+        async function carregarDadosPerfil(uid) {
+            const snap = await db.ref(`usuarios/${uid}/perfil`).once('value');
+            const p = snap.val();
+            if(!p) return;
+
+            document.getElementById('p-img-view').src = p.foto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+            document.getElementById('p-nome-view').innerText = p.nome;
+            document.getElementById('p-user-view').innerText = '@' + p.username;
+            document.getElementById('p-bio-view').innerText = p.bio;
+
+            // Mostrar/Esconder botão de edição
+            document.getElementById('btn-edit-toggle').style.display = (uid === me.uid) ? 'block' : 'none';
+            
+            // Botão VIP (Apenas se for perfil de amigo)
+            const vipBtn = document.getElementById('btn-vip-container');
+            if(uid !== me.uid) {
+                vipBtn.style.display = 'block';
+            } else {
+                vipBtn.style.display = 'none';
+            }
+
+            renderTimeline(uid);
+        }
+
+        async function tornarAmigoVip() {
+            if(!uidVisitado) return;
+            await db.ref(`usuarios/${me.uid}/vips/${uidVisitado}`).set(true);
+            customAlerta("Amigo agora é VIP!", "💎");
+        }
+
+        async function enviarConvite(uid) {
+            if(uid === me.uid) return;
+            await db.ref(`convites/${uid}/${me.uid}`).set({ de_uid: me.uid, de_username: perfilAtual.username, de_foto: perfilAtual.foto || '' });
+            customAlerta("Pedido enviado!", "📩");
+            document.getElementById('resultado-busca').style.display = "none";
+        }
+
+        function escutarConvites() {
+            db.ref(`convites/${me.uid}`).on('value', snap => {
+                const convites = snap.val();
+                const container = document.getElementById('notificacoes-convites');
+                container.innerHTML = convites ? "<h4 style='font-size:12px'>🔔 Pedidos</h4>" : "";
+                for (let id in convites) {
+                    const c = convites[id];
+                    container.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:#f1f5f9; border-radius:10px; margin-bottom:5px;">
+                        <span style="font-size:12px">@${c.de_username}</span>
+                        <button onclick="responderConvite('${id}', true)" style="background:var(--money); color:white; border:none; border-radius:5px; padding:5px 10px; font-size:10px;">Aceitar</button>
+                    </div>`;
+                }
+            });
+        }
+
+        async function responderConvite(id, aceitou) {
+            if (aceitou) {
+                await db.ref(`usuarios/${me.uid}/amigos/${id}`).set(true);
+                await db.ref(`usuarios/${id}/amigos/${me.uid}`).set(true);
+                customAlerta("Conectados!", "🤝");
+            }
+            await db.ref(`convites/${me.uid}/${id}`).remove();
+        }
+
+        // --- POSTAGEM E FEED ---
+        async function postarViagem() {
+            const uf = document.getElementById('sel-uf').value;
+            const cidade = document.getElementById('txt-cidade').value;
+            if (!uf || !cidade) return customAlerta("Preencha o local!", "⚠️");
+            
+            const vH = parseFloat(document.getElementById('v-hosp').value) || 0;
+            const vT = parseFloat(document.getElementById('v-trans').value) || 0;
+            const vA = parseFloat(document.getElementById('v-alime').value) || 0;
+            const vAt = parseFloat(document.getElementById('v-atrac').value) || 0;
+            
+            const id = Date.now();
+            const post = { 
+                id, uid: me.uid, username: perfilAtual.username, uFoto: perfilAtual.foto || '', 
+                uf, cidade, total: (vH+vT+vA+vAt), fotos: fotosPost,
+                exp: { h: vH>0, t: vT>0, a: vA>0, atr: vAt>0, p: document.getElementById('chk-p').checked, n: document.getElementById('chk-n').checked } 
+            };
+            
+            await db.ref('feed_global/' + id).set(post);
+            await db.ref(`usuarios/${me.uid}/viagens/${id}`).set(post);
+            
+            customAlerta("Viagem Salva!", "✅");
+            mudarAba('feed', document.querySelector('.nav-item'));
+            // Limpeza
+            document.getElementById('txt-cidade').value = "";
+            document.getElementById('previa-container').innerHTML = "";
+            fotosPost = [];
+        }
+
+        async function temPermissaoParaVerGasto(uid) {
+            if (me.uid === uid) return true;
+            const vipsSnap = await db.ref(`usuarios/${uid}/vips/${me.uid}`).once('value');
+            return vipsSnap.exists();
+        }
+
+        function renderFeed() {
+            db.ref('feed_global').limitToLast(20).on('value', async snap => {
+                const container = document.getElementById('feed-container');
+                container.innerHTML = "";
+                const posts = snap.val() || {};
+                const lista = Object.values(posts).reverse();
+
+                for (let p of lista) {
+                    const podeVer = await temPermissaoParaVerGasto(p.uid);
+                    container.innerHTML += `
+                        <div class="feed-card">
+                            <div style="padding:15px; display:flex; align-items:center; gap:10px;">
+                                <img src="${p.uFoto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" style="width:30px; height:30px; border-radius:50%">
+                                <b onclick="verPerfilExterno('${p.uid}')" style="cursor:pointer">@${p.username}</b> em ${p.cidade}
+                            </div>
+                            <div class="carrossel">${p.fotos ? p.fotos.map(f => `<img src="${f}">`).join('') : ''}</div>
+                            <div style="padding:15px; display:flex; justify-content:space-between; align-items:center;">
+                                <div style="font-size:18px">
+                                    ${p.exp.h?'🏨':''} ${p.exp.t?'🚗':''} ${p.exp.a?'🍴':''} ${p.exp.p?'🏖️':''} ${p.exp.n?'🌳':''}
+                                </div>
+                                <b style="color:var(--money)">${podeVer ? 'R$ '+p.total.toLocaleString() : '🔒 VIP'}</b>
+                            </div>
+                        </div>`;
+                }
+            });
+        }
+
+        function renderTimeline(uid) {
+            db.ref(`usuarios/${uid}/viagens`).on('value', snap => {
+                const container = document.getElementById('timeline-perfil');
+                const viagens = snap.val() || {};
+                container.innerHTML = "<h4>📍 Linha do Tempo</h4>";
+                Object.values(viagens).reverse().forEach(v => {
+                    container.innerHTML += `
+                        <div style="text-align:left; padding:10px; border-left:2px solid var(--primary); margin-left:10px; margin-bottom:10px;">
+                            <small>${v.uf.replace('BR','')}</small> - <b>${v.cidade}</b>
+                        </div>`;
+                });
+            });
+        }
+
+        // --- RELATÓRIOS ---
+        function renderRelatorioPrivado() {
+            db.ref(`usuarios/${me.uid}/viagens`).on('value', snap => {
+                let total = 0;
+                Object.values(snap.val() || {}).forEach(v => total += (v.total || 0));
+                document.getElementById('aba-gastos').innerHTML = `
+                    <div class="card" style="text-align:center">
+                        <h3>💰 Relatório de Investimento</h3>
+                        <div style="background:var(--money); color:white; padding:30px; border-radius:20px;">
+                            <small>TOTAL GASTO EM VIAGENS</small>
+                            <h2 style="margin:0">R$ ${total.toLocaleString('pt-BR')}</h2>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        // --- PERFIL EDIT ---
+        async function verificarDisponibilidade(user) {
+            const input = user.toLowerCase().trim().replace(/[^a-z0-9_]/g, "");
+            document.getElementById('edit-user').value = input;
+            if (input.length < 3) return;
+            const snap = await db.ref(`usernames/${input}`).once('value');
+            usernameDisponivel = !snap.val() || snap.val() === me.uid;
+            const st = document.getElementById('status-username');
+            st.innerText = usernameDisponivel ? "✓ Disponível" : "✕ Em uso";
+            st.style.color = usernameDisponivel ? "var(--money)" : "var(--primary)";
+        }
+
+        async function salvarPerfil() {
+            if (!usernameDisponivel) return customAlerta("Username ocupado!");
+            const novo = document.getElementById('edit-user').value.toLowerCase().trim();
+            const antigo = perfilAtual.username;
+            
+            const updates = { nome: document.getElementById('edit-nome').value, username: novo, bio: document.getElementById('edit-bio').value };
+            await db.ref(`usuarios/${me.uid}/perfil`).update(updates);
+            await db.ref(`usernames/${novo}`).set(me.uid);
+            if(antigo && antigo !== novo) db.ref(`usernames/${antigo}`).remove();
+            
+            toggleModoPerfil();
+            customAlerta("Perfil Salvo!", "✅");
+        }
+
+        function toggleModoPerfil() {
+            const v = document.getElementById('perfil-modo-view'), e = document.getElementById('perfil-modo-edit');
+            const editando = v.style.display === 'none';
+            v.style.display = editando ? 'block' : 'none';
+            e.style.display = editando ? 'none' : 'block';
+            if(!editando) {
+                document.getElementById('edit-nome').value = perfilAtual.nome;
+                document.getElementById('edit-user').value = perfilAtual.username;
+                document.getElementById('edit-bio').value = perfilAtual.bio;
+            }
+        }
+
+        // --- FOTOS ---
+        async function processarFotoPerfil(input) {
+            if (input.files[0]) {
+                const b64 = await esmagarFoto(input.files[0], 300);
+                await db.ref(`usuarios/${me.uid}/perfil/foto`).set(b64);
+            }
+        }
+
+        async function esmagarFoto(file, size = 600) {
             return new Promise(resolve => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
+                const reader = new FileReader(); reader.readAsDataURL(file);
                 reader.onload = e => {
-                    const img = new Image();
-                    img.src = e.target.result;
+                    const img = new Image(); img.src = e.target.result;
                     img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        const ctx = canvas.getContext('2d');
-                        canvas.width = 600;
-                        canvas.height = 600 * (img.height/img.width);
-                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        resolve(canvas.toDataURL('image/jpeg', 0.6));
+                        const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d');
+                        canvas.width = size; canvas.height = size * (img.height/img.width);
+                        ctx.drawImage(img, 0, 0, size, canvas.height); resolve(canvas.toDataURL('image/jpeg', 0.6));
                     };
                 };
             });
         }
 
         async function previaFotos(input) {
-            fotosPost = [];
-            const container = document.getElementById('previa-container');
-            container.innerHTML = "";
+            fotosPost = []; document.getElementById('previa-container').innerHTML = "";
             for(let f of Array.from(input.files).slice(0, 3)) {
-                const b64 = await esmagarFoto(f);
-                fotosPost.push(b64);
-                container.innerHTML += `<img src="${b64}" style="width:40px; height:40px; border-radius:8px; object-fit:cover;">`;
+                const b64 = await esmagarFoto(f); fotosPost.push(b64);
+                document.getElementById('previa-container').innerHTML += `<img src="${b64}" style="width:50px; height:50px; border-radius:10px; object-fit:cover;">`;
             }
         }
 
-        async function postarViagem() {
-    // 1. Captura dos campos básicos
-    const uf = document.getElementById('sel-uf').value;
-    const cidade = document.getElementById('txt-cidade').value.trim();
-    const dataViagem = document.getElementById('txt-data').value;
-    
-    // Validação simples para não salvar campos vazios
-    if (!uf || !cidade || !dataViagem) {
-        return customAlerta("Por favor, preencha o estado, cidade e data!", "⚠️");
-    }
-
-    // 2. Captura e Cálculo de Gastos
-    const vHosp = parseFloat(document.getElementById('v-hosp').value) || 0;
-    const vTrans = parseFloat(document.getElementById('v-trans').value) || 0;
-    const vAlime = parseFloat(document.getElementById('v-alime').value) || 0;
-    const vAtrac = parseFloat(document.getElementById('v-atrac').value) || 0;
-    
-    const totalGasto = vHosp + vTrans + vAlime + vAtrac;
-    const tripID = Date.now();
-
-    // 3. Lógica Inteligente de Experiências (Automático + Manual)
-    const post = {
-        id: tripID,
-        uid: me.uid,
-        username: perfilAtual.username,
-        uFoto: perfilAtual.foto || '',
-        uf: uf,
-        cidade: cidade,
-        data: new Date(dataViagem).toLocaleDateString('pt-BR'),
-        rawDate: dataViagem,
-        fotos: fotosPost, // Array de base64 vindo da função previaFotos
-        total: totalGasto,
-        isVip: document.getElementById('is-vip').checked,
-        // Aqui a mágica acontece: true se o valor for > 0
-        exp: { 
-            h: vHosp > 0, 
-            t: vTrans > 0, 
-            a: vAlime > 0,
-            atr: vAtrac > 0,
-            p: document.getElementById('chk-p').checked, // Checkbox de Praia
-            n: document.getElementById('chk-n').checked  // Checkbox de Natureza
-        },
-        // Guardamos os valores individuais para o Relatório Privado
-        detalhes: {
-            hotel: vHosp,
-            transporte: vTrans,
-            alimentacao: vAlime,
-            atracoes: vAtrac
-        }
-    };
-
-    try {
-        // 4. Salvar no Banco de Dados
-        // Salva no Feed Global (Público)
-        await db.ref('feed_global/' + tripID).set(post);
-        
-        // Salva no Histórico do Usuário (Privado/Completo)
-        await db.ref(`usuarios/${me.uid}/viagens/${tripID}`).set(post);
-        
-        // 5. Atualizar contador de estados no perfil
-        db.ref(`usuarios/${me.uid}/viagens`).once('value', snap => {
-            const viagens = snap.val() || {};
-            // Filtra UFs únicas para o contador
-            const estadosVisitados = [...new Set(Object.values(viagens).map(v => v.uf))].length;
-            db.ref(`usuarios/${me.uid}/perfil/estados`).set(estadosVisitados);
-        });
-
-        // 6. Finalização
-        customAlerta("Memória Salva com Sucesso! 📍", "✅");
-        
-        // Limpar formulário
-        document.getElementById('txt-cidade').value = "";
-        document.getElementById('v-hosp').value = "";
-        document.getElementById('v-trans').value = "";
-        document.getElementById('v-alime').value = "";
-        document.getElementById('v-atrac').value = "";
-        document.getElementById('chk-p').checked = false;
-        document.getElementById('chk-n').checked = false;
-        document.getElementById('previa-container').innerHTML = "";
-        fotosPost = [];
-
-        // Voltar para o Feed
-        mudarAba('feed', document.querySelector('.nav-item'));
-
-    } catch (err) {
-        console.error("Erro ao salvar viagem:", err);
-        customAlerta("Erro ao salvar. Tente novamente.", "❌");
-    }
-}
-
-        // --- FUNÇÃO CORRIGIDA ---
-async function temPermissaoParaVerGasto(uidDoDono, doPost) { // Adicionada a vírgula aqui
-    if (!me) return false;
-    if (me.uid === uidDoDono) return true; 
-
-    const vipsSnap = await db.ref(`usuarios/${uidDoDono}/vips/${me.uid}`).once('value');
-    return vipsSnap.exists();
-}
-
-// --- VERIFICAÇÃO DE SEGURANÇA NO RENDERFEED ---
-function renderFeed() {
-    // Usamos .on para escutar mudanças em tempo real
-    db.ref('feed_global').limitToLast(20).on('value', async snap => {
-        const posts = snap.val() || {};
-        const container = document.getElementById('feed-container');
-        container.innerHTML = "";
-
-        // Inverter para mostrar os mais recentes primeiro
-        const listaPosts = Object.values(posts).reverse();
-
-        for (let p of listaPosts) {
-            const podeVer = await temPermissaoParaVerGasto(p.uid);
-            const valorTexto = podeVer ? `R$ ${parseFloat(p.total || 0).toLocaleString('pt-BR')}` : "🔒 Conteúdo VIP";
-
-            container.innerHTML += `
-                <div class="feed-card">
-                    <div style="display:flex; align-items:center; gap:10px; padding:15px;">
-                        <img src="${p.uFoto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" style="width:30px; height:30px; border-radius:50%; object-fit:cover;">
-                        <div style="line-height:1.2">
-                            <b style="font-size:13px;">@${p.username}</b><br>
-                            <small style="color:var(--sub)">${p.cidade} - ${p.uf.replace('BR','')}</small>
-                        </div>
-                    </div>
-                    <div class="carrossel">${p.fotos ? p.fotos.map(f => `<img src="${f}">`).join('') : ''}</div>
-                    <div style="padding:15px; display:flex; justify-content:space-between; align-items:center;">
-                        <div style="display:flex; gap:5px; font-size:16px;">
-                            ${p.exp.h?'🏨':''} ${p.exp.t?'🚗':''} ${p.exp.a?'🍴':''} ${p.exp.atr?'🎡':''} ${p.exp.p?'🏖️':''} ${p.exp.n?'🌳':''}
-                        </div>
-                        <span style="font-weight:800; color:var(--money); font-size:13px;">${valorTexto}</span>
-                    </div>
-                </div>`;
-        }
-    });
-}
- 
-        function renderRelatorioPrivado() {
-    db.ref(`usuarios/${me.uid}/viagens`).on('value', snap => {
-        const viagens = snap.val() || {};
-        const container = document.getElementById('aba-gastos');
-        let totalGeral = 0;
-        let htmlViagens = '';
-
-        Object.values(viagens).reverse().forEach(v => {
-            totalGeral += parseFloat(v.total || 0);
-            htmlViagens += `
-                <div style="padding: 12px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;">
-                    <span>${v.cidade} (${v.uf.replace('BR','')})</span>
-                    <b style="color:var(--money)">R$ ${parseFloat(v.total).toLocaleString('pt-BR')}</b>
-                </div>
-            `;
-        });
-
-        container.innerHTML = `
-            <div class="card">
-                <h3>💰 Meu Relatório</h3>
-                <div style="background:var(--money); color:white; padding:20px; border-radius:20px; text-align:center; margin-bottom: 20px;">
-                    <small>INVESTIMENTO TOTAL</small>
-                    <h2 style="margin:5px 0;">R$ ${totalGeral.toLocaleString('pt-BR')}</h2>
-                </div>
-                <h4>Histórico Detalhado:</h4>
-                ${htmlViagens || '<p style="font-size:12px; color:var(--sub)">Nenhuma viagem registrada.</p>'}
-            </div>
-        `;
-    });
-}
-        
-        function verPerfilAmigo(uidAmigo) {
-    db.ref(`usuarios/${uidAmigo}`).once('value', snap => {
-        const dados = snap.val();
-        // 1. Pintar o mapa com as viagens do AMIGO
-        pintarMapa(dados.viagens);
-        // 2. Mudar para a aba de perfil e mostrar os dados dele
-        renderTimelineAmigo(dados.viagens);
-        mudarAba('perfil'); 
-    });
-}
-
-        // Verifica se eu posso ver os gastos de um determinado post
-async function temPermissaoParaVerGasto(uidDoDono, doPost) { // Adicionada a vírgula aqui
-    if (!me) return false;
-    if (me.uid === uidDoDono) return true; 
-
-    const vipsSnap = await db.ref(`usuarios/${uidDoDono}/vips/${me.uid}`).once('value');
-    return vipsSnap.exists();
-}
-        
-        async function adicionarVipManual() {
-    const idAmigo = prompt("Insira o ID único do seu amigo para torná-lo VIP:");
-    
-    if (idAmigo && idAmigo.trim() !== "") {
-        try {
-            // Guardamos no nó de VIPs do utilizador atual
-            await db.ref(`usuarios/${me.uid}/vips/${idAmigo}`).set(true);
-            customAlerta("Amigo adicionado aos VIPs!", "✅");
-        } catch (error) {
-            customAlerta("Erro ao adicionar.", "❌");
-        }
-    }}
-
-        async function verificarDisponibilidade(user) {
-    const statusEl = document.getElementById('status-username');
-    const input = user.toLowerCase().trim().replace(/[^a-z0-9_]/g, ""); // Limpa caracteres especiais
-    
-    // Atualiza o input visualmente (opcional, para forçar o padrão)
-    document.getElementById('edit-user').value = input;
-
-    if (input.length < 3) {
-        statusEl.innerText = "Mínimo 3 caracteres";
-        statusEl.style.color = "orange";
-        usernameDisponivel = false;
-        return;
-    }
-
-    // Consulta o índice de usernames
-    const snap = await db.ref(`usernames/${input}`).once('value');
-    const donoDoId = snap.val();
-
-    // Se ninguém for dono OU se o dono for o próprio utilizador atual
-    if (!donoDoId || donoDoId === me.uid) {
-        statusEl.innerText = "✓ Username disponível";
-        statusEl.style.color = "var(--money)";
-        usernameDisponivel = true;
-    } else {
-        statusEl.innerText = "✕ Este username já está em uso";
-        statusEl.style.color = "var(--primary)";
-        usernameDisponivel = false;
-    }
-}
-        async function buscarDadosComPermissao(uidPerfilVisitado) {
-    // 1. Procurar os dados do perfil que estamos a visitar
-    const snap = await db.ref(`usuarios/${uidPerfilVisitado}`).once('value');
-    const dados = snap.val();
-    
-    // 2. Verificar se EU (me.uid) estou na lista de VIPs dele
-    const souVip = dados.vips && dados.vips[me.uid] === true;
-    
-    // 3. Se for o meu próprio perfil, eu sou sempre VIP de mim mesmo
-    const eMeuProprioPerfil = me.uid === uidPerfilVisitado;
-
-    return {
-        ...dados,
-        podeVerGastos: souVip || eMeuProprioPerfil
-    };
-}
-        
         function renderJornada() {
             const estados = perfilAtual.estados || 0;
             const conquistas = [
@@ -851,116 +586,6 @@ async function temPermissaoParaVerGasto(uidDoDono, doPost) { // Adicionada a ví
             });
             document.getElementById('grid-conquistas').innerHTML = html;
         }
-
-        async function salvarPerfil() {
-    if (!usernameDisponivel) {
-        return customAlerta("Por favor, escolhe um username disponível antes de salvar.", "💡");
-    }
-
-    const novoUser = document.getElementById('edit-user').value.toLowerCase().trim();
-    const antigoUser = perfilAtual.username; // Pegamos o nome que ele tinha antes
-
-    const updates = {
-        nome: document.getElementById('edit-nome').value,
-        username: novoUser,
-        bio: document.getElementById('edit-bio').value
-    };
-
-    // 1. Atualiza o perfil do usuário
-    await db.ref(`usuarios/${me.uid}/perfil`).update(updates);
-
-    // 2. Cria a ligação no índice global (Username -> ID)
-    await db.ref(`usernames/${novoUser}`).set(me.uid);
-
-    // 3. Se ele mudou de nome, removemos o antigo do índice para outros poderem usar
-    if (antigoUser && antigoUser !== novoUser) {
-        db.ref(`usernames/${antigoUser}`).remove();
-    }
-
-    customAlerta("Perfil Atualizado!", "✅");
-    toggleModoPerfil();
-}
-
-        async function processarFotoPerfil(input) {
-            if (input.files[0]) {
-                const b64 = await esmagarFoto(input.files[0]);
-                await db.ref(`usuarios/${me.uid}/perfil/foto`).set(b64);
-                customAlerta("Foto alterada!", "📸");
-            }
-        }
-
-        async function initApp() {
-    // 1. ESCUTAR PERFIL (Header e Tela de Perfil)
-    db.ref('usuarios/' + me.uid + '/perfil').on('value', snap => {
-        perfilAtual = snap.val() || {};
-        const foto = perfilAtual.foto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
-
-        document.getElementById('h-avatar').src = foto;
-        document.getElementById('h-nome').innerText = perfilAtual.nome || 'Viajante';
-        document.getElementById('h-user').innerText = '@' + (perfilAtual.username || 'user');
-        document.getElementById('info-conquistas').innerText = `ESTADOS: ${perfilAtual.estados || 0}`;
-
-        document.getElementById('p-img-view').src = foto;
-        document.getElementById('p-nome-view').innerText = perfilAtual.nome || 'Viajante';
-        document.getElementById('p-user-view').innerText = '@' + (perfilAtual.username || 'user');
-        document.getElementById('p-bio-view').innerText = perfilAtual.bio || 'Bem-vindo à minha jornada!';
-        
-        document.getElementById('p-img').src = foto;
-    });
-
-    // 2. CARREGAR E CONFIGURAR O MAPA SVG
-    try {
-        const res = await fetch('br.svg');
-        const svgText = await res.text();
-        const container = document.getElementById('svg-container');
-        
-        // Inserimos o SVG no container
-        container.innerHTML = svgText;
-
-        const svgEl = container.querySelector('svg');
-        if (svgEl) {
-            // Ajustes de estilo forçados para garantir visibilidade
-            svgEl.style.width = "100%";
-            svgEl.style.height = "100%";
-            svgEl.style.display = "block";
-
-            // Inicializa a biblioteca de Zoom
-            // Usamos um pequeno delay para garantir que o navegador calculou o tamanho do SVG
-            setTimeout(() => {
-                controleMapa = svgPanZoom(svgEl, {
-                    zoomEnabled: true,
-                    controlIconsEnabled: false,
-                    fit: true,
-                    center: true,
-                    minZoom: 0.5,
-                    maxZoom: 10
-                });
-            }, 300);
-        }
-    } catch (err) {
-        console.error("Erro ao carregar o arquivo br.svg:", err);
-    }
-
-    // 3. ESCUTAR VIAGENS PARA PINTAR O MAPA
-    // Usamos o UID do usuário logado para garantir que ele veja o mapa DELE
-    db.ref(`usuarios/${me.uid}/viagens`).on('value', snap => {
-        const viagens = snap.val() || {};
-        
-        // Primeiro, limpamos todos os estados (removemos a classe visitado)
-        document.querySelectorAll('path').forEach(p => p.classList.remove('visitado'));
-        
-        // Pintamos os estados que possuem registros de viagem
-        // Importante: No seu código de casal, os dados eram agrupados por UF.
-        // Aqui garantimos que ele pegue as chaves ou o campo 'uf' do post.
-        Object.values(viagens).forEach(trip => {
-            const el = document.getElementById(trip.uf);
-            if (el) el.classList.add('visitado');
-        });
-    });
-    escutarConvites();
-    // 4. CARREGAR O FEED INICIAL
-    renderFeed();
-}
     </script>
 </body>
 </html>
