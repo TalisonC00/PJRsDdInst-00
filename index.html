@@ -98,8 +98,8 @@
         <button class="btn-acao" onclick="handleAuth()" id="btn-auth-main" style="display: block; margin-top: 10px;">Entrar</button>
         
         <p style="margin-top: 20px; font-size: 13px; color: var(--text-sub);">
-            <span id="auth-text-toggle">Ainda não tem conta?</span> 
-            <b id="auth-btn-toggle" style="color:var(--primary); cursor: pointer;" onclick="toggleAuthMode()">Cadastrar</b>
+    <span id="auth-text-toggle">Ainda não tem conta?</span> 
+    <b id="auth-btn-toggle" style="color:var(--primary); cursor: pointer;" onclick="toggleAuthMode()">Cadastrar</b>
         </p>
         
         <p style="margin-top: 10px; font-size: 12px; color: var(--text-sub); cursor:pointer" onclick="resetarSenha()">Esqueci minha senha</p>
@@ -290,43 +290,48 @@ let isLoginMode = true;
 let mapaZoom = null;
 
 // --- FUNÇÃO DE AUTENTICAÇÃO (LOGIN / CADASTRO) ---
+
+    // 1. ALTERNAR ENTRE LOGIN E CADASTRO
+function toggleAuthMode() {
+    isLoginMode = !isLoginMode;
+    const title = document.getElementById('auth-title');
+    const btnMain = document.getElementById('btn-auth-main');
+    const textToggle = document.getElementById('auth-text-toggle');
+    const btnToggle = document.getElementById('auth-btn-toggle');
+
+    if (isLoginMode) {
+        title.innerText = "Minha Jornada";
+        btnMain.innerText = "Entrar";
+        textToggle.innerText = "Ainda não tem conta?";
+        btnToggle.innerText = "Cadastrar";
+    } else {
+        title.innerText = "Nova Jornada";
+        btnMain.innerText = "Criar Conta";
+        textToggle.innerText = "Já tem uma conta?";
+        btnToggle.innerText = "Entrar";
+    }
+}
+    
 async function handleAuth() {
-    // Captura os elementos
-    const emailInp = document.getElementById('auth-email');
-    const passInp = document.getElementById('auth-pass');
+    const email = document.getElementById('auth-email').value.trim();
+    const pass = document.getElementById('auth-pass').value;
     const btn = document.getElementById('btn-auth-main');
 
-    // Validações básicas antes de chamar o Firebase
-    const email = emailInp.value.trim();
-    const pass = passInp.value;
-
-    if (!email || !pass) {
-        return toast("Por favor, preencha todos os campos.", "⚠️");
+    if (!email || pass.length < 6) {
+        return toast("E-mail válido e senha de no mínimo 6 dígitos são necessários.", "⚠️");
     }
-
-    if (pass.length < 6) {
-        return toast("A senha deve ter no mínimo 6 caracteres.", "🔑");
-    }
-
-    // Bloqueia o botão para evitar cliques múltiplos
+    
     btn.disabled = true;
-    const textoOriginal = btn.innerText;
     btn.innerText = "Processando...";
 
     try {
         if (isLoginMode) {
-            // --- LÓGICA DE LOGIN ---
             await auth.signInWithEmailAndPassword(email, pass);
-            // O onAuthStateChanged cuidará do redirecionamento
         } else {
-            // --- LÓGICA DE CADASTRO ---
             const res = await auth.createUserWithEmailAndPassword(email, pass);
             const uid = res.user.uid;
+            const defaultUser = "user_" + Math.floor(Math.random() * 99999);
             
-            // Gerar um username temporário
-            const defaultUser = "viajante_" + Math.floor(Math.random() * 99999);
-            
-            // 1. Cria o perfil no Banco de Dados
             await db.ref(`usuarios/${uid}/perfil`).set({
                 nome: "Novo Viajante",
                 username: defaultUser,
@@ -334,45 +339,19 @@ async function handleAuth() {
                 bio: "Começando minha jornada! 🇧🇷",
                 estados: 0
             });
-            
-            // 2. Reserva o username no índice global
             await db.ref(`usernames/${defaultUser}`).set(uid);
-            
-            toast("Conta criada! Bem-vindo(a).", "🌍");
+            toast("Conta criada com sucesso!", "🌍");
         }
-    } catch (error) {
-        console.error("Erro de Autenticação:", error.code, error.message);
-        
-        let msg = "Erro ao processar. Tente novamente.";
-        
-        // Tradução de erros comuns do Firebase para o usuário
-        switch (error.code) {
-            case 'auth/email-already-in-use':
-                msg = "Este e-mail já está sendo usado por outra conta.";
-                break;
-            case 'auth/invalid-email':
-                msg = "O formato do e-mail é inválido.";
-                break;
-            case 'auth/user-disabled':
-                msg = "Esta conta foi desativada.";
-                break;
-            case 'auth/user-not-found':
-            case 'auth/wrong-password':
-                msg = "E-mail ou senha incorretos.";
-                break;
-            case 'auth/network-request-failed':
-                msg = "Falha na conexão. Verifique sua internet.";
-                break;
-            case 'auth/weak-password':
-                msg = "A senha escolhida é muito fraca.";
-                break;
-        }
-        
+    } catch (e) {
+        console.error(e);
+        let msg = "Erro na autenticação.";
+        if (e.code === "auth/email-already-in-use") msg = "Este e-mail já está em uso.";
+        if (e.code === "auth/invalid-email") msg = "E-mail inválido.";
+        if (e.code === "auth/user-not-found" || e.code === "auth/wrong-password") msg = "E-mail ou senha incorretos.";
         toast(msg, "❌");
-        
-        // Destrava o botão apenas em caso de erro para o usuário tentar de novo
+    } finally {
         btn.disabled = false;
-        btn.innerText = textoOriginal;
+        btn.innerText = isLoginMode ? "Entrar" : "Criar Conta";
     }
 }
 
@@ -391,7 +370,6 @@ auth.onAuthStateChanged(user => {
 async function initApp() {
     if (!eu) return;
 
-    // Carregar dados do perfil logado
     db.ref(`usuarios/${eu.uid}/perfil`).on('value', snap => {
         meuPerfil = snap.val() || {};
         if (meuPerfil.username) {
@@ -402,7 +380,6 @@ async function initApp() {
         }
     });
 
-    // Carregar o Mapa br.svg com tratamento de erro
     try {
         const res = await fetch('br.svg');
         if (!res.ok) throw new Error("Arquivo br.svg não encontrado");
@@ -414,6 +391,7 @@ async function initApp() {
         const svgEl = container.querySelector('svg');
         if (svgEl) {
             svgEl.setAttribute('id', 'mapa-svg-real');
+            // Forçamos o tamanho para evitar erro de matriz
             svgEl.style.width = "100%";
             svgEl.style.height = "100%";
             
@@ -426,18 +404,16 @@ async function initApp() {
                     minZoom: 0.1
                 });
                 pintarMapa(targetUid || eu.uid);
-            }, 500);
+            }, 800); 
         }
     } catch (e) {
         console.error("Erro ao carregar mapa:", e);
-        // Se falhar o fetch, tenta carregar o mapa embutido (fallback)
     }
 
-    // Configurar Cliques no Mapa
-    document.getElementById('svg-container').addEventListener('click', (e) => {
+    document.getElementById('svg-container').onclick = (e) => {
         const path = e.target.closest('path') || e.target.closest('.estado');
         if (path && path.id) gerenciarCliqueEstado(path.id);
-    });
+    };
 
     renderFeed();
     ouvirConvites();
