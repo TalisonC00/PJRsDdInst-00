@@ -151,25 +151,47 @@
     <div id="aba-ranking" class="aba"><div id="rank-container" class="card"></div></div>
 
     <div id="aba-registro" class="aba">
-        <div class="card">
-            <h4>Nova Viagem 📍</h4>
-            <select id="sel-uf">
-                <option value="BRSP">São Paulo</option><option value="BRRJ">Rio de Janeiro</option>
-                <option value="BRMG">Minas Gerais</option><option value="BRBA">Bahia</option>
-                <option value="BRSC">Santa Catarina</option><option value="BRPR">Paraná</option>
-                <option value="BRRS">Rio Grande do Sul</option>
+    <div class="card">
+        <h4>Nova Viagem 📍</h4>
+        <select id="sel-uf">
+            <option value="BRSP">São Paulo</option><option value="BRRJ">Rio de Janeiro</option>
+            <option value="BRMG">Minas Gerais</option><option value="BRBA">Bahia</option>
+            <option value="BRSC">Santa Catarina</option><option value="BRPR">Paraná</option>
+            <option value="BRRS">Rio Grande do Sul</option>
             </select>
-            <input type="text" id="cidade" placeholder="Cidade">
-            <input type="number" id="valor" placeholder="Gasto total (R$)">
-            
-            <div class="exp-group">
-                <label class="exp-item"><span>🏨</span><input type="checkbox" id="chk-h"></label>
-                <label class="exp-item"><span>🚗</span><input type="checkbox" id="chk-t"></label>
-                <label class="exp-item"><span>🏖️</span><input type="checkbox" id="chk-p"></label>
-                <label class="exp-item"><span>🍴</span><input type="checkbox" id="chk-a"></label>
-                <label class="exp-item"><span>🎡</span><input type="checkbox" id="chk-atr"></label>
-                <label class="exp-item"><span>🌳</span><input type="checkbox" id="chk-n"></label>
-            </div>
+        <input type="text" id="txt-cidade" placeholder="Cidade">
+        <input type="date" id="txt-data">
+
+        <label style="font-size: 11px; color: var(--sub); margin: 10px 0 5px;">Detalhamento de Gastos (R$):</label>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <input type="number" id="v-hosp" placeholder="🏨 Hotel">
+            <input type="number" id="v-trans" placeholder="🚗 Transp.">
+            <input type="number" id="v-alime" placeholder="🍴 Aliment.">
+            <input type="number" id="v-atrac" placeholder="🎡 Atrações">
+        </div>
+        
+        <div class="exp-group">
+            <label class="exp-item"><span>🏨</span><input type="checkbox" id="chk-h"></label>
+            <label class="exp-item"><span>🚗</span><input type="checkbox" id="chk-t"></label>
+            <label class="exp-item"><span>🏖️</span><input type="checkbox" id="chk-p"></label>
+            <label class="exp-item"><span>🍴</span><input type="checkbox" id="chk-a"></label>
+            <label class="exp-item"><span>🎡</span><input type="checkbox" id="chk-atr"></label>
+            <label class="exp-item"><span>🌳</span><input type="checkbox" id="chk-n"></label>
+        </div>
+
+        <input type="file" id="inp-fotos" multiple accept="image/*" onchange="previaFotos(this)">
+        <div id="previa-container" style="display:flex; gap:5px; margin: 10px 0;"></div>
+        
+        <div style="background:#F8FAFC; padding:12px; border-radius:15px; margin-top:10px;">
+            <label style="font-size: 11px; margin:0; display: flex; align-items: center; gap: 8px;">
+                <input type="checkbox" id="is-vip"> 
+                <span>Permitir que VIPs vejam os gastos 💎</span>
+            </label>
+        </div>
+        
+        <button class="btn btn-m" style="margin-top:15px;" onclick="postarViagem()">Salvar Memória 🚩</button>
+    </div>
+</div>
 
             <input type="file" id="inp-fotos" multiple accept="image/*" onchange="previaFotos(this)">
             <div id="previa-container" style="display:flex; gap:5px; margin: 10px 0;"></div>
@@ -220,12 +242,16 @@
 </div>
 
     <nav class="nav">
-        <div class="nav-item ativa" onclick="mudarAba('feed', this)">🏠</div>
-        <div class="nav-item" onclick="mudarAba('mapa', this)">📍</div>
-        <div class="nav-item" onclick="mudarAba('registro', this)">➕</div>
-        <div class="nav-item" onclick="mudarAba('conquistas', this)">🏆</div>
-        <div class="nav-item" id="nav-perfil" onclick="mudarAba('perfil', this)" style="display:none">👤</div>
-    </nav>
+    <div class="nav-item ativa" onclick="mudarAba('feed', this)">🏠</div>
+    <div class="nav-item" onclick="mudarAba('mapa', this)">📍</div>
+    <div class="nav-item" onclick="mudarAba('registro', this)">➕</div>
+    <div class="nav-item" onclick="mudarAba('gastos', this)">💰</div>
+    <div class="nav-item" onclick="mudarAba('conquistas', this)">🏆</div>
+    <div class="nav-item" id="nav-perfil" onclick="mudarAba('perfil', this)" style="display:none">👤</div>
+</nav>
+
+<div id="aba-gastos" class="aba">
+    </div>
 
     <script>
         // CONFIGURAÇÃO FIREBASE
@@ -344,14 +370,18 @@
         
         // APP LOGIC
         function mudarAba(id, el) {
-            document.querySelectorAll('.aba').forEach(a => a.classList.remove('ativa'));
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('ativa'));
-            document.getElementById('aba-' + id).classList.add('ativa');
-            el.classList.add('ativa');
-            if(id === 'mapa' && controleMapa) setTimeout(() => controleMapa.resize().fit().center(), 100);
-            if(id === 'ranking') renderRanking();
-            if(id === 'conquistas') renderJornada();
-        }
+    document.querySelectorAll('.aba').forEach(a => a.classList.remove('ativa'));
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('ativa'));
+    document.getElementById('aba-' + id).classList.add('ativa');
+    if(el) el.classList.add('ativa');
+
+    // Chamar funções específicas de cada aba
+    if(id === 'mapa' && controleMapa) setTimeout(() => controleMapa.resize().fit().center(), 100);
+    if(id === 'ranking') renderRanking();
+    if(id === 'conquistas') renderJornada();
+    if(id === 'gastos') renderRelatorioPrivado(); // Chama o relatório privado
+    if(id === 'feed') renderFeed();
+}
 
         function toggleEdicaoPerfil() {
     const viewDiv = document.getElementById('perfil-view');
@@ -394,6 +424,38 @@
         document.getElementById('edit-bio').value = perfilAtual.bio || '';
     });
 
+            // Adicione esta função ao seu <script>
+async function buscarUsuario() {
+    const userBusca = prompt("Digite o @username que deseja encontrar:").toLowerCase().trim();
+    if (!userBusca) return;
+
+    // 1. Procura o UID através do índice de usernames que criamos
+    const snap = await db.ref(`usernames/${userBusca}`).once('value');
+    const uidEncontrado = snap.val();
+
+    if (uidEncontrado) {
+        // 2. Se encontrar, carrega o perfil dele
+        abrirPerfilVisitante(uidEncontrado);
+    } else {
+        customAlerta("Usuário não encontrado!", "❌");
+    }
+}
+
+// Função para visualizar o perfil de outra pessoa
+async function abrirPerfilVisitante(uidVisitado) {
+    const permissao = await buscarDadosComPermissao(uidVisitado);
+    
+    // Aqui vamos redirecionar para a aba perfil, mas com os dados do amigo
+    // Nota: Precisaríamos de uma lógica para "limpar" o perfil ao voltar para o seu
+    console.log("Visualizando perfil de:", permissao.nome, "Pode ver gastos:", permissao.podeVerGastos);
+    
+    // Por agora, vamos apenas oferecer para adicionar como VIP se for o caso
+    if (confirm(`Deseja tornar @${permissao.username} seu VIP para que ele veja seus gastos?`)) {
+        await db.ref(`usuarios/${me.uid}/vips/${uidVisitado}`).set(true);
+        customAlerta("VIP adicionado!", "💎");
+    }
+}
+            
             // Mapa
             const res = await fetch('https://raw.githubusercontent.com/talisonc00/l/main/br.svg');
             const svgText = await res.text();
@@ -493,25 +555,71 @@
 }
 
         async function renderFeed() {
-            const snap = await db.ref('feed_global').limitToLast(15).once('value');
-            const data = snap.val() || {};
-            const container = document.getElementById('feed-container');
-            container.innerHTML = "";
-            Object.values(data).reverse().forEach(p => {
-                container.innerHTML += `
-                <div class="feed-card">
-                    <div class="user-info">
-                        <img src="${p.uFoto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" class="avatar">
-                        <div><b>@${p.username}</b> <br> <small>${p.cidade} - ${p.uf.replace('BR','')}</small></div>
-                    </div>
-                    <div class="carrossel">${p.fotos ? p.fotos.map(f => `<img src="${f}">`).join('') : ''}</div>
-                    <div style="padding:15px; display:flex; gap:8px;">
-                        ${p.exp.h?'🏨':''} ${p.exp.t?'🚗':''} ${p.exp.p?'🏖️':''} ${p.exp.a?'🍴':''} ${p.exp.atr?'🎡':''}
-                    </div>
-                </div>`;
-            });
-        }
+    const snap = await db.ref('feed_global').limitToLast(15).once('value');
+    const posts = snap.val() || {};
+    const container = document.getElementById('feed-container');
+    container.innerHTML = "";
 
+    for (let id in posts) {
+        const p = posts[id];
+        
+        // Chamamos a nossa função de permissão
+        const podeVer = await temPermissaoParaVerGasto(p.uid);
+        
+        // Definimos o que será exibido no campo de valor
+        const valorTexto = podeVer 
+            ? `R$ ${parseFloat(p.total).toLocaleString('pt-BR')}` 
+            : "🔒 Conteúdo VIP";
+
+        container.innerHTML += `
+            <div class="feed-card">
+                <div class="user-info">
+                    <img src="${p.uFoto || 'link_padrao'}" class="avatar">
+                    <span><b>@${p.username}</b> em ${p.cidade}</span>
+                </div>
+                <div class="carrossel">${p.fotos ? p.fotos.map(f => `<img src="${f}">`).join('') : ''}</div>
+                <div style="padding:15px; display:flex; justify-content:space-between; align-items:center;">
+                    <div class="pills-exp">${p.exp.h?'🏨':''} ${p.exp.a?'🍴':''}</div>
+                    <span style="font-weight:800; color:var(--money); font-size:14px;">
+                        ${valorTexto}
+                    </span>
+                </div>
+            </div>`;
+    }
+}
+
+        
+        function renderRelatorioPrivado() {
+    db.ref(`usuarios/${me.uid}/viagens`).on('value', snap => {
+        const viagens = snap.val() || {};
+        const container = document.getElementById('aba-gastos');
+        let totalGeral = 0;
+        let htmlViagens = '';
+
+        Object.values(viagens).reverse().forEach(v => {
+            totalGeral += parseFloat(v.total || 0);
+            htmlViagens += `
+                <div style="padding: 12px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;">
+                    <span>${v.cidade} (${v.uf.replace('BR','')})</span>
+                    <b style="color:var(--money)">R$ ${parseFloat(v.total).toLocaleString('pt-BR')}</b>
+                </div>
+            `;
+        });
+
+        container.innerHTML = `
+            <div class="card">
+                <h3>💰 Meu Relatório</h3>
+                <div style="background:var(--money); color:white; padding:20px; border-radius:20px; text-align:center; margin-bottom: 20px;">
+                    <small>INVESTIMENTO TOTAL</small>
+                    <h2 style="margin:5px 0;">R$ ${totalGeral.toLocaleString('pt-BR')}</h2>
+                </div>
+                <h4>Histórico Detalhado:</h4>
+                ${htmlViagens || '<p style="font-size:12px; color:var(--sub)">Nenhuma viagem registrada.</p>'}
+            </div>
+        `;
+    });
+}
+        
         function verPerfilAmigo(uidAmigo) {
     db.ref(`usuarios/${uidAmigo}`).once('value', snap => {
         const dados = snap.val();
@@ -522,6 +630,16 @@
         mudarAba('perfil'); 
     });
 }
+
+        // Verifica se eu posso ver os gastos de um determinado post
+async function temPermissaoParaVerGasto(uidDoDono doPost) {
+    if (me.uid === uidDoDono) return true; // Eu sempre vejo os meus gastos
+
+    // Verifica se estou na lista VIP do dono do post
+    const vipsSnap = await db.ref(`usuarios/${uidDoDono}/vips/${me.uid}`).once('value');
+    return vipsSnap.exists();
+}
+        
         async function adicionarVipManual() {
     const idAmigo = prompt("Insira o ID único do seu amigo para torná-lo VIP:");
     
