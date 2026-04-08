@@ -95,7 +95,7 @@
         .nav-item { font-size: 24px; opacity: 0.3; transition: 0.3s; }
         .nav-item.ativa { opacity: 1; color: var(--primary); transform: translateY(-5px); }
 
-        #login-screen { position: fixed; inset: 0; background: var(--sky); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        #login-screen { position: fixed; inset: 0; background: linear-gradient(135deg, var(--sky) 0%, #fff 100%); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
     </style>
 </head>
 <body>
@@ -265,6 +265,17 @@
             document.getElementById('btn-auth-main').innerText = isLogin ? "Entrar" : "Cadastrar";
         }
 
+        function traduzirErro(codigo) {
+    switch (codigo) {
+        case 'auth/email-already-in-use': return "Este e-mail já está a ser utilizado.";
+        case 'auth/invalid-email': return "O e-mail digitado não é válido.";
+        case 'auth/weak-password': return "A senha deve ter pelo menos 6 caracteres.";
+        case 'auth/user-not-found': return "Utilizador não encontrado.";
+        case 'auth/wrong-password': return "Senha incorreta.";
+        default: return "Ocorreu um erro inesperado. Tenta novamente.";
+    }
+}
+        
         function toggleModoPerfil() {
         const view = document.getElementById('perfil-modo-view');
         const edit = document.getElementById('perfil-modo-edit');
@@ -278,24 +289,59 @@
         }
     }
         async function handleAuth() {
-            const e = document.getElementById('email').value;
-            const p = document.getElementById('pass').value;
-            try {
-                if(isLogin) await auth.signInWithEmailAndPassword(e, p);
-                else {
-                    const res = await auth.createUserWithEmailAndPassword(e, p);
-                    await db.ref('usuarios/' + res.user.uid + '/perfil').set({
-                        nome: "Viajante", username: "user" + Math.floor(Math.random()*999), estados: 0
-                    });
-                }
-            } catch(err) { customAlerta(err.message, '❌'); }
+    const e = document.getElementById('email').value.trim();
+    const p = document.getElementById('pass').value;
+    const btn = document.getElementById('btn-auth-main');
+
+    if (!e || !p) return customAlerta("Preenche todos os campos!", "⚠️");
+
+    // Bloqueia o botão para evitar cliques repetidos
+    btn.disabled = true;
+    btn.innerText = "A processar...";
+
+    try {
+        if (isLogin) {
+            // LOGIN
+            await auth.signInWithEmailAndPassword(e, p);
+        } else {
+            // CADASTRO
+            const res = await auth.createUserWithEmailAndPassword(e, p);
+            
+            // Criamos o perfil inicial básico
+            const idTemporario = "user_" + Math.floor(Math.random() * 9999);
+            
+            await db.ref('usuarios/' + res.user.uid + '/perfil').set({
+                nome: "Novo Viajante",
+                username: idTemporario,
+                estados: 0,
+                foto: 'https://cdn-icons-png.flaticon.com/512/149/149071.png',
+                bio: "Comecei a minha jornada! 🌍"
+            });
+
+            // Regista o username temporário no nosso índice
+            await db.ref(`usernames/${idTemporario}`).set(res.user.uid);
         }
+    } catch (err) {
+        customAlerta(traduzirErro(err.code), '❌');
+        btn.disabled = false;
+        btn.innerText = isLogin ? "Entrar" : "Cadastrar";
+    }
+}
 
         auth.onAuthStateChanged(user => {
             if(user) { me = user; document.getElementById('login-screen').style.display = 'none'; initApp(); }
             else { document.getElementById('login-screen').style.display = 'flex'; }
         });
 
+        function recuperarSenha() {
+    const email = document.getElementById('email').value;
+    if(!email) return customAlerta("Digita o teu e-mail primeiro.", "📧");
+    
+    auth.sendPasswordResetEmail(email)
+        .then(() => customAlerta("E-mail de recuperação enviado!", "📧"))
+        .catch(err => customAlerta(traduzirErro(err.code), "❌"));
+}
+        
         // APP LOGIC
         function mudarAba(id, el) {
             document.querySelectorAll('.aba').forEach(a => a.classList.remove('ativa'));
