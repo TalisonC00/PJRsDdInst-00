@@ -195,21 +195,24 @@
         </div>
 
         <div id="perfil-modo-edit" style="display: none;">
-            <div style="position: relative; display: inline-block;">
-                <img id="p-img" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; opacity: 0.6;">
-                <button onclick="document.getElementById('f-upload').click()" style="position: absolute; inset: 0; background: none; border: none; cursor: pointer; font-size: 20px;"></button>
-            </div>
-            <input type="file" id="f-upload" style="display:none" onchange="processarFotoPerfil(this)">
-            
-            <p style="font-size: 11px; color: var(--sub); margin-bottom: 15px;">📸 Toque na foto para alterar</p>
+    <div style="position: relative; display: inline-block;">
+        <img id="p-img" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; opacity: 0.6;">
+        <button onclick="document.getElementById('f-upload').click()" style="position: absolute; inset: 0; background: none; border: none; cursor: pointer; font-size: 20px;"></button>
+    </div>
+    <input type="file" id="f-upload" style="display:none" onchange="processarFotoPerfil(this)">
+    
+    <p style="font-size: 11px; color: var(--sub); margin-bottom: 15px;">📸 Toque na foto para alterar</p>
 
-            <input type="text" id="edit-nome" placeholder="Nome">
-            <input type="text" id="edit-user" placeholder="username">
-            <textarea id="edit-bio" placeholder="Sua biografia..." style="height: 80px; resize: none;"></textarea>
-            
-            <button class="btn btn-p" onclick="salvarPerfil()">Salvar Alterações</button>
-            <button onclick="toggleModoPerfil()" style="background: none; border: none; color: var(--sub); margin-top: 15px; font-weight: 600; cursor: pointer;">Cancelar</button>
-        </div>
+    <input type="text" id="edit-nome" placeholder="Nome">
+
+    <label style="font-size: 11px; color: var(--sub); margin-top: 10px; display: block; text-align: left; margin-left: 5px;">Username único:</label>
+    <input type="text" id="edit-user" placeholder="username" oninput="verificarDisponibilidade(this.value)">
+    <div id="status-username" style="font-size: 10px; font-weight: 700; margin-top: -5px; margin-bottom: 10px; text-align: left; margin-left: 5px;"></div>
+    <textarea id="edit-bio" placeholder="Sua biografia..." style="height: 80px; resize: none;"></textarea>
+    
+    <button class="btn btn-p" onclick="salvarPerfil()">Salvar Alterações</button>
+    <button onclick="toggleModoPerfil()" style="background: none; border: none; color: var(--sub); margin-top: 15px; font-weight: 600; cursor: pointer;">Cancelar</button>
+</div>
 
         <hr style="border: 0; border-top: 1px solid #F1F5F9; margin: 30px 0;">
         <button onclick="auth.signOut()" style="color: #FF4B5C; border: none; background: none; font-weight: 800; font-size: 14px; cursor: pointer;">Sair da Conta</button>
@@ -245,6 +248,7 @@
         let fotosPost = [];
         let controleMapa;
         let perfilAtual = {};
+        let usernameDisponivel = true;
 
         // ALERTAS CUSTOMIZADOS
         function customAlerta(msg, icon = '💡') {
@@ -396,27 +400,51 @@
         }
 
         async function postarViagem() {
-            const uf = document.getElementById('sel-uf').value;
-            const tripID = Date.now();
-            const post = {
-                id: tripID, uid: me.uid, username: perfilAtual.username, uFoto: perfilAtual.foto || '',
-                uf: uf, cidade: document.getElementById('cidade').value, fotos: fotosPost,
-                exp: { h: document.getElementById('chk-h').checked, t: document.getElementById('chk-t').checked, 
-                       p: document.getElementById('chk-p').checked, a: document.getElementById('chk-a').checked,
-                       atr: document.getElementById('chk-atr').checked, n: document.getElementById('chk-n').checked },
-                isVip: document.getElementById('is-vip').checked, data: new Date().toLocaleDateString()
-            };
+    const uf = document.getElementById('sel-uf').value;
+    const tripID = Date.now();
+    
+    // Pegamos os valores dos gastos
+    const gastos = {
+        h: parseFloat(document.getElementById('v-hosp').value) || 0,
+        t: parseFloat(document.getElementById('v-trans').value) || 0,
+        al: parseFloat(document.getElementById('v-alime').value) || 0,
+        at: parseFloat(document.getElementById('v-atrac').value) || 0
+    };
+    const total = gastos.h + gastos.t + gastos.al + gastos.at;
 
-            await db.ref('feed_global/' + tripID).set(post);
-            await db.ref(`usuarios/${me.uid}/viagens/${uf}/${tripID}`).set({...post, valor: document.getElementById('valor').value});
-            
-            db.ref(`usuarios/${me.uid}/viagens`).once('value', s => {
-                db.ref(`usuarios/${me.uid}/perfil/estados`).set(Object.keys(s.val() || {}).length);
-            });
+    const novaViagem = {
+        id: tripID,
+        uid: me.uid,
+        username: perfilAtual.username,
+        uFoto: perfilAtual.foto || '',
+        uf: uf,
+        cidade: document.getElementById('txt-cidade').value,
+        data: document.getElementById('txt-data').value,
+        fotos: fotosPost, // Array de base64
+        gastos: gastos,
+        total: total,
+        isVip: document.getElementById('is-vip').checked // Se true, só VIPs vêm o 'total'
+    };
 
-            customAlerta("Memória Salva! 📍", "✅");
-            mudarAba('feed', document.querySelector('.nav-item'));
-        }
+    // 1. Salva no perfil do usuário (Privado/Completo)
+    await db.ref(`usuarios/${me.uid}/viagens/${tripID}`).set(novaViagem);
+
+    // 2. Salva no Feed Global (Público - sem os gastos detalhados por segurança)
+    const postPublico = { ...novaViagem };
+    if (!novaViagem.isVip) delete postPublico.gastos; // Remove gastos se não for público
+    
+    await db.ref('feed_global/' + tripID).set(postPublico);
+
+    // 3. Atualiza contador de estados
+    db.ref(`usuarios/${me.uid}/viagens`).once('value', s => {
+        const viagens = s.val() || {};
+        const estadosUnicos = [...new Set(Object.values(viagens).map(v => v.uf))].length;
+        db.ref(`usuarios/${me.uid}/perfil/estados`).set(estadosUnicos);
+    });
+
+    customAlerta("Viagem publicada no Feed! 🌍", "✅");
+    mudarAba('feed', document.querySelector('.nav-item'));
+}
 
         async function renderFeed() {
             const snap = await db.ref('feed_global').limitToLast(15).once('value');
@@ -438,6 +466,75 @@
             });
         }
 
+        function verPerfilAmigo(uidAmigo) {
+    db.ref(`usuarios/${uidAmigo}`).once('value', snap => {
+        const dados = snap.val();
+        // 1. Pintar o mapa com as viagens do AMIGO
+        pintarMapa(dados.viagens);
+        // 2. Mudar para a aba de perfil e mostrar os dados dele
+        renderTimelineAmigo(dados.viagens);
+        mudarAba('perfil'); 
+    });
+}
+        async function adicionarVipManual() {
+    const idAmigo = prompt("Insira o ID único do seu amigo para torná-lo VIP:");
+    
+    if (idAmigo && idAmigo.trim() !== "") {
+        try {
+            // Guardamos no nó de VIPs do utilizador atual
+            await db.ref(`usuarios/${me.uid}/vips/${idAmigo}`).set(true);
+            customAlerta("Amigo adicionado aos VIPs!", "✅");
+        } catch (error) {
+            customAlerta("Erro ao adicionar.", "❌");
+        }
+    }}
+
+        async function verificarDisponibilidade(user) {
+    const statusEl = document.getElementById('status-username');
+    const input = user.toLowerCase().trim().replace(/[^a-z0-9_]/g, ""); // Limpa caracteres especiais
+    
+    // Atualiza o input visualmente (opcional, para forçar o padrão)
+    document.getElementById('edit-user').value = input;
+
+    if (input.length < 3) {
+        statusEl.innerText = "Mínimo 3 caracteres";
+        statusEl.style.color = "orange";
+        usernameDisponivel = false;
+        return;
+    }
+
+    // Consulta o índice de usernames
+    const snap = await db.ref(`usernames/${input}`).once('value');
+    const donoDoId = snap.val();
+
+    // Se ninguém for dono OU se o dono for o próprio utilizador atual
+    if (!donoDoId || donoDoId === me.uid) {
+        statusEl.innerText = "✓ Username disponível";
+        statusEl.style.color = "var(--money)";
+        usernameDisponivel = true;
+    } else {
+        statusEl.innerText = "✕ Este username já está em uso";
+        statusEl.style.color = "var(--primary)";
+        usernameDisponivel = false;
+    }
+}
+        async function buscarDadosComPermissao(uidPerfilVisitado) {
+    // 1. Procurar os dados do perfil que estamos a visitar
+    const snap = await db.ref(`usuarios/${uidPerfilVisitado}`).once('value');
+    const dados = snap.val();
+    
+    // 2. Verificar se EU (me.uid) estou na lista de VIPs dele
+    const souVip = dados.vips && dados.vips[me.uid] === true;
+    
+    // 3. Se for o meu próprio perfil, eu sou sempre VIP de mim mesmo
+    const eMeuProprioPerfil = me.uid === uidPerfilVisitado;
+
+    return {
+        ...dados,
+        podeVerGastos: souVip || eMeuProprioPerfil
+    };
+}
+        
         function renderJornada() {
             const estados = perfilAtual.estados || 0;
             const conquistas = [
@@ -456,15 +553,33 @@
         }
 
         async function salvarPerfil() {
-        const updates = {
-            nome: document.getElementById('edit-nome').value,
-            username: document.getElementById('edit-user').value.toLowerCase(),
-            bio: document.getElementById('edit-bio').value
-        };
-        await db.ref(`usuarios/${me.uid}/perfil`).update(updates);
-        customAlerta("Perfil Atualizado!", "✅");
-        toggleModoPerfil(); // Volta para o modo visualização automaticamente
+    if (!usernameDisponivel) {
+        return customAlerta("Por favor, escolhe um username disponível antes de salvar.", "💡");
     }
+
+    const novoUser = document.getElementById('edit-user').value.toLowerCase().trim();
+    const antigoUser = perfilAtual.username; // Pegamos o nome que ele tinha antes
+
+    const updates = {
+        nome: document.getElementById('edit-nome').value,
+        username: novoUser,
+        bio: document.getElementById('edit-bio').value
+    };
+
+    // 1. Atualiza o perfil do usuário
+    await db.ref(`usuarios/${me.uid}/perfil`).update(updates);
+
+    // 2. Cria a ligação no índice global (Username -> ID)
+    await db.ref(`usernames/${novoUser}`).set(me.uid);
+
+    // 3. Se ele mudou de nome, removemos o antigo do índice para outros poderem usar
+    if (antigoUser && antigoUser !== novoUser) {
+        db.ref(`usernames/${antigoUser}`).remove();
+    }
+
+    customAlerta("Perfil Atualizado!", "✅");
+    toggleModoPerfil();
+}
 
         async function processarFotoPerfil(input) {
             if (input.files[0]) {
