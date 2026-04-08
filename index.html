@@ -432,26 +432,6 @@ async function abrirPerfilVisitante(uidVisitado) {
     }
 }
             
-            // Mapa
-            const res = await fetch('https://raw.githubusercontent.com/talisonc00/l/main/br.svg');
-            const svgText = await res.text();
-            document.getElementById('svg-container').innerHTML = svgText;
-            const svgEl = document.querySelector('#svg-container svg');
-            svgEl.style.width = "100%"; svgEl.style.height = "100%";
-            controleMapa = svgPanZoom(svgEl, { zoomEnabled: true, controlIconsEnabled: false, fit: true, center: true });
-
-            db.ref(`usuarios/${me.uid}/viagens`).on('value', snap => {
-                const viagens = snap.val() || {};
-                document.querySelectorAll('path').forEach(p => p.classList.remove('visitado'));
-                Object.keys(viagens).forEach(uf => {
-                    const el = document.getElementById(uf);
-                    if(el) el.classList.add('visitado');
-                });
-            });
-
-            renderFeed();
-        }
-
         // COMPACTADOR DE FOTOS
         async function esmagarFoto(file) {
             return new Promise(resolve => {
