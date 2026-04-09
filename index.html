@@ -476,8 +476,29 @@ async function checarStatusAmizade(uidAlvo) {
     if (convite.exists()) return { texto: "Enviado", css: "background:#64748B" };
     return { texto: "Conectar", css: "" };
 }
+    // Envia solicitação de amizade
+async function enviarPedido(destUid, btn) {
+    if (!destUid || destUid === eu.uid) return;
+    btn.disabled = true;
+    btn.innerText = "Enviando...";
 
-async function carregarPerfilUI(uid) {
+    try {
+        await db.ref(`convites/${destUid}/${eu.uid}`).set({
+            uid: eu.uid,
+            user: meuPerfil.username,
+            nome: meuPerfil.nome,
+            timestamp: Date.now()
+        });
+        btn.innerText = "Enviado";
+        btn.style.background = "#64748B";
+        toast("Solicitação enviada!", "📩");
+    } catch (e) {
+        btn.disabled = false;
+        btn.innerText = "Conectar";
+        toast("Erro ao enviar.", "❌");
+    }
+}
+    async function carregarPerfilUI(uid) {
     const isMe = uid === eu.uid;
     const snap = await db.ref(`usuarios/${uid}/perfil`).once('value');
     const p = snap.val() || {};
@@ -572,14 +593,59 @@ function renderConquistas(uid) {
     });
 }
 
-function renderFeed() {
-    db.ref('feed_global').limitToLast(20).on('value', snap => {
+
+    function renderFeed() {
+    db.ref('feed_global').limitToLast(20).on('value', async snap => {
         const container = document.getElementById('lista-feed');
+        if(!container) return;
         container.innerHTML = "";
         const posts = Object.values(snap.val() || {}).reverse();
-        posts.forEach(p => {
-            container.innerHTML += `<div class="feed-card" style="padding:15px"><b>@${p.user}</b> explorou ${p.cidade}</div>`;
-        });
+        
+        for(let p of posts) {
+            // Lógica de Reações
+            const reacoesSnap = await db.ref(`likes/${p.id}`).once('value');
+            const reacoesData = reacoesSnap.val() || {};
+            const totalReacoes = Object.keys(reacoesData).length;
+            const minhaReacao = reacoesData[eu?.uid] || '🤍';
+
+            // Verificação de VIP (Se quem postou me deu acesso VIP)
+            const vipSnap = await db.ref(`usuarios/${p.uid}/vips/${eu?.uid}`).once('value');
+            const isVIP = (p.uid === eu?.uid) || vipSnap.exists();
+
+            let gastosHtml = isVIP 
+                ? `<span style="background:#F1F5F9; padding:4px 8px; border-radius:8px; font-size:11px; font-weight:700;">💰 R$ ${p.total?.toFixed(2)}</span>`
+                : `<span style="font-size:10px; font-weight:800; color:var(--text-sub); opacity:0.6;">🔒 GASTOS VIP</span>`;
+
+            container.innerHTML += `
+                <div class="feed-card" style="margin-bottom: 25px; position:relative;">
+                    <div style="padding:15px; display:flex; align-items:center; justify-content:space-between;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <img src="${p.fotoUser || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" style="width:35px; height:35px; border-radius:50%; object-fit:cover;">
+                            <div>
+                                <b onclick="irParaPerfil('${p.uid}')" style="cursor:pointer; font-size:14px;">@${p.user}</b><br>
+                                <small style="color:var(--text-sub); font-size:11px;">${p.cidade} - ${p.uf.replace('BR','')}</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="carrossel">
+                        ${p.fotos ? p.fotos.map(f => `<img src="${f}" style="width:100%; height:320px; object-fit:cover;">`).join('') : ''}
+                    </div>
+
+                    <div class="reacoes-menu" id="menu-${p.id}" style="display:none;">
+                        <span onclick="reagir('${p.id}', '❤️')">❤️</span>
+                        <span onclick="reagir('${p.id}', '🔥')">🔥</span>
+                        <span onclick="reagir('${p.id}', '✈️')">✈️</span>
+                    </div>
+
+                    <div style="padding:15px; display:flex; justify-content:space-between; align-items:center;">
+                        <button class="like-btn" onclick="abrirMenuReacao('${p.id}')">
+                            <span>${minhaReacao}</span> <b>${totalReacoes}</b>
+                        </button>
+                        ${gastosHtml}
+                    </div>
+                </div>`;
+        }
     });
 }
 
@@ -653,6 +719,21 @@ async function responderPedido(id, aceitou) {
     await db.ref(`convites/${eu.uid}/${id}`).remove();
 }
 
+    / Lógica para tornar um amigo VIP (ver gastos)
+   async function tratarVIP() {
+    if(!targetUid || targetUid === eu.uid) return;
+    const ref = db.ref(`usuarios/${targetUid}/vips/${eu.uid}`);
+    const snap = await ref.once('value');
+    if(snap.exists()) {
+        await ref.remove();
+        toast("Privilégio VIP removido", "💎");
+    } else {
+        await ref.set(true);
+        toast("Este amigo agora é seu VIP!", "💎");
+    }
+    carregarPerfilUI(targetUid);
+}
+    
 // --- CONFIGURAÇÕES E EDIÇÃO DE PERFIL ---
 function abrirConfiguracoes() {
     document.getElementById('edit-nome').value = meuPerfil.nome || "";
@@ -693,11 +774,6 @@ async function salvarConfig() {
 }
 // Final do Script
 </script>
-
-
-
-
-    
 </body>
 </html>
 
