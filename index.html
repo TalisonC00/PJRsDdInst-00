@@ -290,7 +290,10 @@
     </div>
                         
 <script>
-// 1. CONFIGURAÇÃO E VARIÁVEIS DE ESTADO
+
+    // ==========================================
+// 1. CONFIGURAÇÃO E ESTADO GLOBAL
+// ==========================================
 const firebaseConfig = {
     apiKey: "AIzaSyC6C5dJZeRF6Ylx4x-eWex6s2WGdRiMqbg",
     authDomain: "pjrsddinst-00.firebaseapp.com",
@@ -321,7 +324,9 @@ const REGIOES = {
     'SUL': { icon: '❄️', color: '#A855F7', UFs: ['BRPR','BRSC','BRRS'] }
 };
 
-// 2. FUNÇÃO DE NAVEGAÇÃO (CRÍTICA)
+// ==========================================
+// 2. NAVEGAÇÃO E AUTH (CORE)
+// ==========================================
 function trocarAba(id, btn) {
     document.querySelectorAll('.aba').forEach(a => a.classList.remove('ativa'));
     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
@@ -337,28 +342,17 @@ function trocarAba(id, btn) {
         const uid = targetUid || eu.uid;
         document.getElementById('map-owner-tag').innerText = (uid === eu.uid) ? "Meu Mapa" : "Mapa de Amigo";
         pintarMapa(uid);
-        if(mapaZoom) {
-            setTimeout(() => { mapaZoom.resize(); mapaZoom.fit(); mapaZoom.center(); }, 150);
-        }
+        if(mapaZoom) setTimeout(() => { mapaZoom.resize(); mapaZoom.fit(); mapaZoom.center(); }, 150);
     }
     if(id === 'gastos') renderRelatorioGastos();
     if(id === 'perfil') carregarPerfilUI(targetUid || eu.uid);
-}
-
-// 3. AUTENTICAÇÃO E LOGOUT
-function toggleAuthMode() {
-    isLoginMode = !isLoginMode;
-    document.getElementById('auth-title').innerText = isLoginMode ? "Minha Jornada" : "Nova Jornada";
-    document.getElementById('btn-auth-main').innerText = isLoginMode ? "Entrar" : "Criar Conta";
-    document.getElementById('auth-text-toggle').innerText = isLoginMode ? "Ainda não tem conta?" : "Já tem conta?";
-    document.getElementById('auth-btn-toggle').innerText = isLoginMode ? "Cadastrar" : "Entrar";
 }
 
 async function handleAuth() {
     const email = document.getElementById('auth-email').value.trim();
     const pass = document.getElementById('auth-pass').value;
     const btn = document.getElementById('btn-auth-main');
-    if (!email || pass.length < 6) return toast("E-mail válido e senha (6+ caracteres) são obrigatórios.", "⚠️");
+    if (!email || pass.length < 6) return toast("E-mail e senha (6+) são necessários.", "⚠️");
     btn.disabled = true;
     try {
         if (isLoginMode) {
@@ -368,14 +362,11 @@ async function handleAuth() {
             const uid = res.user.uid;
             const defaultUser = "user_" + Math.floor(Math.random() * 99999);
             await db.ref(`usuarios/${uid}/perfil`).set({
-                nome: "Novo Viajante",
-                username: defaultUser,
-                foto: "https://cdn-icons-png.flaticon.com/512/149/149071.png",
-                bio: "Explorando o Brasil! 🇧🇷",
-                estados: 0
+                nome: "Novo Viajante", username: defaultUser, estados: 0,
+                foto: "https://cdn-icons-png.flaticon.com/512/149/149071.png", bio: "Explorando o Brasil! 🇧🇷"
             });
             await db.ref(`usernames/${defaultUser}`).set(uid);
-            toast("Conta criada com sucesso!", "🌍");
+            toast("Conta criada!", "🌍");
         }
     } catch (e) { toast(e.message, "❌"); }
     finally { btn.disabled = false; }
@@ -388,12 +379,6 @@ function fazerLogout() {
     }
 }
 
-function resetarSenha() {
-    const email = document.getElementById('auth-email').value.trim();
-    if (!email) return toast("Digite seu e-mail acima.", "📧");
-    auth.sendPasswordResetEmail(email).then(() => toast("E-mail enviado!", "📧")).catch(() => toast("Erro ao enviar.", "❌"));
-}
-
 auth.onAuthStateChanged(user => {
     if (user) {
         eu = user;
@@ -401,106 +386,89 @@ auth.onAuthStateChanged(user => {
         initApp();
     } else {
         document.getElementById('auth-screen').style.display = 'flex';
-        // Limpar UI para segurança
-        document.getElementById('h-nome').innerText = "...";
-        document.getElementById('lista-feed').innerHTML = "";
+        location.reload(); 
     }
 });
 
-    // 4. INICIALIZAÇÃO
+// ==========================================
+// 3. INICIALIZAÇÃO E FEED (COM LIKES E VIP)
+// ==========================================
 async function initApp() {
-    if (!eu) return;
     db.ref(`usuarios/${eu.uid}/perfil`).on('value', snap => {
         meuPerfil = snap.val() || {};
-        if (meuPerfil.username) {
-            document.getElementById('h-nome').innerText = meuPerfil.nome;
-            document.getElementById('h-user').innerText = '@' + meuPerfil.username;
-            document.getElementById('h-avatar').src = meuPerfil.foto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
-            if (!targetUid) carregarPerfilUI(eu.uid);
-        }
+        document.getElementById('h-nome').innerText = meuPerfil.nome;
+        document.getElementById('h-user').innerText = '@' + meuPerfil.username;
+        document.getElementById('h-avatar').src = meuPerfil.foto;
     });
 
     try {
         const res = await fetch('br.svg');
         const svgText = await res.text();
-        const container = document.getElementById('svg-container');
-        container.innerHTML = svgText;
-        const svgEl = container.querySelector('svg');
+        document.getElementById('svg-container').innerHTML = svgText;
+        const svgEl = document.querySelector('#svg-container svg');
         if (svgEl) {
             svgEl.setAttribute('id', 'mapa-svg-real');
-            requestAnimationFrame(() => {
-                mapaZoom = svgPanZoom('#mapa-svg-real', { zoomEnabled: true, fit: true, center: true });
-                pintarMapa(targetUid || eu.uid);
-            });
+            mapaZoom = svgPanZoom('#mapa-svg-real', { zoomEnabled: true, fit: true, center: true });
+            pintarMapa(eu.uid);
         }
-    } catch (e) { console.error("Erro mapa:", e); }
+    } catch (e) { console.error("Erro mapa", e); }
 
     renderFeed();
     ouvirConvites();
     verificarConquistas();
 }
 
-// 5. SISTEMA SOCIAL
-async function buscarDinamico(valor) {
-    const resDiv = document.getElementById('res-busca');
-    const query = valor.toLowerCase().trim().replace('@', '');
-    if (query.length < 2) { resDiv.style.display = "none"; return; }
-    db.ref('usuarios').once('value', async (snap) => {
-        const todos = snap.val();
-        let html = "";
-        let encontrados = 0;
-        for (let uid in todos) {
-            if (uid === eu.uid) continue;
-            const p = todos[uid].perfil;
-            if (p.nome.toLowerCase().includes(query) || p.username.toLowerCase().includes(query)) {
-                encontrados++;
-                const status = await checarStatusAmizade(uid);
-                html += `<div class="sugestao-item" onclick="irParaPerfil('${uid}')">
-                    <img src="${p.foto}" class="sugestao-avatar">
-                    <div class="sugestao-info"><b>${p.nome}</b><small>@${p.username}</small></div>
-                    <button class="btn-acao" style="width:auto; padding:6px; ${status.css}" onclick="event.stopPropagation(); enviarPedido('${uid}', this)">${status.texto}</button>
+function renderFeed() {
+    db.ref('feed_global').limitToLast(20).on('value', async snap => {
+        const container = document.getElementById('lista-feed');
+        container.innerHTML = "";
+        const posts = Object.values(snap.val() || {}).reverse();
+        
+        for(let p of posts) {
+            const reacoesSnap = await db.ref(`likes/${p.id}`).once('value');
+            const reacoesData = reacoesSnap.val() || {};
+            const total = Object.keys(reacoesData).length;
+            const minha = reacoesData[eu.uid] || '🤍';
+
+            const vipSnap = await db.ref(`usuarios/${p.uid}/vips/${eu.uid}`).once('value');
+            const isVIP = (p.uid === eu.uid) || vipSnap.exists();
+
+            container.innerHTML += `
+                <div class="feed-card" style="margin-bottom:25px; position:relative;">
+                    <div style="padding:15px; display:flex; align-items:center; gap:10px;">
+                        <img src="${p.fotoUser || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" style="width:35px; height:35px; border-radius:50%; object-fit:cover;">
+                        <div>
+                            <b onclick="irParaPerfil('${p.uid}')" style="cursor:pointer; font-size:14px;">@${p.user}</b><br>
+                            <small style="color:var(--text-sub); font-size:11px;">${p.cidade} - ${p.uf.replace('BR','')}</small>
+                        </div>
+                    </div>
+                    <div class="carrossel">
+                        ${p.fotos ? p.fotos.map(f => `<img src="${f}" style="width:100%; height:320px; object-fit:cover;">`).join('') : ''}
+                    </div>
+                    <div class="reacoes-menu" id="menu-${p.id}" style="display:none; position:absolute; bottom:60px; left:20px; background:white; padding:10px; border-radius:30px; box-shadow:0 5px 15px rgba(0,0,0,0.1); gap:10px; z-index:100;">
+                        <span onclick="reagir('${p.id}', '❤️')">❤️</span>
+                        <span onclick="reagir('${p.id}', '🔥')">🔥</span>
+                        <span onclick="reagir('${p.id}', '✈️')">✈️</span>
+                    </div>
+                    <div style="padding:15px; display:flex; justify-content:space-between; align-items:center;">
+                        <button class="like-btn" onclick="abrirMenuReacao('${p.id}')" style="border:none; background:none; cursor:pointer;">
+                            <span style="font-size:24px;">${minha}</span> <b>${total}</b>
+                        </button>
+                        ${isVIP ? `<span style="font-weight:800; font-size:12px;">💰 R$ ${p.total?.toFixed(2)}</span>` : `<small>🔒 VIP</small>`}
+                    </div>
                 </div>`;
-            }
-            if (encontrados > 5) break;
         }
-        resDiv.innerHTML = html;
-        resDiv.style.display = encontrados > 0 ? "block" : "none";
     });
 }
 
-async function checarStatusAmizade(uidAlvo) {
-    const amigo = await db.ref(`usuarios/${eu.uid}/amigos/${uidAlvo}`).once('value');
-    if (amigo.exists()) return { texto: "Amigo ✓", css: "background:#10B981" };
-    const convite = await db.ref(`convites/${uidAlvo}/${eu.uid}`).once('value');
-    if (convite.exists()) return { texto: "Enviado", css: "background:#64748B" };
-    return { texto: "Conectar", css: "" };
-}
-    // Envia solicitação de amizade
-async function enviarPedido(destUid, btn) {
-    if (!destUid || destUid === eu.uid) return;
-    btn.disabled = true;
-    btn.innerText = "Enviando...";
-
-    try {
-        await db.ref(`convites/${destUid}/${eu.uid}`).set({
-            uid: eu.uid,
-            user: meuPerfil.username,
-            nome: meuPerfil.nome,
-            timestamp: Date.now()
-        });
-        btn.innerText = "Enviado";
-        btn.style.background = "#64748B";
-        toast("Solicitação enviada!", "📩");
-    } catch (e) {
-        btn.disabled = false;
-        btn.innerText = "Conectar";
-        toast("Erro ao enviar.", "❌");
-    }
-}
-    async function carregarPerfilUI(uid) {
+// ==========================================
+// 4. SOCIAL, CONQUISTAS E TIMELINE
+// ==========================================
+async function carregarPerfilUI(uid) {
     const isMe = uid === eu.uid;
     const snap = await db.ref(`usuarios/${uid}/perfil`).once('value');
     const p = snap.val() || {};
+    
     document.getElementById('perfil-foto').src = p.foto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
     document.getElementById('perfil-nome').innerText = p.nome;
     document.getElementById('perfil-user').innerText = '@' + p.username;
@@ -509,78 +477,32 @@ async function enviarPedido(destUid, btn) {
 
     if(!isMe) {
         const status = await checarStatusAmizade(uid);
-        const btn = document.getElementById('btn-amizade');
-        btn.innerText = status.texto; btn.style = status.css;
-        btn.onclick = () => enviarPedido(uid, btn);
+        const btnA = document.getElementById('btn-amizade');
+        btnA.innerText = status.texto; btnA.style = status.css;
+        btnA.onclick = () => enviarPedido(uid, btnA);
+        
+        const vipSnap = await db.ref(`usuarios/${uid}/vips/${eu.uid}`).once('value');
+        document.getElementById('btn-vip').innerText = vipSnap.exists() ? "💎 VIP Ativo" : "💎 Tornar VIP";
     }
-    
+
     db.ref(`usuarios/${uid}/amigos`).on('value', s => {
         document.getElementById('count-amigos').innerText = s.numChildren();
     });
+
     renderTimeline(uid);
     renderConquistas(uid);
 }
-    // 6. LOGICA DE VIAGEM E POSTS
-async function processarFotosPost(input) {
-    fotosPost = [];
-    const container = document.getElementById('previa-post');
-    container.innerHTML = "";
-    for(let f of Array.from(input.files).slice(0,3)) {
-        const b64 = await esmagarImg(f, 600);
-        fotosPost.push(b64);
-        container.innerHTML += `<img src="${b64}" style="width:70px; height:70px; border-radius:15px; object-fit:cover;">`;
-    }
-}
 
-async function publicarViagem() {
-    const cidade = document.getElementById('reg-cidade').value;
-    const uf = document.getElementById('reg-uf').value;
-    const data = document.getElementById('reg-data').value;
-    if(!cidade || !data) return toast("Preencha cidade e data!", "⚠️");
-    
-    const vH = parseFloat(document.getElementById('reg-h').value) || 0;
-    const vT = parseFloat(document.getElementById('reg-t').value) || 0;
-    const vAl = parseFloat(document.getElementById('reg-al').value) || 0;
-    const vAt = parseFloat(document.getElementById('reg-at').value) || 0;
-    
-    const id = Date.now();
-    const post = {
-        id, uid: eu.uid, user: meuPerfil.username, fotoUser: meuPerfil.foto || "",
-        cidade, uf, data: data.split('-').reverse().join('/'),
-        total: vH + vT + vAl + vAt, h:vH, t:vT, al:vAl, at:vAt,
-        praia: document.getElementById('reg-p').checked,
-        natureza: document.getElementById('reg-n').checked,
-        fotos: fotosPost
-    };
-    await db.ref(`usuarios/${eu.uid}/viagens/${id}`).set(post);
-    await db.ref(`feed_global/${id}`).set(post);
-    atualizarContagemEstados();
-    toast("Viagem publicada!", "✨");
-    trocarAba('feed', document.querySelectorAll('.nav-item')[0]);
-}
-
-function esmagarImg(file, size) {
-    return new Promise(r => {
-        const reader = new FileReader(); reader.readAsDataURL(file);
-        reader.onload = e => {
-            const img = new Image(); img.src = e.target.result;
-            img.onload = () => {
-                const cv = document.createElement('canvas');
-                cv.width = size; cv.height = size * (img.height/img.width);
-                cv.getContext('2d').drawImage(img, 0, 0, size, cv.height);
-                r(cv.toDataURL('image/jpeg', 0.6));
-            };
-        };
-    });
-}
-
-// 7. UTILITÁRIOS FINAIS (CONQUISTAS, GASTOS E MODAIS)
 function renderConquistas(uid) {
     db.ref(`usuarios/${uid}`).on('value', snap => {
         const d = snap.val() || {};
         const n = (d.perfil && d.perfil.estados) || 0;
         const lib = d.conquistas || {};
-        const base = [{id:'inicio', n:1, t:'Início', i:'🌱'}, {id:'explorador', n:5, t:'Explorador', i:'🏃'}, {id:'mestre', n:26, t:'Mestre', i:'👑'}];
+        const base = [
+            {id:'inicio', n:1, t:'Início', i:'🌱'}, 
+            {id:'explorador', n:5, t:'Explorador', i:'🏃'}, 
+            {id:'mestre', n:26, t:'Mestre', i:'👑'}
+        ];
         let h = ''; let count = 0;
         base.forEach(c => {
             const ativa = n >= c.n || lib[c.id];
@@ -592,70 +514,73 @@ function renderConquistas(uid) {
     });
 }
 
-
-    function renderFeed() {
-    db.ref('feed_global').limitToLast(20).on('value', async snap => {
-        const container = document.getElementById('lista-feed');
-        if(!container) return;
-        container.innerHTML = "";
-        const posts = Object.values(snap.val() || {}).reverse();
-        
-        for(let p of posts) {
-            // Lógica de Reações
-            const reacoesSnap = await db.ref(`likes/${p.id}`).once('value');
-            const reacoesData = reacoesSnap.val() || {};
-            const totalReacoes = Object.keys(reacoesData).length;
-            const minhaReacao = reacoesData[eu?.uid] || '🤍';
-
-            // Verificação de VIP (Se quem postou me deu acesso VIP)
-            const vipSnap = await db.ref(`usuarios/${p.uid}/vips/${eu?.uid}`).once('value');
-            const isVIP = (p.uid === eu?.uid) || vipSnap.exists();
-
-            let gastosHtml = isVIP 
-                ? `<span style="background:#F1F5F9; padding:4px 8px; border-radius:8px; font-size:11px; font-weight:700;">💰 R$ ${p.total?.toFixed(2)}</span>`
-                : `<span style="font-size:10px; font-weight:800; color:var(--text-sub); opacity:0.6;">🔒 GASTOS VIP</span>`;
-
+function renderTimeline(uid) {
+    db.ref(`usuarios/${uid}/viagens`).on('value', snap => {
+        const container = document.getElementById('perfil-timeline');
+        const trips = Object.values(snap.val() || {}).reverse();
+        container.innerHTML = trips.length ? "" : "<p>Nenhuma viagem registrada.</p>";
+        trips.forEach(t => {
             container.innerHTML += `
-                <div class="feed-card" style="margin-bottom: 25px; position:relative;">
-                    <div style="padding:15px; display:flex; align-items:center; justify-content:space-between;">
-                        <div style="display:flex; align-items:center; gap:10px;">
-                            <img src="${p.fotoUser || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" style="width:35px; height:35px; border-radius:50%; object-fit:cover;">
-                            <div>
-                                <b onclick="irParaPerfil('${p.uid}')" style="cursor:pointer; font-size:14px;">@${p.user}</b><br>
-                                <small style="color:var(--text-sub); font-size:11px;">${p.cidade} - ${p.uf.replace('BR','')}</small>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="carrossel">
-                        ${p.fotos ? p.fotos.map(f => `<img src="${f}" style="width:100%; height:320px; object-fit:cover;">`).join('') : ''}
-                    </div>
-
-                    <div class="reacoes-menu" id="menu-${p.id}" style="display:none;">
-                        <span onclick="reagir('${p.id}', '❤️')">❤️</span>
-                        <span onclick="reagir('${p.id}', '🔥')">🔥</span>
-                        <span onclick="reagir('${p.id}', '✈️')">✈️</span>
-                    </div>
-
-                    <div style="padding:15px; display:flex; justify-content:space-between; align-items:center;">
-                        <button class="like-btn" onclick="abrirMenuReacao('${p.id}')">
-                            <span>${minhaReacao}</span> <b>${totalReacoes}</b>
-                        </button>
-                        ${gastosHtml}
-                    </div>
+                <div style="border-left:3px solid var(--primary); padding-left:15px; margin-bottom:15px; position:relative;">
+                    <div style="width:12px; height:12px; background:var(--primary); border-radius:50%; position:absolute; left:-7.5px; top:0;"></div>
+                    <b>${t.cidade} - ${t.uf.replace('BR','')}</b><br>
+                    <small>${t.data}</small>
                 </div>`;
-        }
+        });
     });
 }
 
-function toast(msg, icon) {
-    document.getElementById('modal-icon').innerText = icon || '💡';
-    document.getElementById('modal-content').innerHTML = `<p style="font-weight:700;">${msg}</p>`;
-    document.getElementById('modal-global').style.display = 'flex';
+// ==========================================
+// 5. POSTAGEM, MAPA E GASTOS
+// ==========================================
+async function publicarViagem() {
+    const cidade = document.getElementById('reg-cidade').value;
+    const uf = document.getElementById('reg-uf').value;
+    const data = document.getElementById('reg-data').value;
+    if(!cidade || !data) return toast("Cidade e data são obrigatórios!", "⚠️");
+
+    const vH = parseFloat(document.getElementById('reg-h').value) || 0;
+    const vT = parseFloat(document.getElementById('reg-t').value) || 0;
+    const vAl = parseFloat(document.getElementById('reg-al').value) || 0;
+    const vAt = parseFloat(document.getElementById('reg-at').value) || 0;
+
+    const id = Date.now();
+    const post = {
+        id, uid: eu.uid, user: meuPerfil.username, fotoUser: meuPerfil.foto || "",
+        cidade, uf, data: data.split('-').reverse().join('/'),
+        total: vH + vT + vAl + vAt, h:vH, t:vT, al:vAl, at:vAt,
+        praia: document.getElementById('reg-p').checked,
+        natureza: document.getElementById('reg-n').checked,
+        fotos: fotosPost
+    };
+
+    await db.ref(`usuarios/${eu.uid}/viagens/${id}`).set(post);
+    await db.ref(`feed_global/${id}`).set(post);
+    atualizarContagemEstados();
+    toast("Viagem publicada!", "✨");
+    trocarAba('feed', document.querySelectorAll('.nav-item')[0]);
 }
-function fecharModal() { document.getElementById('modal-global').style.display = 'none'; }
-function irParaPerfilProprio() { targetUid = null; trocarAba('perfil', document.querySelectorAll('.nav-item')[4]); }
-function irParaPerfil(uid) { targetUid = uid; trocarAba('perfil', document.querySelectorAll('.nav-item')[4]); }
+
+function renderRelatorioGastos() {
+    db.ref(`usuarios/${eu.uid}/viagens`).on('value', snap => {
+        const viagens = Object.values(snap.val() || {});
+        let total = 0; const ufs = {};
+        viagens.forEach(v => {
+            total += v.total;
+            ufs[v.uf] = (ufs[v.uf] || 0) + v.total;
+        });
+        document.getElementById('valor-total-brasil').innerText = total.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+        let html = '';
+        for(let uf in ufs) {
+            html += `<div style="display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid #F1F5F9;">
+                        <b>🚩 ${uf.replace('BR','')}</b>
+                        <span style="color:var(--money); font-weight:800;">${ufs[uf].toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}</span>
+                     </div>`;
+        }
+        document.getElementById('lista-gastos-uf').innerHTML = html || '<p>Nenhum gasto.</p>';
+    });
+}
+
 function pintarMapa(uid) {
     db.ref(`usuarios/${uid}/viagens`).once('value', snap => {
         const v = snap.val() || {};
@@ -667,44 +592,69 @@ function pintarMapa(uid) {
     });
 }
 
-    // --- LÓGICA DE DADOS ACUMULADOS ---
-async function atualizarContagemEstados() {
-    if (!eu) return;
-    const vSnap = await db.ref(`usuarios/${eu.uid}/viagens`).once('value');
-    const viagens = vSnap.val() || {};
-    const ufsUnicas = new Set(Object.values(viagens).map(v => v.uf));
-    await db.ref(`usuarios/${eu.uid}/perfil/estados`).set(ufsUnicas.size);
+// ==========================================
+// 6. UTILITÁRIOS E CONFIGURAÇÕES
+// ==========================================
+async function salvarConfig() {
+    if(!userDisponivel) return toast("Username ocupado!", "❌");
+    const novo = document.getElementById('edit-user').value;
+    const updates = {
+        nome: document.getElementById('edit-nome').value,
+        username: novo,
+        bio: document.getElementById('edit-bio').value
+    };
+    await db.ref(`usuarios/${eu.uid}/perfil`).update(updates);
+    document.getElementById('modal-config').style.display = 'none';
+    toast("Perfil atualizado!", "✅");
 }
 
-function renderTimeline(uid) {
-    db.ref(`usuarios/${uid}/viagens`).on('value', snap => {
-        const container = document.getElementById('perfil-timeline');
-        const trips = Object.values(snap.val() || {}).reverse();
-        container.innerHTML = trips.length ? "" : "<p style='color:var(--text-sub); font-size:13px;'>Nenhuma viagem registrada.</p>";
-        trips.forEach(t => {
-            container.innerHTML += `
-                <div style="border-left:3px solid var(--primary); padding-left:15px; margin-bottom:15px; position:relative;">
-                    <div style="width:12px; height:12px; background:var(--primary); border-radius:50%; position:absolute; left:-7.5px; top:0;"></div>
-                    <b style="font-size:14px;">${t.cidade} - ${t.uf.replace('BR','')}</b><br>
-                    <small style="color:var(--text-sub)">${t.data}</small>
-                </div>`;
-        });
-    });
+function abrirMenuReacao(id) {
+    const m = document.getElementById(`menu-${id}`);
+    m.style.display = m.style.display === 'flex' ? 'none' : 'flex';
 }
 
-// --- GESTÃO DE CONVITES ---
+async function reagir(postId, emoji) {
+    const ref = db.ref(`likes/${postId}/${eu.uid}`);
+    const snap = await ref.once('value');
+    if (snap.val() === emoji) await ref.remove();
+    else await ref.set(emoji);
+    document.getElementById(`menu-${postId}`).style.display = 'none';
+}
+
+async function processarFotosPost(input) {
+    fotosPost = [];
+    for(let f of Array.from(input.files).slice(0,3)) {
+        const reader = new FileReader();
+        reader.readAsDataURL(f);
+        reader.onload = e => fotosPost.push(e.target.result);
+    }
+}
+
+async function checarStatusAmizade(uidAlvo) {
+    const amigo = await db.ref(`usuarios/${eu.uid}/amigos/${uidAlvo}`).once('value');
+    if (amigo.exists()) return { texto: "Amigo ✓", css: "background:#10B981; color:white;" };
+    const convite = await db.ref(`convites/${uidAlvo}/${eu.uid}`).once('value');
+    if (convite.exists()) return { texto: "Enviado", css: "background:#64748B; color:white;" };
+    return { texto: "Conectar", css: "" };
+}
+
+function toast(m, i) {
+    document.getElementById('modal-icon').innerText = i || '💡';
+    document.getElementById('modal-content').innerHTML = `<b>${m}</b>`;
+    document.getElementById('modal-global').style.display = 'flex';
+}
+
+function fecharModal() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
+
+// Funções que faltavam (Convites, Amizade, Estados)
 function ouvirConvites() {
-    if (!eu) return;
     db.ref(`convites/${eu.uid}`).on('value', snap => {
         const list = snap.val();
         const div = document.getElementById('convites-pendentes');
-        div.innerHTML = list ? "<h4 style='font-size:12px; margin-top:20px;'>🔔 Pedidos de Amizade</h4>" : "";
+        if(!div) return;
+        div.innerHTML = list ? "<h4>🔔 Pedidos</h4>" : "";
         for(let id in list) {
-            div.innerHTML += `
-                <div style="display:flex; justify-content:space-between; align-items:center; background:#F8FAFC; padding:12px; border-radius:15px; margin-bottom:8px;">
-                    <span style="font-size:13px"><b>@${list[id].user}</b> quer ser seu amigo</span>
-                    <button onclick="responderPedido('${id}', true)" style="border:none; background:var(--money); color:white; border-radius:8px; padding:6px 12px; font-weight:800; font-size:11px;">Aceitar</button>
-                </div>`;
+            div.innerHTML += `<button onclick="responderPedido('${id}', true)">Aceitar @${list[id].user}</button>`;
         }
     });
 }
@@ -713,64 +663,20 @@ async function responderPedido(id, aceitou) {
     if(aceitou) {
         await db.ref(`usuarios/${eu.uid}/amigos/${id}`).set(true);
         await db.ref(`usuarios/${id}/amigos/${eu.uid}`).set(true);
-        toast("Agora vocês são amigos!", "🤝");
     }
     await db.ref(`convites/${eu.uid}/${id}`).remove();
 }
 
-    / Lógica para tornar um amigo VIP (ver gastos)
-   async function tratarVIP() {
-    if(!targetUid || targetUid === eu.uid) return;
-    const ref = db.ref(`usuarios/${targetUid}/vips/${eu.uid}`);
-    const snap = await ref.once('value');
-    if(snap.exists()) {
-        await ref.remove();
-        toast("Privilégio VIP removido", "💎");
-    } else {
-        await ref.set(true);
-        toast("Este amigo agora é seu VIP!", "💎");
-    }
-    carregarPerfilUI(targetUid);
+async function atualizarContagemEstados() {
+    const vSnap = await db.ref(`usuarios/${eu.uid}/viagens`).once('value');
+    const ufs = new Set(Object.values(vSnap.val() || {}).map(v => v.uf));
+    await db.ref(`usuarios/${eu.uid}/perfil/estados`).set(ufs.size);
 }
+
+function irParaPerfil(uid) { targetUid = uid; trocarAba('perfil', document.querySelectorAll('.nav-item')[4]); }
+function irParaPerfilProprio() { targetUid = null; trocarAba('perfil', document.querySelectorAll('.nav-item')[4]); }
+function abrirConfiguracoes() { document.getElementById('modal-config').style.display = 'flex'; }
     
-// --- CONFIGURAÇÕES E EDIÇÃO DE PERFIL ---
-function abrirConfiguracoes() {
-    document.getElementById('edit-nome').value = meuPerfil.nome || "";
-    document.getElementById('edit-user').value = meuPerfil.username || "";
-    document.getElementById('edit-bio').value = meuPerfil.bio || "";
-    document.getElementById('modal-config').style.display = 'flex';
-}
-
-async function validarUsername(val) {
-    const user = val.toLowerCase().trim().replace(/[^a-z0-9_]/g, "");
-    document.getElementById('edit-user').value = user;
-    if(user.length < 3) return;
-    const snap = await db.ref(`usernames/${user}`).once('value');
-    userDisponivel = !snap.val() || snap.val() === eu.uid;
-    const msg = document.getElementById('msg-user');
-    msg.innerText = userDisponivel ? "✓ Disponível" : "✕ Já em uso";
-    msg.style.color = userDisponivel ? "var(--money)" : "var(--primary)";
-}
-
-async function salvarConfig() {
-    if(!userDisponivel) return toast("Username ocupado!", "❌");
-    const novo = document.getElementById('edit-user').value;
-    const antigo = meuPerfil.username;
-
-    const updates = {
-        nome: document.getElementById('edit-nome').value,
-        username: novo,
-        bio: document.getElementById('edit-bio').value
-    };
-
-    await db.ref(`usuarios/${eu.uid}/perfil`).update(updates);
-    if(novo !== antigo) {
-        await db.ref(`usernames/${novo}`).set(eu.uid);
-        await db.ref(`usernames/${antigo}`).remove();
-    }
-    document.getElementById('modal-config').style.display = 'none';
-    toast("Perfil atualizado!", "✅");
-}
 // Final do Script
 </script>
 </body>
