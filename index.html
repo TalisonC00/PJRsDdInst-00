@@ -443,32 +443,31 @@ async function initApp() {
     });
 
     try {
-        const res = await fetch('br.svg');
-        if (!res.ok) throw new Error("Arquivo br.svg não encontrado");
-        let svgText = await res.text();
-        
-        const container = document.getElementById('svg-container');
-        container.innerHTML = svgText;
-        
-        const svgEl = container.querySelector('svg');
-        if (svgEl) {
-            svgEl.setAttribute('id', 'mapa-svg-real');
-            // Forçamos o tamanho para evitar erro de matriz
-            svgEl.style.width = "100%";
-            svgEl.style.height = "100%";
-            
-            setTimeout(() => {
-                mapaZoom = svgPanZoom(svgEl, {
-                    zoomEnabled: true,
-                    controlIconsEnabled: false,
-                    fit: true,
-                    center: true,
-                    minZoom: 0.1
-                });
-                pintarMapa(targetUid || eu.uid);
-            }, 800); 
-        }
-    } catch (e) {
+    const res = await fetch('br.svg'); // Verifique se br.svg está na MESMA pasta do index.html
+    let svgText = await res.text();
+    
+    const container = document.getElementById('svg-container');
+    container.innerHTML = svgText;
+    
+    const svgEl = container.querySelector('svg');
+    if (svgEl) {
+        svgEl.setAttribute('id', 'mapa-svg-real');
+        svgEl.setAttribute('width', '100%');
+        svgEl.setAttribute('height', '100%');
+        svgEl.style.display = 'block'; // Garante que não está hidden
+
+        // O segredo está aqui: esperar o próximo frame de renderização
+        requestAnimationFrame(() => {
+            mapaZoom = svgPanZoom('#mapa-svg-real', {
+                zoomEnabled: true,
+                controlIconsEnabled: false,
+                fit: true,
+                center: true
+            });
+            pintarMapa(targetUid || eu.uid);
+        });
+    }
+} catch (e) {
         console.error("Erro ao carregar mapa:", e);
     }
 
@@ -643,6 +642,11 @@ async function carregarPerfilUI(uid) {
     
     const socialBar = document.getElementById('perfil-social-actions');
     socialBar.style.display = isMe ? 'none' : 'flex';
+
+    db.ref(`usuarios/${uid}/amigos`).on('value', snap => {
+    const total = snap.numChildren();
+    document.getElementById('count-amigos').innerText = total;
+});
 
     if(!isMe) {
         const status = await checarStatusAmizade(uid);
@@ -1057,8 +1061,12 @@ function renderRelatorioGastos() {
 
 function renderConquistas(uid) {
     db.ref(`usuarios/${uid}/perfil/estados`).on('value', snap => {
-        const n = snap.val() || 0;
-        const conquistas = [
+        // Escuta tanto os estados quanto a lista de conquistas liberadas
+    db.ref(`usuarios/${uid}`).on('value', snap => {
+        const dados = snap.val() || {};
+        const nEstados = (dados.perfil && dados.perfil.estados) || 0;
+        const liberadas = dados.conquistas || {}; // Aqui pegamos o que disparou o alerta
+        const conquistasBase = [
             {n:1, t:'Início', i:'🌱'}, {n:5, t:'Explorador', i:'🏃'}, {n:10, t:'Aventureiro', i:'⭐'}, 
             {n:20, t:'Viajante Raiz', i:'🔥'}, {n:26, t:'Mestre do Brasil', i:'👑'}
         ];
