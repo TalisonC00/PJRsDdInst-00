@@ -336,9 +336,7 @@ const firebaseConfig = {
     databaseURL: "https://pjrsddinst-00-default-rtdb.firebaseio.com"
 };
 
-if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-}
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const auth = firebase.auth();
 
@@ -359,73 +357,7 @@ const REGIOES = {
     'SUL': { icon: '❄️', UFs: ['BRPR','BRSC','BRRS'] }
 };
 
-// --- FUNÇÕES DE AUTENTICAÇÃO ---
-
-function toggleAuthMode() {
-    isLoginMode = !isLoginMode;
-    const title = document.getElementById('auth-title');
-    const btnMain = document.getElementById('btn-auth-main');
-    const textToggle = document.getElementById('auth-text-toggle');
-    const btnToggle = document.getElementById('auth-btn-toggle');
-
-    if (isLoginMode) {
-        title.innerText = "Minha Jornada";
-        btnMain.innerText = "Entrar";
-        textToggle.innerText = "Ainda não tem conta?";
-        btnToggle.innerText = "Cadastrar";
-    } else {
-        title.innerText = "Nova Jornada";
-        btnMain.innerText = "Criar Conta";
-        textToggle.innerText = "Já tem uma conta?";
-        btnToggle.innerText = "Entrar";
-    }
-}
-
-async function handleAuth() {
-    const email = document.getElementById('auth-email').value.trim();
-    const pass = document.getElementById('auth-pass').value;
-    const btn = document.getElementById('btn-auth-main');
-
-    if (!email || pass.length < 6) {
-        return toast("E-mail válido e senha de no mínimo 6 dígitos são necessários.", "⚠️");
-    }
-    
-    btn.disabled = true;
-    btn.innerText = "Processando...";
-
-    try {
-        if (isLoginMode) {
-            await auth.signInWithEmailAndPassword(email, pass);
-        } else {
-            const res = await auth.createUserWithEmailAndPassword(email, pass);
-            const uid = res.user.uid;
-            const defaultUser = "user_" + Math.floor(Math.random() * 99999);
-            
-            await db.ref(`usuarios/${uid}/perfil`).set({
-                nome: "Novo Viajante",
-                username: defaultUser,
-                foto: "https://cdn-icons-png.flaticon.com/512/149/149071.png",
-                bio: "Explorando o Brasil! 🇧🇷",
-                estados: 0,
-                tipo: 'publico' // Padrão: Viajante Brasil
-            });
-            await db.ref(`usernames/${defaultUser}`).set(uid);
-            toast("Conta criada com sucesso!", "🌍");
-        }
-    } catch (e) {
-        console.error(e);
-        toast("Erro: " + e.message, "❌");
-    } finally {
-        btn.disabled = false;
-        btn.innerText = isLoginMode ? "Entrar" : "Criar Conta";
-    }
-}
-
-function logout() {
-    auth.signOut().then(() => {
-        window.location.reload();
-    });
-}
+// --- AUTENTICAÇÃO E INICIALIZAÇÃO ---
 
 auth.onAuthStateChanged(user => {
     if (user) {
@@ -437,226 +369,315 @@ auth.onAuthStateChanged(user => {
     }
 });
 
-// --- INICIALIZAÇÃO E CORE ---
+async function handleAuth() {
+    const email = document.getElementById('auth-email').value.trim();
+    const pass = document.getElementById('auth-pass').value;
+    const btn = document.getElementById('btn-auth-main');
+    if (!email || pass.length < 6) return toast("E-mail e senha (min 6) necessários.", "⚠️");
+    
+    btn.disabled = true;
+    try {
+        if (isLoginMode) {
+            await auth.signInWithEmailAndPassword(email, pass);
+        } else {
+            const res = await auth.createUserWithEmailAndPassword(email, pass);
+            const defaultUser = "user_" + Math.floor(Math.random() * 99999);
+            await db.ref(`usuarios/${res.user.uid}/perfil`).set({
+                nome: "Novo Viajante", username: defaultUser,
+                foto: "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+                bio: "Explorando o Brasil! 🇧🇷", estados: 0, tipo: 'publico'
+            });
+            await db.ref(`usernames/${defaultUser}`).set(res.user.uid);
+        }
+    } catch (e) { toast(e.message, "❌"); }
+    btn.disabled = false;
+}
+
+function logout() { auth.signOut().then(() => window.location.reload()); }
+function toggleAuthMode() { 
+    isLoginMode = !isLoginMode;
+    document.getElementById('auth-title').innerText = isLoginMode ? "Minha Jornada" : "Nova Jornada";
+    document.getElementById('btn-auth-main').innerText = isLoginMode ? "Entrar" : "Criar Conta";
+}
 
 async function initApp() {
-    if (!eu) return;
-
-    // Listener do Perfil Logado
     db.ref(`usuarios/${eu.uid}/perfil`).on('value', snap => {
         meuPerfil = snap.val() || {};
-        if (meuPerfil.username) {
-            document.getElementById('h-nome').innerText = meuPerfil.nome || "Viajante";
-            document.getElementById('h-user').innerText = '@' + meuPerfil.username;
-            document.getElementById('h-avatar').src = meuPerfil.foto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
-            
-            // Mostra controles privados se estiver no próprio perfil
-            const controles = document.getElementById('perfil-privado-controles');
-            if(controles) controles.style.display = (!targetUid || targetUid === eu.uid) ? 'flex' : 'none';
-            
-            if (!targetUid) carregarPerfilUI(eu.uid);
-        }
+        document.getElementById('h-nome').innerText = meuPerfil.nome || "...";
+        document.getElementById('h-user').innerText = '@' + meuPerfil.username;
+        document.getElementById('h-avatar').src = meuPerfil.foto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+        if (!targetUid) carregarPerfilUI(eu.uid);
     });
 
-    // Carregamento do Mapa SVG
     try {
         const res = await fetch('br.svg');
         if (res.ok) {
             const svgText = await res.text();
-            const container = document.getElementById('svg-container');
-            container.innerHTML = svgText;
-            const svgEl = container.querySelector('svg');
+            document.getElementById('svg-container').innerHTML = svgText;
+            const svgEl = document.querySelector('#svg-container svg');
             if (svgEl) {
                 svgEl.setAttribute('id', 'mapa-svg-real');
                 setTimeout(() => {
                     mapaZoom = svgPanZoom(svgEl, { zoomEnabled: true, controlIconsEnabled: false, fit: true, center: true });
-                    pintarMapa(targetUid || eu.uid);
+                    pintarMapa(eu.uid);
                 }, 500);
             }
         }
-    } catch (e) { console.error("Erro mapa:", e); }
-
+    } catch (e) {}
     renderFeed();
     ouvirConvites();
-    ligarListenersContadores(eu.uid);
 }
 
-// --- FUNÇÕES DE NAVEGAÇÃO E UI ---
+// --- NAVEGAÇÃO ---
 
 function trocarAba(id, btn) {
     document.querySelectorAll('.aba').forEach(a => a.classList.remove('ativa'));
     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-    
     document.getElementById('aba-' + id).classList.add('ativa');
-    btn.classList.add('active');
-    
+    if(btn) btn.classList.add('active');
     document.getElementById('view-title').innerText = id.charAt(0).toUpperCase() + id.slice(1);
-    
     if (id !== 'perfil') targetUid = null;
     if (id === 'ranking') renderRanking();
     if (id === 'mapa') pintarMapa(targetUid || eu.uid);
     if (id === 'perfil') carregarPerfilUI(targetUid || eu.uid);
 }
 
+function irParaPerfilProprio() { targetUid = null; trocarAba('perfil', document.querySelectorAll('.nav-item')[4]); }
+function irParaPerfil(uid) { targetUid = uid; trocarAba('perfil', document.querySelectorAll('.nav-item')[4]); }
+
+// --- SOCIAL E BUSCA ---
+
+async function buscarDinamico(valor) {
+    const resDiv = document.getElementById('res-busca');
+    const query = valor.toLowerCase().trim().replace('@', '');
+    if (query.length < 2) return resDiv.style.display = "none";
+
+    db.ref('usuarios').once('value', async (snap) => {
+        const todos = snap.val();
+        let html = "";
+        for (let uid in todos) {
+            if (uid === eu.uid) continue;
+            const p = todos[uid].perfil || {};
+            if ((p.nome||"").toLowerCase().includes(query) || (p.username||"").toLowerCase().includes(query)) {
+                const status = await checarStatusAmizade(uid);
+                html += `<div class="sugestao-item" onclick="irParaPerfil('${uid}')">
+                    <img src="${p.foto}" class="sugestao-avatar">
+                    <div class="sugestao-info"><b>${p.nome}</b><br><small>@${p.username}</small></div>
+                    <button class="btn-acao" style="width:auto;padding:6px;margin-left:auto;${status.css}" onclick="event.stopPropagation();enviarPedido('${uid}',this)">${status.texto}</button>
+                </div>`;
+            }
+        }
+        resDiv.innerHTML = html || "<p style='padding:10px'>Ninguém encontrado.</p>";
+        resDiv.style.display = "block";
+    });
+}
+
+async function checarStatusAmizade(uidAlvo) {
+    const amigo = await db.ref(`usuarios/${eu.uid}/amigos/${uidAlvo}`).once('value');
+    if (amigo.exists()) return { texto: "Amigo ✓", css: "background:#10B981;opacity:0.7" };
+    const convite = await db.ref(`convites/${uidAlvo}/${eu.uid}`).once('value');
+    if (convite.exists()) return { texto: "Enviado", css: "background:#64748B;opacity:0.7" };
+    return { texto: "Conectar", css: "" };
+}
+
+async function enviarPedido(destUid, btn) {
+    btn.disabled = true;
+    await db.ref(`convites/${destUid}/${eu.uid}`).set({ uid: eu.uid, user: meuPerfil.username, nome: meuPerfil.nome, timestamp: Date.now() });
+    btn.innerText = "Enviado";
+    toast("Pedido enviado!", "📩");
+}
+
+function ouvirConvites() {
+    db.ref(`convites/${eu.uid}`).on('value', snap => {
+        const div = document.getElementById('convites-pendentes');
+        div.innerHTML = snap.exists() ? "<h4>🔔 Pedidos</h4>" : "";
+        snap.forEach(c => {
+            const v = c.val();
+            div.innerHTML += `<div style="display:flex;justify-content:space-between;align-items:center;background:#f8fafc;padding:10px;border-radius:12px;margin-bottom:5px;">
+                <span style="font-size:12px"><b>@${v.user}</b></span>
+                <button onclick="responderPedido('${c.key}', true)" style="border:none;background:var(--money);color:white;padding:5px 10px;border-radius:8px;">Aceitar</button>
+            </div>`;
+        });
+    });
+}
+
+async function responderPedido(id, aceitou) {
+    if(aceitou) {
+        await db.ref(`usuarios/${eu.uid}/amigos/${id}`).set(true);
+        await db.ref(`usuarios/${id}/amigos/${eu.uid}`).set(true);
+    }
+    await db.ref(`convites/${eu.uid}/${id}`).remove();
+}
+
+async function tratarVIP() {
+    if(!targetUid) return;
+    const ref = db.ref(`usuarios/${targetUid}/vips/${eu.uid}`);
+    const snap = await ref.once('value');
+    if(snap.exists()) { await ref.remove(); toast("VIP removido", "💎"); }
+    else { await ref.set(true); toast("Agora você é VIP!", "💎"); }
+    carregarPerfilUI(targetUid);
+}
+
+// --- PERFIL E CONFIGS ---
+
 async function carregarPerfilUI(uid) {
     const isMe = uid === eu.uid;
     const snap = await db.ref(`usuarios/${uid}/perfil`).once('value');
     const p = snap.val() || {};
     
-    document.getElementById('perfil-foto').src = p.foto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
-    document.getElementById('perfil-nome').innerText = p.nome || "Viajante";
-    document.getElementById('perfil-user').innerText = '@' + (p.username || "...");
+    document.getElementById('perfil-foto').src = p.foto;
+    document.getElementById('perfil-nome').innerText = p.nome;
+    document.getElementById('perfil-user').innerText = '@' + p.username;
     document.getElementById('perfil-bio').innerText = p.bio || "";
     
-    // Tag de tipo de perfil
     const tag = document.getElementById('perfil-tipo-tag');
-    tag.innerText = p.tipo === 'publico' ? "Viajante Brasil" : "Viajante Local";
-    tag.style.background = p.tipo === 'publico' ? 'var(--money)' : 'var(--text-sub)';
-    tag.style.color = '#fff';
+    if(tag) {
+        tag.innerText = p.tipo === 'publico' ? "Viajante Brasil" : "Viajante Local";
+        tag.style.background = p.tipo === 'publico' ? 'var(--money)' : 'var(--text-sub)';
+    }
 
-    // Botões sociais
-    const socialBar = document.getElementById('perfil-social-actions');
-    socialBar.style.display = isMe ? 'none' : 'flex';
+    document.getElementById('perfil-privado-controles').style.display = isMe ? 'flex' : 'none';
+    document.getElementById('perfil-social-actions').style.display = isMe ? 'none' : 'flex';
+
+    if(!isMe) {
+        const status = await checarStatusAmizade(uid);
+        const btnA = document.getElementById('btn-amizade');
+        btnA.innerText = status.texto; btnA.style = status.css;
+        btnA.onclick = () => enviarPedido(uid, btnA);
+        const vip = await db.ref(`usuarios/${uid}/vips/${eu.uid}`).once('value');
+        document.getElementById('btn-vip').innerText = vip.exists() ? "💎 VIP Ativo" : "💎 Tornar VIP";
+    }
 
     ligarListenersContadores(uid);
     renderTimeline(uid);
+    renderConquistasUI(uid);
 }
 
 function ligarListenersContadores(uid) {
-    db.ref(`usuarios/${uid}/amigos`).on('value', snap => {
-        document.getElementById('count-amigos').innerText = snap.numChildren();
-    });
-    db.ref(`usuarios/${uid}/conquistas`).on('value', snap => {
-        document.getElementById('count-conquistas').innerText = snap.numChildren();
-        renderConquistasUI(uid);
-    });
+    db.ref(`usuarios/${uid}/amigos`).on('value', s => document.getElementById('count-amigos').innerText = s.numChildren());
+    db.ref(`usuarios/${uid}/conquistas`).on('value', s => document.getElementById('count-conquistas').innerText = s.numChildren());
 }
 
-// --- LOGICA DE NEGÓCIO (RANKING / FEED / POST) ---
+function abrirConfiguracoes() {
+    document.getElementById('edit-nome').value = meuPerfil.nome;
+    document.getElementById('edit-user').value = meuPerfil.username;
+    document.getElementById('edit-bio').value = meuPerfil.bio;
+    document.getElementById('edit-tipo-perfil').value = meuPerfil.tipo;
+    document.getElementById('modal-config').style.display = 'flex';
+}
+
+async function salvarConfig() {
+    const novo = {
+        nome: document.getElementById('edit-nome').value,
+        username: document.getElementById('edit-user').value,
+        bio: document.getElementById('edit-bio').value,
+        tipo: document.getElementById('edit-tipo-perfil').value
+    };
+    await db.ref(`usuarios/${eu.uid}/perfil`).update(novo);
+    fecharModais();
+    toast("Perfil salvo!", "✅");
+}
+
+// --- POSTAGEM E TIMELINE ---
 
 async function publicarViagem() {
-    const cidade = document.getElementById('reg-cidade').value.trim();
+    const cidade = document.getElementById('reg-cidade').value;
     const uf = document.getElementById('reg-uf').value;
     const data = document.getElementById('reg-data').value;
-    const gastosPublicos = document.getElementById('reg-aberto').checked;
-
-    if (!cidade || !data) return toast("Cidade e data são obrigatórios!", "⚠️");
-
-    const vH = parseFloat(document.getElementById('reg-h').value) || 0;
-    const vT = parseFloat(document.getElementById('reg-t').value) || 0;
-    const vAl = parseFloat(document.getElementById('reg-al').value) || 0;
-    const vAt = parseFloat(document.getElementById('reg-at').value) || 0;
+    if(!cidade || !data) return toast("Preencha tudo!", "⚠️");
 
     const idPost = db.ref().child('feed_global').push().key;
     const post = {
         id: idPost, uid: eu.uid, user: meuPerfil.username, fotoUser: meuPerfil.foto,
         cidade, uf, data: data.split('-').reverse().join('/'),
-        h: vH, t: vT, al: vAl, at: vAt, total: (vH+vT+vAl+vAt),
-        gastosAbertos: gastosPublicos,
+        h: parseFloat(document.getElementById('reg-h').value)||0,
+        t: parseFloat(document.getElementById('reg-t').value)||0,
+        al: parseFloat(document.getElementById('reg-al').value)||0,
+        at: parseFloat(document.getElementById('reg-at').value)||0,
+        gastosAbertos: document.getElementById('reg-aberto').checked,
         praia: document.getElementById('reg-p').checked,
         natureza: document.getElementById('reg-n').checked,
-        fotos: fotosPost,
-        timestamp: Date.now()
+        fotos: fotosPost, timestamp: Date.now()
     };
-
     await db.ref(`usuarios/${eu.uid}/viagens/${idPost}`).set(post);
     await db.ref(`feed_global/${idPost}`).set(post);
-    
     atualizarContagemEstados();
-    verificarConquistas();
-    limparFormularioRegistro();
-    toast("Jornada publicada!", "🚀");
     trocarAba('feed', document.querySelectorAll('.nav-item')[0]);
+    toast("Postado!", "🚀");
 }
 
-function renderRanking() {
-    const container = document.getElementById('lista-ranking');
-    container.innerHTML = "<p style='text-align:center;'>Carregando líderes...</p>";
+async function renderTimeline(uid) {
+    const container = document.getElementById('perfil-timeline');
+    const podeVer = await podeVerConteudo(uid);
+    if (!podeVer) return container.innerHTML = "<p>🔒 Perfil Privado</p>";
 
-    db.ref('usuarios').once('value', snap => {
-        const todos = snap.val();
-        let lista = [];
-        for (let uid in todos) {
-            const p = todos[uid].perfil || {};
-            const v = todos[uid].viagens || {};
-            lista.push({
-                uid,
-                nome: p.nome,
-                username: p.username,
-                foto: p.foto,
-                estados: new Set(Object.values(v).map(i => i.uf)).size,
-                cidades: Object.keys(v).length
-            });
-        }
-        lista.sort((a, b) => b.estados - a.estados || b.cidades - a.cidades);
-        
+    db.ref(`usuarios/${uid}/viagens`).on('value', snap => {
         container.innerHTML = "";
-        lista.forEach((u, i) => {
-            container.innerHTML += `
-                <div class="sugestao-item" onclick="irParaPerfil('${u.uid}')" style="border: ${i<3?'2px solid var(--primary)':'1px solid #eee'}">
-                    <b style="width:25px; color:var(--primary)">${i<3 ? ['🥇','🥈','🥉'][i] : '#'+(i+1)}</b>
-                    <img src="${u.foto}" class="sugestao-avatar">
-                    <div class="sugestao-info"><b>${u.nome}</b><small>@${u.username}</small></div>
-                    <div style="margin-left:auto; text-align:right">
-                        <b style="color:var(--primary)">${u.estados} Est.</b><br><small>${u.cidades} Cid.</small>
-                    </div>
-                </div>`;
+        snap.forEach(t => {
+            const v = t.val();
+            container.innerHTML += `<div class="card" style="margin:10px 0;text-align:left;">
+                <b>${v.cidade}</b> ${uid===eu.uid?`<button onclick="excluirViagem('${v.id}')">X</button>`:''}<br>
+                <small>${v.data}</small>
+                <div style="display:flex;gap:5px;">${v.fotos?v.fotos.map(f=>`<img src="${f}" width="50">`).join(''):''}</div>
+            </div>`;
         });
     });
 }
 
-// --- UTILITÁRIOS GERAIS ---
-
-async function podeVerConteudo(donoUid) {
-    if (donoUid === eu.uid) return true;
-    const donoSnap = await db.ref(`usuarios/${donoUid}/perfil`).once('value');
-    const p = donoSnap.val() || {};
-    if (p.tipo === 'publico') return true;
-    const amigosSnap = await db.ref(`usuarios/${donoUid}/amigos/${eu.uid}`).once('value');
-    return amigosSnap.exists();
+async function excluirViagem(id) {
+    if(confirm("Excluir?")) {
+        await db.ref(`usuarios/${eu.uid}/viagens/${id}`).remove();
+        await db.ref(`feed_global/${id}`).remove();
+    }
 }
 
-function toast(msg, icon) {
-    document.getElementById('modal-icon').innerText = icon || '💡';
-    document.getElementById('modal-content').innerHTML = `<p style="font-weight:700;">${msg}</p>`;
-    document.getElementById('modal-global').style.display = 'flex';
-}
+// --- RANKING E MAPA ---
 
-function fecharModal() { document.getElementById('modal-global').style.display = 'none'; }
-function fecharModais() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
-
-async function pintarMapa(uid) {
-    const vSnap = await db.ref(`usuarios/${uid}/viagens`).once('value');
-    const viagens = vSnap.val() || {};
-    const ufs = new Set(Object.values(viagens).map(v => v.uf));
-    document.querySelectorAll('.estado').forEach(el => {
-        el.classList.toggle('visitado', ufs.has(el.id));
+function renderRanking() {
+    const container = document.getElementById('lista-ranking');
+    db.ref('usuarios').once('value', snap => {
+        let lista = [];
+        snap.forEach(u => {
+            const p = u.val().perfil;
+            const v = u.val().viagens || {};
+            lista.push({ uid: u.key, ...p, est: new Set(Object.values(v).map(i=>i.uf)).size });
+        });
+        lista.sort((a,b) => b.est - a.est);
+        container.innerHTML = lista.map((u,i) => `<div class="sugestao-item" onclick="irParaPerfil('${u.uid}')">#${i+1} ${u.nome} - ${u.est} Est.</div>`).join('');
     });
 }
 
-function esmagarImg(file, size = 600) {
-    return new Promise(r => {
-        const reader = new FileReader(); reader.readAsDataURL(file);
+async function pintarMapa(uid) {
+    const snap = await db.ref(`usuarios/${uid}/viagens`).once('value');
+    const ufs = new Set();
+    snap.forEach(t => ufs.add(t.val().uf));
+    document.querySelectorAll('.estado').forEach(el => el.classList.toggle('visitado', ufs.has(el.id)));
+}
+
+// --- UTILITÁRIOS ---
+
+function toast(msg, icon) {
+    document.getElementById('modal-icon').innerText = icon;
+    document.getElementById('modal-content').innerHTML = msg;
+    document.getElementById('modal-global').style.display = 'flex';
+}
+function fecharModal() { document.getElementById('modal-global').style.display = 'none'; }
+function fecharModais() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
+
+async function processarFotosPost(input) {
+    fotosPost = [];
+    for(let f of Array.from(input.files).slice(0,3)) {
+        const reader = new FileReader();
+        reader.readAsDataURL(f);
         reader.onload = e => {
             const img = new Image(); img.src = e.target.result;
             img.onload = () => {
                 const cv = document.createElement('canvas');
-                cv.width = size; cv.height = size * (img.height/img.width);
-                cv.getContext('2d').drawImage(img, 0, 0, size, cv.height);
-                r(cv.toDataURL('image/jpeg', 0.6));
+                cv.width = 600; cv.height = 600 * (img.height/img.width);
+                cv.getContext('2d').drawImage(img, 0,0,600,cv.height);
+                fotosPost.push(cv.toDataURL('image/jpeg', 0.6));
             };
         };
-    });
-}
-
-async function processarFotosPost(input) {
-    fotosPost = [];
-    const container = document.getElementById('previa-post');
-    container.innerHTML = "";
-    for(let f of Array.from(input.files).slice(0,3)) {
-        const b64 = await esmagarImg(f, 600);
-        fotosPost.push(b64);
-        container.innerHTML += `<img src="${b64}" style="width:70px;height:70px;border-radius:12px;object-fit:cover;">`;
     }
 }
 </script>
