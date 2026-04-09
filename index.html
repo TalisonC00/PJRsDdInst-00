@@ -205,11 +205,15 @@
                 <label style="display: flex; align-items: center; gap: 6px; font-size:12px; font-weight:700;"><input type="checkbox" id="reg-n" style="width:18px;height:18px;margin:0"> Natureza? 🌳</label>
             </div>
 
+            <label style="display: flex; align-items: center; gap: 6px; font-size:12px; font-weight:700; color:var(--money);">
+            <input type="checkbox" id="reg-aberto" style="width:18px;height:18px;margin:0"> Exibir os valores nesta postagem? 🔓
+            </label>
+            
             <label>Fotos (Máx 3)</label>
             <input type="file" id="reg-fotos" multiple accept="image/*" onchange="processarFotosPost(this)">
             <div id="previa-post" style="display:flex; gap:10px; margin-bottom:15px; overflow-x:auto;"></div>
 
-            <button class="btn-acao btn-money" onclick="publicarViagem()">Salvar e Publicar</button>
+            <button class="btn-acao btn-money" onclick="publicarViagem()">Publicar</button>
         </div>
     </div>
 
@@ -225,35 +229,41 @@
     </div>
 
     <div id="aba-perfil" class="aba">
-        <div class="card" style="text-align: center; position: relative; padding-top: 40px;">
-            <div id="btn-settings" onclick="abrirConfiguracoes()" style="position: absolute; right: 20px; top: 20px; font-size: 24px; cursor:pointer">⚙️</div>
-            
-            <img id="perfil-foto" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" style="width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 4px solid var(--primary); box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
-            <h2 id="perfil-nome" style="margin: 15px 0 5px;">...</h2>
-            <p id="perfil-user" style="color: var(--primary); font-weight: 800; margin: 0; font-size:18px;">@username</p>
-            <p id="perfil-bio" style="font-size: 14px; color: var(--text-sub); margin: 15px 30px; line-height: 1.5;">...</p>
-            
-            <div id="perfil-social-actions" style="display:none; margin: 20px 0; gap: 10px; justify-content: center;">
-                <button id="btn-amizade" class="btn-acao" style="width: auto; padding: 10px 25px;" onclick="tratarAmizade()">Conectar</button>
-                <button id="btn-vip" class="btn-acao btn-money" style="width: auto; padding: 10px 25px;" onclick="tratarVIP()">💎 Tornar VIP</button>
-            </div>
-
-            <div style="display:flex; justify-content:center; gap:30px; margin: 20px 0; border-top: 1px solid #F1F5F9; padding-top:15px;">
-                <div onclick="verAmigos()"><b>Amigos</b><br><span id="count-amigos" style="color:var(--text-sub)">0</span></div>
-                <div onclick="verConquistas()"><b>Conquistas</b><br><span id="count-conquistas" style="color:var(--text-sub)">0</span></div>
-            </div>
-
-            <div id="convites-pendentes" style="text-align: left;"></div>
-
-            <hr style="border: 0; border-top: 1px solid #F1F5F9; margin: 25px 0;">
-            
-            <h4 style="text-align: left; display: flex; align-items: center; gap: 8px;">🏆 Conquistas Desbloqueadas</h4>
-            <div id="lista-conquistas" class="badge-grid"></div>
-            
-            <h4 style="text-align: left; margin-top: 30px;">🕒 Linha do Tempo</h4>
-            <div id="perfil-timeline" style="text-align: left;"></div>
-        </div>
+    <div id="perfil-privado-controles" style="display:none; justify-content: flex-end; align-items: center; gap: 15px; padding: 15px 25px;">
+        <div id="btn-settings" onclick="abrirConfiguracoes()" style="font-size: 24px; cursor:pointer; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));">⚙️</div>
+        <button onclick="logout()" style="background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 12px; font-weight: 800; font-size: 12px; cursor: pointer; box-shadow: 0 4px 10px rgba(255, 75, 92, 0.2);">Sair</button>
     </div>
+
+    <div class="card" style="text-align: center; position: relative; padding-top: 20px; margin-top: 0;">
+        <img id="perfil-foto" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" style="width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 4px solid var(--primary); box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+        <h2 id="perfil-nome" style="margin: 15px 0 5px;">...</h2>
+        <p id="perfil-user" style="color: var(--primary); font-weight: 800; margin: 0; font-size:18px;">@username</p>
+        
+        <div id="perfil-tipo-tag" style="display: inline-block; margin-top: 10px; padding: 4px 12px; border-radius: 20px; font-size: 10px; font-weight: 800; text-transform: uppercase;"></div>
+
+        <p id="perfil-bio" style="font-size: 14px; color: var(--text-sub); margin: 15px 30px; line-height: 1.5;">...</p>
+        
+        <div id="perfil-social-actions" style="display:none; margin: 20px 0; gap: 10px; justify-content: center;">
+            <button id="btn-amizade" class="btn-acao" style="width: auto; padding: 10px 25px;">Conectar</button>
+            <button id="btn-vip" class="btn-acao btn-money" style="width: auto; padding: 10px 25px;">💎 Tornar VIP</button>
+        </div>
+
+        <div style="display:flex; justify-content:center; gap:30px; margin: 20px 0; border-top: 1px solid #F1F5F9; padding-top:15px;">
+            <div style="cursor: pointer;"><b>Amigos</b><br><span id="count-amigos" style="color:var(--text-sub); font-weight: 800;">0</span></div>
+            <div style="cursor: pointer;"><b>Conquistas</b><br><span id="count-conquistas" style="color:var(--text-sub); font-weight: 800;">0</span></div>
+        </div>
+
+        <div id="convites-pendentes" style="text-align: left; padding: 0 20px;"></div>
+
+        <hr style="border: 0; border-top: 1px solid #F1F5F9; margin: 25px 0;">
+        
+        <h4 style="text-align: left; display: flex; align-items: center; gap: 8px; padding: 0 20px;">🏆 Conquistas Desbloqueadas</h4>
+        <div id="lista-conquistas" class="badge-grid" style="padding: 0 20px;"></div>
+        
+        <h4 style="text-align: left; margin-top: 30px; padding: 0 20px;">🕒 Linha do Tempo</h4>
+        <div id="perfil-timeline" style="text-align: left; padding: 0 20px 20px 20px;"></div>
+    </div>
+</div>
 
     <nav class="nav">
         <div class="nav-item active" onclick="trocarAba('feed', this)">🏠</div>
@@ -273,20 +283,45 @@
     </div>
 
     <div id="modal-config" class="modal">
-        <div class="modal-card">
-            <h3>Configurações de Perfil</h3>
-            <label>Foto de Perfil</label>
-            <input type="file" accept="image/*" onchange="uploadFotoPerfil(this)">
-            <label>Nome Completo</label>
-            <input type="text" id="edit-nome">
-            <label>Nome de Usuário (Username)</label>
-            <input type="text" id="edit-user" oninput="validarUsername(this.value)">
-            <div id="msg-user" style="font-size:10px; font-weight:800; margin-bottom:10px;"></div>
-            <label>Bio</label>
-            <textarea id="edit-bio" rows="3"></textarea>
-            <button class="btn-acao" onclick="salvarConfig()">Salvar Alterações</button>
-            <button onclick="auth.signOut()" style="background:none; border:none; color:var(--primary); font-weight:800; margin-top:25px; cursor:pointer; width:100%">DESCONECTAR CONTA</button>
+        <div class="header">
+    <div>
+        <h3 id="view-title">Explorar</h3>
+        <span id="header-stats" style="font-size: 10px; font-weight: 800; color: var(--text-sub);">CONECTADO</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="text-align: right;">
+            <div id="h-nome" style="font-size: 12px; font-weight: 800;">...</div>
+            <div id="h-user" style="font-size: 10px; color: var(--text-sub);">@...</div>
         </div>
+        <img id="h-avatar" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="header-avatar" onclick="irParaPerfilProprio()">
+    </div>
+</div>
+
+<div id="modal-config" class="modal">
+    <div class="modal-card">
+        <h3>Configurações de Perfil</h3>
+        <label>Tipo de Perfil</label>
+        <select id="edit-tipo-perfil">
+            <option value="publico">Viajante Brasil (Público)</option>
+            <option value="privado">Viajante Local (Privado)</option>
+        </select>
+        <label>Foto de Perfil</label>
+        <input type="file" accept="image/*" onchange="uploadFotoPerfil(this)">
+        <label>Nome Completo</label>
+        <input type="text" id="edit-nome">
+        <label>Username</label>
+        <input type="text" id="edit-user" oninput="validarUsername(this.value)">
+        <div id="msg-user" style="font-size:10px; font-weight:800; margin-bottom:10px;"></div>
+        <label>Bio</label>
+        <textarea id="edit-bio" rows="3"></textarea>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
+            <button class="btn-acao" onclick="salvarConfig()">Confirmar</button>
+            <button class="btn-acao" style="background:#64748B" onclick="fecharModais()">Cancelar</button>
+        </div>
+        <button onclick="logout()" style="background:none; border:none; color:var(--primary); font-weight:800; margin-top:25px; cursor:pointer; width:100%">SAIR DA CONTA</button>
+    </div>
+</div>
     </div>
 
 <script>
@@ -312,8 +347,8 @@ const auth = firebase.auth();
 let eu = null;
 let meuPerfil = {};
 let targetUid = null;
-let isLoginMode = true;
-let mapaZoom = null;
+let userDisponivel = true;
+let fotosPost = [];
 
 const REGIOES = {
     'NORTE': { icon: '🌳', color: '#22C55E', UFs: ['BRAC','BRAM','BRRR','BRRO','BRPA','BRAP','BRTO'], nomes: ['Acre','Amazonas','Roraima','Rondônia','Pará','Amapá','Tocantins'] },
@@ -345,7 +380,43 @@ function toggleAuthMode() {
     }
 }
     
-async function handleAuth() {
+    function logout() {
+    auth.signOut().then(() => {
+        window.location.reload(); // Recarrega para limpar todos os listeners e cache
+    });
+}
+
+    function ligarListenersContadores(uid) {
+    // Amigos
+    db.ref(`usuarios/${uid}/amigos`).on('value', snap => {
+        const qtd = snap.numChildren();
+        document.getElementById('count-amigos').innerText = qtd;
+    });
+
+    // Conquistas
+    db.ref(`usuarios/${uid}/conquistas`).on('value', snap => {
+        const qtd = snap.numChildren();
+        document.getElementById('count-conquistas').innerText = qtd;
+        renderizarGradeConquistas(snap.val() || {});
+    });
+}
+   
+    // --- LÓGICA DE PRIVACIDADE E ACESSO ---
+async function podeVerConteudo(donoUid) {
+    if (donoUid === eu.uid) return true;
+    
+    const donoSnap = await db.ref(`usuarios/${donoUid}/perfil`).once('value');
+    const p = donoSnap.val();
+    
+    if (p.tipo === 'publico') return true;
+    
+    // Se for privado, checa se são amigos
+    const amigosSnap = await db.ref(`usuarios/${donoUid}/amigos/${eu.uid}`).once('value');
+    return amigosSnap.exists();
+}
+
+    
+    async function handleAuth() {
     const email = document.getElementById('auth-email').value.trim();
     const pass = document.getElementById('auth-pass').value;
     const btn = document.getElementById('btn-auth-main');
@@ -549,7 +620,8 @@ async function buscarDinamico(valor) {
 
 
     // 2. CHECAR STATUS PARA O BOTÃO
-async function checarStatusAmizade(uidAlvo) {
+
+    async function checarStatusAmizade(uidAlvo) {
     const amigoSnap = await db.ref(`usuarios/${eu.uid}/amigos/${uidAlvo}`).once('value');
     if (amigoSnap.exists()) return { texto: "Amigo ✓", css: "background:#10B981; opacity:0.7", acao: false };
 
@@ -560,7 +632,8 @@ async function checarStatusAmizade(uidAlvo) {
 }
     
     // 3. ENVIAR PEDIDO COM FEEDBACK IMEDIATO
-async function enviarPedido(destUid, btn) {
+
+    async function enviarPedido(destUid, btn) {
     if (!destUid || destUid === eu.uid) return;
 
     // Feedback visual imediato no botão
@@ -589,7 +662,8 @@ async function enviarPedido(destUid, btn) {
     }
 }
 
-function ouvirConvites() {
+
+    function ouvirConvites() {
     db.ref(`convites/${eu.uid}`).on('value', snap => {
         const list = snap.val();
         const div = document.getElementById('convites-pendentes');
@@ -605,7 +679,8 @@ function ouvirConvites() {
     });
 }
 
-async function responderPedido(id, aceitou) {
+
+    async function responderPedido(id, aceitou) {
     if(aceitou) {
         await db.ref(`usuarios/${eu.uid}/amigos/${id}`).set(true);
         await db.ref(`usuarios/${id}/amigos/${eu.uid}`).set(true);
@@ -614,7 +689,8 @@ async function responderPedido(id, aceitou) {
     await db.ref(`convites/${eu.uid}/${id}`).remove();
 }
 
-async function tratarVIP() {
+
+    async function tratarVIP() {
     if(!targetUid || targetUid === eu.uid) return;
     const ref = db.ref(`usuarios/${targetUid}/vips/${eu.uid}`);
     const snap = await ref.once('value');
@@ -629,10 +705,11 @@ async function tratarVIP() {
 }
 
 // Navegação de Perfil
-function irParaPerfilProprio() { targetUid = null; trocarAba('perfil', document.querySelectorAll('.nav-item')[4]); }
-function irParaPerfil(uid) { targetUid = uid; trocarAba('perfil', document.querySelectorAll('.nav-item')[4]); carregarPerfilUI(uid); }
 
-async function carregarPerfilUI(uid) {
+    function irParaPerfilProprio() { targetUid = null; trocarAba('perfil', document.querySelectorAll('.nav-item')[4]); }
+    function irParaPerfil(uid) { targetUid = uid; trocarAba('perfil', document.querySelectorAll('.nav-item')[4]); carregarPerfilUI(uid); }
+    
+    async function carregarPerfilUI(uid) {
     const isMe = uid === eu.uid;
     const snap = await db.ref(`usuarios/${uid}/perfil`).once('value');
     const p = snap.val();
@@ -663,7 +740,8 @@ async function carregarPerfilUI(uid) {
 
 <script>
 // --- LOGICA DE POSTAGEM ---
-async function processarFotosPost(input) {
+
+    async function processarFotosPost(input) {
     fotosPost = [];
     const container = document.getElementById('previa-post');
     container.innerHTML = "";
@@ -674,12 +752,27 @@ async function processarFotosPost(input) {
     }
 }
 
-async function publicarViagem() {
-    const cidade = document.getElementById('reg-cidade').value;
+    // --- 2. LÓGICA DE GASTOS NO FEED (VIP ou PÚBLICO) ---
+async function verificarVisibilidadeGastos(post, donoUid) {
+    // 1. Se os gastos forem marcados como abertos na postagem
+    if (post.gastosAbertos) return true;
+    
+    // 2. Se eu sou o dono
+    if (donoUid === eu.uid) return true;
+    
+    // 3. Se eu sou VIP do dono
+    const vipSnap = await db.ref(`usuarios/${donoUid}/vips/${eu.uid}`).once('value');
+    if (vipSnap.exists()) return true;
+
+    return false;
+}
+   
+    async function publicarViagem() {
+    const cidade = document.getElementById('reg-cidade').value.trim();
     const uf = document.getElementById('reg-uf').value;
     const data = document.getElementById('reg-data').value;
     
-    // Captura dos valores individuais
+    // Captura financeira
     const vH = parseFloat(document.getElementById('reg-h').value) || 0;
     const vT = parseFloat(document.getElementById('reg-t').value) || 0;
     const vAl = parseFloat(document.getElementById('reg-al').value) || 0;
@@ -687,44 +780,82 @@ async function publicarViagem() {
     
     const ePraia = document.getElementById('reg-p').checked;
     const eNatureza = document.getElementById('reg-n').checked;
-
-    if(!cidade || !data) return toast("Cidade e data são obrigatórios!", "⚠️");
-
-    const id = Date.now();
-    const totalGeral = vH + vT + vAl + vAt;
-
-    const post = {
-        id: id,
-        uid: eu.uid,
-        user: meuPerfil.username,
-        fotoUser: meuPerfil.foto || "",
-        cidade: cidade,
-        uf: uf,
-        data: data.split('-').reverse().join('/'),
-        // Aqui definimos a estrutura que o feed vai ler:
-        h: vH, 
-        t: vT,
-        al: vAl,
-        at: vAt,
-        total: totalGeral,
-        praia: ePraia,
-        natureza: eNatureza,
-        fotos: fotosPost
-    };
-
-    // Salva no perfil do usuário e no feed global
-    await db.ref(`usuarios/${eu.uid}/viagens/${id}`).set(post);
-    await db.ref(`feed_global/${id}`).set(post);
     
-    // Atualiza o contador de estados conquistados
-    atualizarContagemEstados();
+    // NOVO: Verificação de Gastos Públicos (Checkbox reg-aberto)
+    const gastosPublicos = document.getElementById('reg-aberto').checked;
 
-    toast("Memória publicada com sucesso!", "✨");
-    trocarAba('feed', document.querySelectorAll('.nav-item')[0]);
-    
-    // Limpa o formulário
+    if (!cidade || !data) {
+        return toast("Preencha a cidade e a data da sua aventura!", "⚠️");
+    }
+
+    const btn = document.querySelector('.btn-money');
+    btn.disabled = true;
+    btn.innerText = "Publicando...";
+
+    try {
+        const idPost = db.ref().child('feed_global').push().key; // Gera ID único
+        const totalGeral = vH + vT + vAl + vAt;
+
+        const postagem = {
+            id: idPost,
+            uid: eu.uid,
+            user: meuPerfil.username,
+            nome: meuPerfil.nome,
+            fotoUser: meuPerfil.foto || "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+            cidade: cidade,
+            uf: uf,
+            data: data.split('-').reverse().join('/'),
+            // Dados financeiros
+            h: vH, 
+            t: vT,
+            al: vAl,
+            at: vAt,
+            total: totalGeral,
+            gastosAbertos: gastosPublicos, // Define se todos podem ver os gastos
+            // Atributos
+            praia: ePraia,
+            natureza: eNatureza,
+            fotos: fotosPost, // Array de base64 processado
+            timestamp: Date.now()
+        };
+
+        // 1. Salva na Timeline do Usuário
+        await db.ref(`usuarios/${eu.uid}/viagens/${idPost}`).set(postagem);
+
+        // 2. Salva no Feed Global
+        await db.ref(`feed_global/${idPost}`).set(postagem);
+
+        // 3. Atualiza contadores e conquistas
+        await atualizarContagemEstados();
+        await verificarConquistas();
+
+        toast("Sua jornada foi Atualizada!", "🚀");
+        
+        // Limpeza e Redirecionamento
+        limparFormularioRegistro();
+        trocarAba('feed', document.querySelectorAll('.nav-item')[0]);
+
+    } catch (error) {
+        console.error("Erro ao publicar:", error);
+        toast("Houve um erro ao salvar sua viagem.", "❌");
+    } finally {
+        btn.disabled = false;
+        btn.innerText = "Salvar e Publicar";
+    }
+}
+
+function limparFormularioRegistro() {
     document.getElementById('reg-cidade').value = "";
-    document.getElementById('container-previa').innerHTML = ""; 
+    document.getElementById('reg-data').value = "";
+    document.getElementById('reg-h').value = "";
+    document.getElementById('reg-t').value = "";
+    document.getElementById('reg-al').value = "";
+    document.getElementById('reg-at').value = "";
+    document.getElementById('reg-p').checked = false;
+    document.getElementById('reg-n').checked = false;
+    document.getElementById('reg-aberto').checked = false;
+    document.getElementById('previa-post').innerHTML = "";
+    fotosPost = [];
 }
 
     async function atualizarContagemEstados() {
@@ -772,7 +903,44 @@ async function publicarViagem() {
     }
 }
 
-async function dispararAlertaConquista(id, nome, icone) {
+    function renderRanking() {
+    db.ref('usuarios').on('value', snap => {
+        const users = snap.val();
+        const lista = [];
+        
+        for(let uid in users) {
+            const p = users[uid].perfil;
+            const viagens = users[uid].viagens || {};
+            const cidades = Object.values(viagens).length;
+            const estados = p.estados || 0;
+            
+            lista.push({ uid, ...p, cidades, estados });
+        }
+
+        // Ordena por estados, depois por cidades
+        lista.sort((a, b) => b.estados - a.estados || b.cidades - a.cidades);
+
+        const container = document.getElementById('lista-ranking');
+        container.innerHTML = "";
+        
+        lista.forEach((u, index) => {
+            container.innerHTML += `
+                <div class="sugestao-item" onclick="irParaPerfil('${u.uid}')" style="background: ${index < 3 ? '#FFFBEB' : '#fff'}; border-radius:15px; margin-bottom:8px;">
+                    <div style="font-weight:800; width:25px; color:var(--primary)">#${index + 1}</div>
+                    <img src="${u.foto}" class="sugestao-avatar" style="border: 2px solid ${index < 3 ? '#FACC15' : '#eee'}">
+                    <div class="sugestao-info">
+                        <b>${u.nome}</b>
+                        <small>@${u.username}</small>
+                    </div>
+                    <div style="margin-left:auto; text-align:right;">
+                        <b style="color:var(--primary);">${u.estados} Est.</b><br>
+                        <small style="font-size:9px;">${u.cidades} Cid.</small>
+                    </div>
+                </div>`;
+        });
+    });
+}
+    async function dispararAlertaConquista(id, nome, icone) {
     // Trava no banco para não repetir
     await db.ref(`usuarios/${eu.uid}/conquistas/${id}`).set({ nome, icone, data: Date.now() });
 
@@ -800,13 +968,15 @@ async function postarConquistaFeed(nome, icone) {
     toast("Conquista compartilhada!", "🚀");
 }
 // --- FEED E INTERAÇÃO (LIKES) ---
-function renderFeed() {
-    db.ref('feed_global').limitToLast(20).on('value', async snap => {
+    function renderFeed() {
+    db.ref('feed_global').limitToLast(30).on('value', async snap => {
         const container = document.getElementById('lista-feed');
         container.innerHTML = "";
         const posts = Object.values(snap.val() || {}).reverse();
-        
-        for(let p of posts) {
+
+        for (let p of posts) {
+            const ver = await podeVerConteudo(p.uid);
+            if (!ver) continue;
             // Lógica de Reações (Likes)
             const reacoesSnap = await db.ref(`likes/${p.id}`).once('value');
             const reacoesData = reacoesSnap.val() || {};
@@ -908,7 +1078,8 @@ function renderFeed() {
     menu.style.display = (menu.style.display === 'flex') ? 'none' : 'flex';
 }
    // Salva a reação no Firebase
-async function reagir(postId, emoji) {
+
+    async function reagir(postId, emoji) {
     const ref = db.ref(`likes/${postId}/${eu.uid}`);
     const snap = await ref.once('value');
 
@@ -938,22 +1109,21 @@ document.addEventListener('click', (e) => {
 }
 
 // --- MAPA E PRIVACIDADE ---
+    async function pintarMapa(uid) {
+    const vSnap = await db.ref(`usuarios/${uid}/viagens`).once('value');
+    const viagens = vSnap.val() || {};
+    const ufsVisitadas = new Set(Object.values(viagens).map(v => v.uf));
 
-    function pintarMapa(uid) {
-    db.ref(`usuarios/${uid}/viagens`).once('value', snap => {
-        const viagens = snap.val() || {};
-        // Remove a cor de todos os estados primeiro
-        document.querySelectorAll('.estado').forEach(p => p.classList.remove('visitado'));
-        
-        // Pinta apenas os visitados
-        Object.values(viagens).forEach(v => {
-            const el = document.getElementById(v.uf);
-            if(el) el.classList.add('visitado');
-        });
+    document.querySelectorAll('.estado').forEach(el => {
+        if (ufsVisitadas.has(el.id)) {
+            el.classList.add('visitado');
+        } else {
+            el.classList.remove('visitado');
+        }
     });
 }
 
-async function gerenciarCliqueEstado(ufId) {
+    async function gerenciarCliqueEstado(ufId) {
     const uid = targetUid || eu.uid;
     // REGRA DE AMIZADE: Se não sou eu, preciso ser amigo para ver detalhes
     if(uid !== eu.uid) {
@@ -963,7 +1133,7 @@ async function gerenciarCliqueEstado(ufId) {
     abrirPopEstado(ufId, uid);
 }
 
-async function abrirPopEstado(ufId, uid) {
+    async function abrirPopEstado(ufId, uid) {
     const snap = await db.ref(`usuarios/${uid}/viagens`).once('value');
     const trips = Object.values(snap.val() || {}).filter(v => v.uf === ufId);
     if(trips.length === 0) return;
@@ -1003,7 +1173,7 @@ function esmagarImg(file, size = 600) {
     });
 }
 
-function trocarAba(id, btn) {
+    function trocarAba(id, btn) {
     document.querySelectorAll('.aba').forEach(a => a.classList.remove('ativa'));
     document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
     document.getElementById('aba-' + id).classList.add('ativa');
@@ -1022,16 +1192,19 @@ function trocarAba(id, btn) {
     if(id === 'perfil') carregarPerfilUI(targetUid || eu.uid);
 }
 
-function toast(msg, icon) {
+
+    function toast(msg, icon) {
     document.getElementById('modal-icon').innerText = icon || '💡';
     document.getElementById('modal-content').innerHTML = `<p style="font-weight:700; font-size:16px;">${msg}</p>`;
     document.getElementById('modal-global').style.display = 'flex';
 }
 
-function fecharModal() { document.getElementById('modal-global').style.display = 'none'; }
+
+    function fecharModal() { document.getElementById('modal-global').style.display = 'none'; }
 
 // --- RELATÓRIOS E CONQUISTAS ---
-function renderRelatorioGastos() {
+
+    function renderRelatorioGastos() {
     db.ref(`usuarios/${eu.uid}/viagens`).on('value', snap => {
         const viagens = Object.values(snap.val() || {});
         let total = 0;
@@ -1055,7 +1228,8 @@ function renderRelatorioGastos() {
     });
 }
 
-function renderConquistas(uid) {
+
+    function renderConquistas(uid) {
     db.ref(`usuarios/${uid}/perfil/estados`).on('value', snap => {
         const n = snap.val() || 0;
         const conquistas = [
@@ -1075,32 +1249,57 @@ function renderConquistas(uid) {
     });
 }
 
-function renderTimeline(uid) {
+
+    async function renderTimeline(uid) {
+    const container = document.getElementById('perfil-timeline');
+    const podeVer = await podeVerConteudo(uid);
+    
+    if (!podeVer) {
+        container.innerHTML = "<p style='text-align:center; padding:20px;'>🔒 Este perfil é privado. Adicione como amigo para ver.</p>";
+        return;
+    }
+
     db.ref(`usuarios/${uid}/viagens`).on('value', snap => {
-        const container = document.getElementById('perfil-timeline');
         const trips = Object.values(snap.val() || {}).reverse();
-        container.innerHTML = trips.length ? "" : "<p style='color:var(--text-sub); font-size:13px;'>Nenhuma viagem registrada.</p>";
+        container.innerHTML = "";
         trips.forEach(t => {
+            const btnExcluir = (uid === eu.uid) ? 
+                `<span onclick="excluirViagem('${t.id}')" style="color:var(--primary); cursor:pointer; font-size:10px; font-weight:800;">EXCLUIR</span>` : "";
+            
             container.innerHTML += `
-                <div style="border-left:3px solid var(--primary); padding-left:15px; margin-bottom:15px; position:relative;">
-                    <div style="width:12px; height:12px; background:var(--primary); border-radius:50%; position:absolute; left:-7.5px; top:0;"></div>
-                    <b style="font-size:14px;">${t.cidade} - ${t.uf.replace('BR','')}</b><br>
-                    <small style="color:var(--text-sub)">${t.data}</small>
-                </div>
-            `;
+                <div class="card-timeline" style="border-left:3px solid var(--primary); padding:15px; margin-bottom:10px; background:#fff; border-radius:12px;">
+                    <div style="display:flex; justify-content:space-between;">
+                        <b>${t.cidade} - ${t.uf.replace('BR','')}</b>
+                        ${btnExcluir}
+                    </div>
+                    <small>${t.data}</small>
+                    <div style="display:flex; gap:5px; margin-top:5px;">
+                        ${t.fotos ? t.fotos.map(f => `<img src="${f}" style="width:50px; height:50px; border-radius:8px; object-fit:cover;">`).join('') : ''}
+                    </div>
+                </div>`;
         });
     });
 }
 
 // Configurações
-function abrirConfiguracoes() {
+
+    async function excluirViagem(id) {
+    if (confirm("Deseja apagar esta memória permanentemente?")) {
+        await db.ref(`usuarios/${eu.uid}/viagens/${id}`).remove();
+        await db.ref(`feed_global/${id}`).remove();
+        toast("Viagem removida", "🗑️");
+    }
+}
+    
+    function abrirConfiguracoes() {
     document.getElementById('edit-nome').value = meuPerfil.nome;
     document.getElementById('edit-user').value = meuPerfil.username;
     document.getElementById('edit-bio').value = meuPerfil.bio;
     document.getElementById('modal-config').style.display = 'flex';
 }
 
-async function validarUsername(val) {
+
+    async function validarUsername(val) {
     const user = val.toLowerCase().trim().replace(/[^a-z0-9_]/g, "");
     document.getElementById('edit-user').value = user;
     if(user.length < 3) return;
@@ -1111,22 +1310,18 @@ async function validarUsername(val) {
     msg.style.color = userDisponivel ? "var(--money)" : "var(--primary)";
 }
 
-async function salvarConfig() {
-    if(!userDisponivel) return toast("Username ocupado!", "❌");
-    const novo = document.getElementById('edit-user').value;
-    const antigo = meuPerfil.username;
 
+    async function salvarConfig() {
+    if (!userDisponivel) return toast("Username ocupado!", "❌");
+    
     const updates = {
         nome: document.getElementById('edit-nome').value,
-        username: novo,
-        bio: document.getElementById('edit-bio').value
+        username: document.getElementById('edit-user').value,
+        bio: document.getElementById('edit-bio').value,
+        tipo: document.getElementById('edit-tipo-perfil').value // 'publico' ou 'privado'
     };
 
     await db.ref(`usuarios/${eu.uid}/perfil`).update(updates);
-    if(novo !== antigo) {
-        await db.ref(`usernames/${novo}`).set(eu.uid);
-        await db.ref(`usernames/${antigo}`).remove();
-    }
     document.getElementById('modal-config').style.display = 'none';
     toast("Perfil atualizado!", "✅");
 }
