@@ -40,72 +40,104 @@
 
         .card { background: var(--card); padding: 20px; margin: 16px; border-radius: 28px; box-shadow: var(--shadow); }
 
-        /* INPUTS */
-        input, select, textarea { width: 100%; padding: 15px; border-radius: 16px; border: 1.5px solid #F1F5F9; font-family: inherit; background: #F8FAFC; margin-bottom: 12px; outline: none; }
-        label { font-size: 11px; font-weight: 800; color: var(--text-sub); text-transform: uppercase; margin-bottom: 5px; display: block; }
+        /* FORMULÁRIOS PREMIUM */
+        input, select, textarea { width: 100%; padding: 15px; border-radius: 16px; border: 1.5px solid #F1F5F9; font-family: inherit; background: #F8FAFC; margin-bottom: 12px; outline: none; transition: 0.2s; }
+        input:focus { border-color: var(--primary); background: #fff; }
+        label { font-size: 11px; font-weight: 800; color: var(--text-sub); text-transform: uppercase; margin: 0 0 5px 5px; display: block; }
         
-        .btn-acao { background: var(--primary); color: #fff; border: none; padding: 16px; border-radius: 20px; width: 100%; font-weight: 800; cursor: pointer; }
-        .btn-money { background: var(--money); }
+        .btn-acao { background: var(--primary); color: #fff; border: none; padding: 16px; border-radius: 20px; width: 100%; font-weight: 800; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 15px rgba(255, 75, 92, 0.2); }
+        .btn-acao:active { transform: scale(0.97); }
+        .btn-money { background: var(--money); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2); }
 
-        /* FEED */
-        .feed-card { background: #fff; margin: 16px; border-radius: 32px; overflow: hidden; box-shadow: var(--shadow); position: relative; }
-        .carrossel { display: flex; overflow-x: auto; snap-type: x mandatory; height: 320px; background: #f8fafc; scrollbar-width: none; }
+        /* FEED E INTERAÇÕES */
+        .feed-card { background: #fff; margin: 16px; border-radius: 32px; overflow: hidden; box-shadow: var(--shadow); }
+        .carrossel { display: flex; overflow-x: auto; snap-type: x mandatory; snap-type: x mandatory; height: 320px; background: #f8fafc; scrollbar-width: none; }
         .carrossel::-webkit-scrollbar { display: none; }
         .carrossel img { flex: 0 0 100%; height: 100%; object-fit: cover; snap-align: center; }
-        
-        .tag-gasto { background: #F1F5F9; padding: 4px 10px; border-radius: 10px; font-size: 11px; font-weight: 700; color: var(--text-main); display: inline-block; border: 1px solid #E2E8F0; }
-
-        .reacoes-menu { display: none; position: absolute; bottom: 60px; left: 15px; background: white; padding: 8px 12px; border-radius: 25px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); gap: 12px; z-index: 100; }
+        .indicadores-fotos { display: flex; justify-content: center; gap: 5px; padding: 10px 0; background: #fff;}
+        .ponto { width: 6px; height: 6px; border-radius: 50%; background: #CBD5E1; transition: 0.3s; }
+        .ponto.ativo { background: var(--primary); transform: scale(1.3); }
+        .feed-actions { padding: 15px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #F1F5F9; }
+        .reacoes-menu { display: none; position: absolute; bottom: 50px; left: 15px; background: white; padding: 8px 12px; border-radius: 25px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); gap: 12px; z-index: 100; animation: popIn 0.2s ease-out; }
         .reacoes-menu span { font-size: 24px; cursor: pointer; transition: 0.2s; }
         .reacoes-menu span:hover { transform: scale(1.3); }
+        @keyframes popIn { from { opacity: 0; transform: translateY(10px) scale(0.9); } to { opacity: 1; transform: translateY(0) scale(1); }}
+
+        .like-btn { position: relative; }
+        .like-btn { background: none; border: none; font-size: 22px; cursor: pointer; display: flex; align-items: center; gap: 5px; color: var(--text-sub); font-weight: 700; }
+        .like-btn.active { color: var(--primary); }
+
+        /* Lista de sugestões profissional */
+        #res-busca { background: #fff; border-radius: 18px; margin-top: 5px; max-height: 250px; overflow-y: auto; border: 1px solid #F1F5F9; box-shadow: 0 10px 20px rgba(0,0,0,0.05); display: none; }
+        .sugestao-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-bottom: 1px solid #F8FAFC; cursor: pointer; transition: 0.2s; }
+        .sugestao-item:last-child { border-bottom: none; }
+        .sugestao-item:hover { background: #F8FAFC; }
+        .sugestao-avatar { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; background: #eee; }
+        .sugestao-info b { font-size: 13px; display: block; color: var(--text-main); }
+        .sugestao-info small { font-size: 11px; color: var(--primary); font-weight: 700; }
 
         /* MAPA */
-        #svg-container { width: 100%; height: 100%; background: #fff; }
+        .mapa-card { background: var(--card); margin: 16px; border-radius: 28px; height: calc(100% - 32px); display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+        #svg-container { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #fff; touch-action: auto !important; }
         path { fill: #F1F5F9; stroke: #fff; stroke-width: 0.8; transition: 0.5s; cursor: pointer; }
 
-        /* NAV */
-        .nav { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--glass); display: flex; height: 75px; border-top-left-radius: 35px; border-top-right-radius: 35px; z-index: 1000; backdrop-filter: blur(15px); align-items: center; justify-content: space-around; }
-        .nav-item { font-size: 26px; opacity: 0.3; cursor: pointer; }
-        .nav-item.active { opacity: 1; color: var(--primary); transform: translateY(-5px); }
+         /* Cores Regiões */
+        .visitado[id^="BRAC"], .visitado[id^="BRAM"], .visitado[id^="BRRR"], .visitado[id^="BRRO"], .visitado[id^="BRPA"], .visitado[id^="BRAP"], .visitado[id^="BRTO"] { fill: #22C55E !important; }
+        .visitado[id^="BRMA"], .visitado[id^="BRPI"], .visitado[id^="BRCE"], .visitado[id^="BRRN"], .visitado[id^="BRPB"], .visitado[id^="BRPE"], .visitado[id^="BRAL"], .visitado[id^="BRSE"], .visitado[id^="BRBA"] { fill: #FACC15 !important; }
+        .visitado[id^="BRMT"], .visitado[id^="BRMS"], .visitado[id^="BRGO"], .visitado[id^="BRDF"] { fill: #FB923C !important; }
+        .visitado[id^="BRMG"], .visitado[id^="BRSP"], .visitado[id^="BRRJ"], .visitado[id^="BRES"] { fill: #EC4899 !important; }
+        .visitado[id^="BRPR"], .visitado[id^="BRSC"], .visitado[id^="BRRS"] { fill: #A855F7 !important; }
 
         /* CONQUISTAS */
-        .badge-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+        .badge-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px; }
         .badge { display: flex; flex-direction: column; align-items: center; opacity: 0.2; filter: grayscale(1); transition: 0.5s; text-align: center; }
-        .badge.active { opacity: 1; filter: grayscale(0); }
-        .b-icon { width: 60px; height: 60px; background: #F1F5F9; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; margin-bottom: 8px; }
+        .badge.active { opacity: 1; filter: grayscale(0); transform: translateY(-5px); }
+        .b-icon { width: 60px; height: 60px; background: #F1F5F9; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; margin-bottom: 8px; border: 2px solid transparent; }
+        .active .b-icon { border-color: var(--primary); background: #fff; }
+        /* Animação para as conquistas pularem no feed */
         @keyframes bounce { 0%, 100% { transform: translateY(0);} 50% { transform: translateY(-10px);}}
 
-        /* AUTH & MODAL */
-        #auth-screen { position: fixed; inset: 0; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        /* MENU NAV */
+        .nav { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--glass); display: flex; height: 75px; border-top-left-radius: 35px; border-top-right-radius: 35px; z-index: 1000; box-shadow: 0 -10px 30px rgba(0,0,0,0.05); backdrop-filter: blur(15px); align-items: center; justify-content: space-around; }
+        .nav-item { font-size: 26px; opacity: 0.3; transition: 0.3s; cursor: pointer; }
+        .nav-item.active { opacity: 1; color: var(--primary); transform: translateY(-10px); }
+
+        /* AUTH SCREEN */
+        #auth-screen { position: fixed; inset: 0; background: linear-gradient(135deg, var(--sky) 0%, #fff 100%); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
+
+        /* MODAIS */
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 10000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(8px); padding: 20px; }
-        .modal-card { background: #fff; padding: 25px; border-radius: 35px; width: 100%; max-width: 380px; position: relative; max-height: 85vh; overflow-y: auto; text-align: center;}
-        
-        #res-busca { background: #fff; border-radius: 18px; margin-top: 5px; max-height: 200px; overflow-y: auto; border: 1px solid #F1F5F9; display: none; }
-        .sugestao-item { display: flex; align-items: center; gap: 12px; padding: 12px; border-bottom: 1px solid #F8FAFC; }
+        .modal-card { background: #fff; padding: 25px; border-radius: 35px; width: 100%; max-width: 380px; text-align: center; position: relative; max-height: 85vh; overflow-y: auto; }
+        .close-modal { position: absolute; top: 20px; right: 20px; border: none; background: #F1F5F9; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <div id="auth-screen">
-        <div class="card" style="width: 100%; max-width: 360px; text-align: center;">
-            <div style="font-size: 50px;">🌍</div>
-            <h2 id="auth-title">Minha Jornada</h2>
-            <input type="email" id="auth-email" placeholder="E-mail">
-            <input type="password" id="auth-pass" placeholder="Senha">
-            <button class="btn-acao" onclick="handleAuth()" id="btn-auth-main">Entrar</button>
-            <p style="margin-top: 20px; font-size: 13px;">
-                <span id="auth-text-toggle">Ainda não tem conta?</span> 
-                <b id="auth-btn-toggle" style="color:var(--primary); cursor: pointer;" onclick="toggleAuthMode()">Cadastrar</b>
-            </p>
-        </div>
+    <div class="card" style="width: 100%; max-width: 360px; text-align: center;">
+        <div style="font-size: 50px; margin-bottom: 10px;">🌍</div>
+        <h2 id="auth-title">Minha Jornada</h2>
+        
+        <input type="email" id="auth-email" placeholder="E-mail" autocomplete="email">
+        <input type="password" id="auth-pass" placeholder="Senha">
+        
+        <button class="btn-acao" onclick="handleAuth()" id="btn-auth-main" style="display: block; margin-top: 10px;">Entrar</button>
+        
+        <p style="margin-top: 20px; font-size: 13px; color: var(--text-sub);">
+    <span id="auth-text-toggle">Ainda não tem conta?</span> 
+    <b id="auth-btn-toggle" style="color:var(--primary); cursor: pointer;" onclick="toggleAuthMode()">Cadastrar</b>
+        </p>
+        
+        <p style="margin-top: 10px; font-size: 12px; color: var(--text-sub); cursor:pointer" onclick="resetarSenha()">Esqueci minha senha</p>
     </div>
+</div>
 
     <div class="header">
         <div>
             <h3 id="view-title">Explorar</h3>
-            <span style="font-size: 10px; font-weight: 800; color: var(--text-sub);">CONECTADO</span>
+            <span id="header-stats" style="font-size: 10px; font-weight: 800; color: var(--text-sub);">CONECTADO</span>
         </div>
-        <div style="display: flex; align-items: center; gap: 10px;" onclick="irParaPerfilProprio()">
+        <div style="display: flex; align-items: center; gap: 12px;" onclick="irParaPerfilProprio()">
             <div style="text-align: right;">
                 <div id="h-nome" style="font-size: 12px; font-weight: 800;">...</div>
                 <div id="h-user" style="font-size: 10px; color: var(--text-sub);">@...</div>
@@ -116,32 +148,51 @@
 
     <div id="aba-feed" class="aba ativa">
         <div class="card" style="padding: 12px; margin-bottom: 5px;">
-            <input type="text" id="input-busca" placeholder="Buscar viajantes..." oninput="buscarDinamico(this.value)">
-            <div id="res-busca"></div>
+            <div style="display: flex; gap: 8px;">
+                <input type="text" id="input-busca" placeholder="Buscar nome ou @username..." oninput="buscarDinamico(this.value)">
+                <button class="btn-acao" style="width: 55px; padding: 0;" onclick="buscarUser()">🔍</button>
+            </div>
+            <div id="res-busca" style="margin-top: 10px; display: none;"></div>
         </div>
         <div id="lista-feed"></div>
     </div>
 
     <div id="aba-mapa" class="aba">
-        <div class="mapa-frame" style="height: 75vh; position: relative;">
-            <div id="map-owner-tag" style="position: absolute; top: 15px; left: 15px; z-index: 10; background:var(--primary); color:white; padding:5px 12px; border-radius:12px; font-size:11px; font-weight:800;">Meu Mapa</div>
-            <div id="svg-container"></div>
+    <div class="mapa-frame" style="height: 80vh; width: 100%; position: relative;">
+        <div style="position: absolute; top: 15px; left: 15px; z-index: 10; display:flex; gap:5px;">
+            <div id="map-owner-tag" style="background:var(--primary); color:white; padding:5px 12px; border-radius:12px; font-size:11px; font-weight:800; box-shadow:0 4px 10px rgba(0,0,0,0.1);">Meu Mapa</div>
+        </div>
+        <button onclick="resetarZoomMapa()" style="position: absolute; top: 15px; right: 15px; z-index: 10; background: #fff; border: none; padding: 10px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); cursor:pointer">🔄</button>
+        <div id="svg-container" style="width: 100%; height: 100%;">
+            <svg id="mapa-svg-real" xmlns="http://www.w3.org/2000/svg" viewBox="-75 -35 42 35" style="width:100%; height:100%; background:#BAE6FD;">
+                 <g transform="scale(1, -1)">
+                    <path id="BRAC" class="estado" d="..." />
+                    </g>
+            </svg>
         </div>
     </div>
+</div>
 
     <div id="aba-registro" class="aba">
         <div class="card">
             <h3>Nova Memória 🚩</h3>
-            <label>Estado</label>
+            <label>Onde você foi?</label>
             <select id="reg-uf">
                 <option value="BRSP">São Paulo</option><option value="BRRJ">Rio de Janeiro</option><option value="BRMG">Minas Gerais</option>
                 <option value="BRBA">Bahia</option><option value="BRSC">Santa Catarina</option><option value="BRPR">Paraná</option>
                 <option value="BRRS">Rio Grande do Sul</option><option value="BRGO">Goiás</option><option value="BRDF">Distrito Federal</option>
+                <option value="BRES">Espírito Santo</option><option value="BRCE">Ceará</option><option value="BRPE">Pernambuco</option>
+                <option value="BRRN">Rio Grande do Norte</option><option value="BRPB">Paraíba</option><option value="BRAL">Alagoas</option>
+                <option value="BRSE">Sergipe</option><option value="BRMA">Maranhão</option><option value="BRPI">Piauí</option>
+                <option value="BRMT">Mato Grosso</option><option value="BRMS">Mato Grosso do Sul</option><option value="BRTO">Tocantins</option>
+                <option value="BRPA">Pará</option><option value="BRAM">Amazonas</option><option value="BRRO">Rondônia</option>
+                <option value="BRAC">Acre</option><option value="BRRR">Roraima</option><option value="BRAP">Amapá</option>
             </select>
-            <input type="text" id="reg-cidade" placeholder="Cidade">
+            <input type="text" id="reg-cidade" placeholder="Nome da cidade">
+            <label>Quando?</label>
             <input type="date" id="reg-data">
             
-            <label>Investimento</label>
+            <label>Investimento (R$)</label>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                 <input type="number" id="reg-h" placeholder="🏨 Hotel">
                 <input type="number" id="reg-t" placeholder="🚗 Transp.">
@@ -149,20 +200,15 @@
                 <input type="number" id="reg-at" placeholder="🎡 Lazer">
             </div>
 
-            <div style="margin: 10px 0; padding: 12px; background: #FFF5F5; border-radius: 16px; border: 1px solid #FFE4E6;">
-                <label style="display: flex; align-items: center; gap: 10px; font-size:11px; cursor:pointer; color: var(--primary); text-transform: none;">
-                    <input type="checkbox" id="reg-publico-gastos" style="width:20px;height:20px;margin:0"> 
-                    <span><b>Liberar gastos para todos?</b> 🌍</span>
-                </label>
+            <div style="display: flex; gap: 15px; margin: 10px 0;">
+                <label style="display: flex; align-items: center; gap: 6px; font-size:12px; font-weight:700;"><input type="checkbox" id="reg-p" style="width:18px;height:18px;margin:0"> Praia? 🏖️</label>
+                <label style="display: flex; align-items: center; gap: 6px; font-size:12px; font-weight:700;"><input type="checkbox" id="reg-n" style="width:18px;height:18px;margin:0"> Natureza? 🌳</label>
             </div>
 
-            <div style="display:flex; gap:10px; margin-bottom:10px;">
-                <label style="font-size:12px;"><input type="checkbox" id="reg-p"> Praia 🏖️</label>
-                <label style="font-size:12px;"><input type="checkbox" id="reg-n"> Natureza 🌳</label>
-            </div>
-
+            <label>Fotos (Máx 3)</label>
             <input type="file" id="reg-fotos" multiple accept="image/*" onchange="processarFotosPost(this)">
-            <div id="previa-post" style="display:flex; gap:5px; overflow-x:auto;"></div>
+            <div id="previa-post" style="display:flex; gap:10px; margin-bottom:15px; overflow-x:auto;"></div>
+
             <button class="btn-acao btn-money" onclick="publicarViagem()">Salvar e Publicar</button>
         </div>
     </div>
@@ -172,61 +218,40 @@
             <h3>💰 Gestão Financeira</h3>
             <div id="lista-gastos-uf"></div>
             <div style="background: var(--money); color: #fff; padding: 25px; border-radius: 25px; text-align: center; margin-top: 25px;">
-                <small>TOTAL ACUMULADO</small>
-                <h2 id="valor-total-brasil">R$ 0,00</h2>
+                <small style="font-weight:800; opacity:0.8;">INVESTIMENTO TOTAL ACUMULADO</small>
+                <h2 id="valor-total-brasil" style="margin: 5px 0; font-size:32px;">R$ 0,00</h2>
             </div>
         </div>
     </div>
 
     <div id="aba-perfil" class="aba">
-        <div class="card" style="text-align: center; position: relative;">
-            <div onclick="abrirConfiguracoes()" style="position: absolute; right: 0; top: 0; font-size: 24px;">⚙️</div>
-            <img id="perfil-foto" src="" style="width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--primary);">
-            <h2 id="perfil-nome">...</h2>
-            <p id="perfil-user" style="color:var(--primary); font-weight:800;">@username</p>
-            <p id="perfil-bio" style="font-size:13px; color:var(--text-sub);"></p>
+        <div class="card" style="text-align: center; position: relative; padding-top: 40px;">
+            <div id="btn-settings" onclick="abrirConfiguracoes()" style="position: absolute; right: 20px; top: 20px; font-size: 24px; cursor:pointer">⚙️</div>
             
-            <div id="perfil-social-actions" style="display:none; justify-content:center; gap:10px; margin:15px 0;">
-                <button id="btn-amizade" class="btn-acao" style="width:auto; padding:8px 20px;">Conectar</button>
+            <img id="perfil-foto" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" style="width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 4px solid var(--primary); box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+            <h2 id="perfil-nome" style="margin: 15px 0 5px;">...</h2>
+            <p id="perfil-user" style="color: var(--primary); font-weight: 800; margin: 0; font-size:18px;">@username</p>
+            <p id="perfil-bio" style="font-size: 14px; color: var(--text-sub); margin: 15px 30px; line-height: 1.5;">...</p>
+            
+            <div id="perfil-social-actions" style="display:none; margin: 20px 0; gap: 10px; justify-content: center;">
+                <button id="btn-amizade" class="btn-acao" style="width: auto; padding: 10px 25px;" onclick="tratarAmizade()">Conectar</button>
+                <button id="btn-vip" class="btn-acao btn-money" style="width: auto; padding: 10px 25px;" onclick="tratarVIP()">💎 Tornar VIP</button>
             </div>
 
-            <div style="display:flex; justify-content:center; gap:25px; border-top:1px solid #eee; padding-top:15px;">
-                <div><b>Amigos</b><br><span id="count-amigos">0</span></div>
-                <div><b>Conquistas</b><br><span id="count-conquistas">0</span></div>
+            <div style="display:flex; justify-content:center; gap:30px; margin: 20px 0; border-top: 1px solid #F1F5F9; padding-top:15px;">
+                <div onclick="verAmigos()"><b>Amigos</b><br><span id="count-amigos" style="color:var(--text-sub)">0</span></div>
+                <div onclick="verConquistas()"><b>Conquistas</b><br><span id="count-conquistas" style="color:var(--text-sub)">0</span></div>
             </div>
 
-            <div id="convites-pendentes"></div>
-            <h4 style="text-align:left;">🏆 Conquistas</h4>
+            <div id="convites-pendentes" style="text-align: left;"></div>
+
+            <hr style="border: 0; border-top: 1px solid #F1F5F9; margin: 25px 0;">
+            
+            <h4 style="text-align: left; display: flex; align-items: center; gap: 8px;">🏆 Conquistas Desbloqueadas</h4>
             <div id="lista-conquistas" class="badge-grid"></div>
-            <h4 style="text-align:left; margin-top:20px;">🕒 Linha do Tempo</h4>
-            <div id="perfil-timeline"></div>
-        </div>
-    </div>
-
-    <div id="modal-global" class="modal">
-        <div class="modal-card">
-            <div id="modal-icon" style="font-size: 40px;">💡</div>
-            <div id="modal-content"></div>
-            <button class="btn-acao" onclick="fecharModal()" style="margin-top:15px;">OK</button>
-        </div>
-    </div>
-
-    <div id="modal-config" class="modal">
-        <div class="modal-card">
-            <h3>Configurações</h3>
-            <label>Nome</label>
-            <input type="text" id="edit-nome">
-            <label>Username</label>
-            <input type="text" id="edit-user">
-            <label>Bio</label>
-            <textarea id="edit-bio"></textarea>
-            <label>Privacidade</label>
-            <select id="edit-tipo">
-                <option value="brasil">Viajante Brasil (Público)</option>
-                <option value="local">Viajante Local (Privado)</option>
-            </select>
-            <button class="btn-acao" onclick="salvarConfig()">Salvar</button>
-            <button onclick="logout()" style="margin-top:20px; background:none; border:none; color:var(--primary); font-weight:800;">SAIR DA CONTA</button>
+            
+            <h4 style="text-align: left; margin-top: 30px;">🕒 Linha do Tempo</h4>
+            <div id="perfil-timeline" style="text-align: left;"></div>
         </div>
     </div>
 
@@ -238,8 +263,35 @@
         <div class="nav-item" onclick="trocarAba('perfil', this)">👤</div>
     </nav>
 
+    <div id="modal-global" class="modal">
+        <div class="modal-card">
+            <button class="close-modal" onclick="fecharModal()">✕</button>
+            <div id="modal-icon" style="font-size: 50px; margin-bottom: 10px;">💡</div>
+            <div id="modal-content"></div>
+            <button class="btn-acao btn-money" style="margin-top:20px;" onclick="fecharModal()">Entendido</button>
+        </div>
+    </div>
+
+    <div id="modal-config" class="modal">
+        <div class="modal-card">
+            <h3>Configurações de Perfil</h3>
+            <label>Foto de Perfil</label>
+            <input type="file" accept="image/*" onchange="uploadFotoPerfil(this)">
+            <label>Nome Completo</label>
+            <input type="text" id="edit-nome">
+            <label>Nome de Usuário (Username)</label>
+            <input type="text" id="edit-user" oninput="validarUsername(this.value)">
+            <div id="msg-user" style="font-size:10px; font-weight:800; margin-bottom:10px;"></div>
+            <label>Bio</label>
+            <textarea id="edit-bio" rows="3"></textarea>
+            <button class="btn-acao" onclick="salvarConfig()">Salvar Alterações</button>
+            <button onclick="auth.signOut()" style="background:none; border:none; color:var(--primary); font-weight:800; margin-top:25px; cursor:pointer; width:100%">DESCONECTAR CONTA</button>
+        </div>
+    </div>
+
 <script>
-// CONFIGURAÇÃO FIREBASE
+// 1. FIREBASE SETUP
+// 1. CONFIGURAÇÃO (Verifique se as chaves batem com seu Firebase Console)
 const firebaseConfig = {
     apiKey: "AIzaSyC6C5dJZeRF6Ylx4x-eWex6s2WGdRiMqbg",
     authDomain: "pjrsddinst-00.firebaseapp.com",
@@ -250,101 +302,179 @@ const firebaseConfig = {
     databaseURL: "https://pjrsddinst-00-default-rtdb.firebaseio.com"
 };
 
-firebase.initializeApp(firebaseConfig);
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
 const db = firebase.database();
 const auth = firebase.auth();
 
-let eu = null, meuPerfil = {}, targetUid = null, isLoginMode = true, fotosPost = [];
+// VARIÁVEIS DE ESTADO
+let eu = null;
+let meuPerfil = {};
+let targetUid = null;
+let isLoginMode = true;
+let mapaZoom = null;
 
 const REGIOES = {
-    'NORTE': { icon: '🌳', UFs: ['BRAC','BRAM','BRRR','BRRO','BRPA','BRAP','BRTO'] },
-    'NORDESTE': { icon: '🌵', UFs: ['BRMA','BRPI','BRCE','BRRN','BRPB','BRPE','BRAL','BRSE','BRBA'] },
-    'CENTRO': { icon: '☀️', UFs: ['BRMT','BRMS','BRGO','BRDF'] },
-    'SUDESTE': { icon: '🏢', UFs: ['BRMG','BRSP','BRRJ','BRES'] },
-    'SUL': { icon: '❄️', UFs: ['BRPR','BRSC','BRRS'] }
+    'NORTE': { icon: '🌳', color: '#22C55E', UFs: ['BRAC','BRAM','BRRR','BRRO','BRPA','BRAP','BRTO'], nomes: ['Acre','Amazonas','Roraima','Rondônia','Pará','Amapá','Tocantins'] },
+    'NORDESTE': { icon: '🌵', color: '#FACC15', UFs: ['BRMA','BRPI','BRCE','BRRN','BRPB','BRPE','BRAL','BRSE','BRBA'], nomes: ['Maranhão','Piauí','Ceará','Rio Grande do Norte','Paraíba','Pernambuco','Alagoas','Sergipe','Bahia'] },
+    'CENTRO': { icon: '☀️', color: '#FB923C', UFs: ['BRMT','BRMS','BRGO','BRDF'], nomes: ['Mato Grosso','Mato Grosso do Sul','Goiás','Distrito Federal'] },
+    'SUDESTE': { icon: '🏢', color: '#EC4899', UFs: ['BRMG','BRSP','BRRJ','BRES'], nomes: ['Minas Gerais','São Paulo','Rio de Janeiro','Espírito Santo'] },
+    'SUL': { icon: '❄️', color: '#A855F7', UFs: ['BRPR','BRSC','BRRS'], nomes: ['Paraná','Santa Catarina','Rio Grande do Sul'] }
 };
+// --- FUNÇÃO DE AUTENTICAÇÃO (LOGIN / CADASTRO) ---
 
-// --- AUTENTICAÇÃO ---
+    // 1. ALTERNAR ENTRE LOGIN E CADASTRO
 function toggleAuthMode() {
     isLoginMode = !isLoginMode;
-    document.getElementById('auth-title').innerText = isLoginMode ? "Minha Jornada" : "Nova Jornada";
-    document.getElementById('btn-auth-main').innerText = isLoginMode ? "Entrar" : "Cadastrar";
-}
+    const title = document.getElementById('auth-title');
+    const btnMain = document.getElementById('btn-auth-main');
+    const textToggle = document.getElementById('auth-text-toggle');
+    const btnToggle = document.getElementById('auth-btn-toggle');
 
+    if (isLoginMode) {
+        title.innerText = "Minha Jornada";
+        btnMain.innerText = "Entrar";
+        textToggle.innerText = "Ainda não tem conta?";
+        btnToggle.innerText = "Cadastrar";
+    } else {
+        title.innerText = "Nova Jornada";
+        btnMain.innerText = "Criar Conta";
+        textToggle.innerText = "Já tem uma conta?";
+        btnToggle.innerText = "Entrar";
+    }
+}
+    
 async function handleAuth() {
-    const email = document.getElementById('auth-email').value;
+    const email = document.getElementById('auth-email').value.trim();
     const pass = document.getElementById('auth-pass').value;
-    if(!email || pass.length < 6) return alert("Preencha corretamente.");
+    const btn = document.getElementById('btn-auth-main');
+
+    if (!email || pass.length < 6) {
+        return toast("E-mail válido e senha de no mínimo 6 dígitos são necessários.", "⚠️");
+    }
+    
+    btn.disabled = true;
+    btn.innerText = "Processando...";
 
     try {
-        if(isLoginMode) {
+        if (isLoginMode) {
             await auth.signInWithEmailAndPassword(email, pass);
+        // Substitua apenas o bloco do "else" (cadastro) dentro da handleAuth
         } else {
+            // Lógica de Cadastro
             const res = await auth.createUserWithEmailAndPassword(email, pass);
             const uid = res.user.uid;
-            const user = "viajante_" + Math.floor(Math.random()*9999);
+            const defaultUser = "user_" + Math.floor(Math.random() * 99999);
+            
+            // Grava no banco e SÓ DEPOIS avisa o sucesso
             await db.ref(`usuarios/${uid}/perfil`).set({
-                nome: "Novo Viajante", username: user, tipoPerfil: "local", bio: "Explorando!", foto: "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                nome: "Novo Viajante",
+                username: defaultUser,
+                foto: "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+                bio: "Explorando o Brasil! 🇧🇷",
+                estados: 0
             });
-            await db.ref(`usernames/${user}`).set(uid);
+            
+            await db.ref(`usernames/${defaultUser}`).set(uid);
+            
+            // Limpa o estado de visita para garantir que abra no SEU perfil novo
+            targetUid = null; 
+            
+            toast("Conta criada com sucesso!", "🌍");
         }
-    } catch(e) { alert(e.message); }
+    } catch (e) {
+        console.error(e);
+        let msg = "Erro na autenticação.";
+        if (e.code === "auth/email-already-in-use") msg = "Este e-mail já está em uso.";
+        if (e.code === "auth/invalid-email") msg = "E-mail inválido.";
+        if (e.code === "auth/user-not-found" || e.code === "auth/wrong-password") msg = "E-mail ou senha incorretos.";
+        toast(msg, "❌");
+    } finally {
+        btn.disabled = false;
+        btn.innerText = isLoginMode ? "Entrar" : "Criar Conta";
+    }
 }
 
+// --- ESCUTAR ESTADO DA CONTA ---
+// Substitua o bloco auth.onAuthStateChanged por este completo:
 auth.onAuthStateChanged(user => {
-    if(user) { eu = user; document.getElementById('auth-screen').style.display='none'; initApp(); }
-    else { document.getElementById('auth-screen').style.display='flex'; }
+    if (user) {
+        eu = user;
+        document.getElementById('auth-screen').style.display = 'none';
+        initApp();
+    } else {
+        // RESET TOTAL AO SAIR
+        eu = null;
+        meuPerfil = {};
+        targetUid = null;
+        
+        // Limpar textos da interface para não "piscar" dados antigos no próximo login
+        document.getElementById('h-nome').innerText = "...";
+        document.getElementById('h-user').innerText = "@...";
+        document.getElementById('perfil-nome').innerText = "...";
+        document.getElementById('perfil-user').innerText = "@...";
+        document.getElementById('perfil-timeline').innerHTML = "";
+        document.getElementById('lista-feed').innerHTML = "";
+        
+        // Limpar inputs de login
+        document.getElementById('auth-email').value = "";
+        document.getElementById('auth-pass').value = "";
+        
+        // Mostrar tela de login
+        document.getElementById('auth-screen').style.display = 'flex';
+        
+        // Forçar recarga para matar listeners ativos (Opcional, mas garante limpeza 100%)
+        // window.location.reload(); 
+    }
 });
-
-function logout() { auth.signOut().then(() => { localStorage.clear(); window.location.reload(); }); }
-
-// --- CORE APP ---
+// --- INICIALIZAÇÃO DO APP ---
 async function initApp() {
+    if (!eu) return;
+
     db.ref(`usuarios/${eu.uid}/perfil`).on('value', snap => {
         meuPerfil = snap.val() || {};
-        document.getElementById('h-nome').innerText = meuPerfil.nome;
-        document.getElementById('h-user').innerText = "@" + meuPerfil.username;
-        document.getElementById('h-avatar').src = meuPerfil.foto;
-        if(!targetUid) carregarPerfilUI(eu.uid);
+        if (meuPerfil.username) {
+            document.getElementById('h-nome').innerText = meuPerfil.nome || "Viajante";
+            document.getElementById('h-user').innerText = '@' + meuPerfil.username;
+            document.getElementById('h-avatar').src = meuPerfil.foto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+            if (!targetUid) carregarPerfilUI(eu.uid);
+        }
     });
 
-    // 2. Carregamento do Mapa com Promessa
     try {
         const res = await fetch('br.svg');
-        if (!res.ok) throw new Error("Erro ao buscar br.svg");
-        const svgText = await res.text();
-        const container = document.getElementById('svg-container');
+        if (!res.ok) throw new Error("Arquivo br.svg não encontrado");
+        let svgText = await res.text();
         
+        const container = document.getElementById('svg-container');
         container.innerHTML = svgText;
-
-        // Localiza o SVG recém injetado
+        
         const svgEl = container.querySelector('svg');
         if (svgEl) {
             svgEl.setAttribute('id', 'mapa-svg-real');
+            // Forçamos o tamanho para evitar erro de matriz
             svgEl.style.width = "100%";
             svgEl.style.height = "100%";
-    
-    setTimeout(() => {
-        const svgEl = document.querySelector('#svg-container svg');
-        svgEl.id = "mapa-svg-real";
-        svgPanZoom(svgEl, { zoomEnabled: true, controlIconsEnabled: false, fit: true, center: true });
-        pintarMapa(targetUid || eu.uid);
-    }, 500);
-
-    // Decide qual mapa pintar: o seu ou o do amigo visitado
-                const donoDoMapa = targetUid || eu.uid;
-                pintarMapa(donoDoMapa);
-                
-                console.log("Mapa carregado e pintado para:", donoDoMapa);
-            }, 500);
+            
+            setTimeout(() => {
+                mapaZoom = svgPanZoom(svgEl, {
+                    zoomEnabled: true,
+                    controlIconsEnabled: false,
+                    fit: true,
+                    center: true,
+                    minZoom: 0.1
+                });
+                pintarMapa(targetUid || eu.uid);
+            }, 800); 
         }
     } catch (e) {
-        console.error("Falha Crítica no Mapa:", e);
+        console.error("Erro ao carregar mapa:", e);
     }
 
-    document.getElementById('svg-container').onclick = e => {
-        const el = e.target.closest('path');
-        if(el && el.id) abrirPopEstado(el.id, targetUid || eu.uid);
+    document.getElementById('svg-container').onclick = (e) => {
+        const path = e.target.closest('path') || e.target.closest('.estado');
+        if (path && path.id) gerenciarCliqueEstado(path.id);
     };
 
     renderFeed();
@@ -352,203 +482,655 @@ async function initApp() {
     verificarConquistas();
 }
 
-    function pintarMapa(uid) {
-    if (!uid) return;
-
-    db.ref(`usuarios/${uid}/viagens`).once('value', snap => {
-        const viagens = snap.val() || {};
-        
-        // Seleciona todos os caminhos do mapa
-        const paths = document.querySelectorAll('#svg-container path');
-        
-        // 1. Limpa todas as cores (Reseta o mapa)
-        paths.forEach(p => p.classList.remove('visitado'));
-
-        // 2. Pinta apenas os estados que estão no banco de dados do UID fornecido
-        Object.values(viagens).forEach(v => {
-            const el = document.getElementById(v.uf); // v.uf deve ser "BRSP", "BRRJ", etc.
-            if (el) {
-                el.classList.add('visitado');
-            }
-        });
-        
-        // Atualiza a tag visual de quem é o mapa
-        const tag = document.getElementById('map-owner-tag');
-        if(tag) tag.innerText = (uid === eu.uid) ? "Meu Mapa" : "Mapa de Amigo";
-    });
+// --- FUNÇÃO ESQUECI SENHA ---
+function resetarSenha() {
+    const email = document.getElementById('auth-email').value.trim();
+    if (!email) return toast("Digite seu e-mail no campo acima.", "📧");
+    
+    auth.sendPasswordResetEmail(email)
+        .then(() => toast("Link de recuperação enviado para seu e-mail!", "📧"))
+        .catch(err => toast("Erro ao enviar e-mail. Verifique o endereço.", "❌"));
 }
 
-    function renderFeed() {
-    db.ref('feed_global').limitToLast(30).on('value', async snap => {
-        const container = document.getElementById('lista-feed');
-        container.innerHTML = "";
-        const posts = Object.values(snap.val() || {}).reverse();
-        const amigosSnap = await db.ref(`usuarios/${eu.uid}/amigos`).once('value');
-        const amigos = Object.keys(amigosSnap.val() || {});
+// --- SISTEMA SOCIAL (AMIZADE/VIP) ---
+async function buscarDinamico(valor) {
+    const resDiv = document.getElementById('res-busca');
+    const query = valor.toLowerCase().trim().replace('@', '');
 
-        for(let p of posts) {
-            const dono = (await db.ref(`usuarios/${p.uid}/perfil`).once('value')).val() || {};
-            if(p.uid === eu.uid || amigos.includes(p.uid) || dono.tipoPerfil === 'brasil') {
-                renderizarCard(p, container);
+    if (query.length < 2) {
+        resDiv.style.display = "none";
+        return;
+    }
+
+    // Buscamos em todos os usuários (Em uma rede grande usaríamos ElasticSearch, aqui usamos o nó de perfis)
+    db.ref('usuarios').once('value', async (snap) => {
+        const todos = snap.val();
+        let html = "";
+        let encontrados = 0;
+
+        for (let uid in todos) {
+            if (uid === eu.uid) continue; // Pula eu mesmo
+
+            const p = todos[uid].perfil;
+            const nomeMatch = p.nome.toLowerCase().includes(query);
+            const userMatch = p.username.toLowerCase().includes(query);
+
+            if (nomeMatch || userMatch) {
+                encontrados++;
+                // Verifica se já são amigos ou se há convite pendente
+                const status = await checarStatusAmizade(uid);
+                
+                html += `
+                    <div class="sugestao-item" onclick="irParaPerfil('${uid}')">
+                        <img src="${p.foto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" class="sugestao-avatar">
+                        <div class="sugestao-info">
+                            <b>${p.nome}</b>
+                            <small>@${p.username}</small>
+                        </div>
+                        <div style="margin-left:auto">
+                             <button class="btn-acao" style="width:auto; padding:6px 12px; font-size:10px; ${status.css}" 
+                                onclick="event.stopPropagation(); enviarPedido('${uid}', this)">
+                                ${status.texto}
+                             </button>
+                        </div>
+                    </div>`;
             }
+            if (encontrados > 5) break; // Limita sugestões para performance
+        }
+
+        if (encontrados > 0) {
+            resDiv.innerHTML = html;
+            resDiv.style.display = "block";
+        } else {
+            resDiv.style.display = "none";
         }
     });
 }
 
-async function renderizarCard(p, container) {
-    const isVIP = (await db.ref(`usuarios/${p.uid}/vips/${eu.uid}`).once('value')).exists();
-    const podeVer = (p.uid === eu.uid) || isVIP || p.abertoParaTodos;
 
-    let gastos = podeVer ? `
-        <span class="tag-gasto">🏨 ${p.h}</span>
-        <span class="tag-gasto">🚗 ${p.t}</span>
-        <span class="tag-gasto">🍴 ${p.al}</span>
-    ` : `<span style="font-size:10px; color:#999; margin-left:10px;">🔒 PRIVADO</span>`;
+    // 2. CHECAR STATUS PARA O BOTÃO
+async function checarStatusAmizade(uidAlvo) {
+    const amigoSnap = await db.ref(`usuarios/${eu.uid}/amigos/${uidAlvo}`).once('value');
+    if (amigoSnap.exists()) return { texto: "Amigo ✓", css: "background:#10B981; opacity:0.7", acao: false };
 
-    container.innerHTML += `
-        <div class="feed-card">
-            <div style="padding:15px; display:flex; justify-content:space-between;">
-                <b onclick="irParaPerfil('${p.uid}')">@${p.user}</b>
-                <small>${p.cidade}</small>
-            </div>
-            <div class="carrossel">${p.fotos ? p.fotos.map(f => `<img src="${f}">`).join('') : ''}</div>
-            <div style="padding:12px 15px; display:flex; align-items:center; border-top:1px solid #eee; overflow-x:auto;">
-                <button onclick="abrirMenuReacao('${p.id}')" style="border:none; background:none; font-size:22px;">
-                    <span id="btn-emoji-${p.id}">🤍</span> <span id="btn-count-${p.id}" style="font-size:14px">0</span>
-                </button>
-                <div style="display:flex; gap:5px; margin-left:10px;">${gastos}</div>
-            </div>
-            <div class="reacoes-menu" id="menu-${p.id}">
-                <span onclick="reagir('${p.id}', '❤️')">❤️</span><span onclick="reagir('${p.id}', '🔥')">🔥</span>
-                <span onclick="reagir('${p.id}', '💙')">💙</span><span onclick="reagir('${p.id}', '✈️')">✈️</span>
-            </div>
-        </div>`;
-    vincularLikes(p.id);
+    const conviteSnap = await db.ref(`convites/${uidAlvo}/${eu.uid}`).once('value');
+    if (conviteSnap.exists()) return { texto: "Enviado", css: "background:#64748B; opacity:0.7", acao: false };
+
+    return { texto: "Conectar", css: "", acao: true };
+}
+    
+    // 3. ENVIAR PEDIDO COM FEEDBACK IMEDIATO
+async function enviarPedido(destUid, btn) {
+    if (!destUid || destUid === eu.uid) return;
+
+    // Feedback visual imediato no botão
+    btn.disabled = true;
+    btn.innerText = "Enviando...";
+    btn.style.opacity = "0.5";
+
+    try {
+        await db.ref(`convites/${destUid}/${eu.uid}`).set({
+            uid: eu.uid,
+            user: meuPerfil.username,
+            nome: meuPerfil.nome,
+            timestamp: Date.now()
+        });
+
+        // Atualiza o botão no perfil e na pesquisa
+        btn.innerText = "Enviado";
+        btn.style.background = "#64748B";
+        btn.style.opacity = "0.7";
+        
+        toast("Solicitação enviada com sucesso!", "📩");
+    } catch (e) {
+        btn.disabled = false;
+        btn.innerText = "Conectar";
+        toast("Erro ao enviar convite.", "❌");
+    }
 }
 
-// --- FUNÇÕES DE APOIO ---
-function vincularLikes(id) {
-    db.ref(`likes/${id}`).on('value', s => {
-        const r = s.val() || {};
-        document.getElementById(`btn-emoji-${id}`).innerText = r[eu.uid] || '🤍';
-        document.getElementById(`btn-count-${id}`).innerText = Object.keys(r).length;
+function ouvirConvites() {
+    db.ref(`convites/${eu.uid}`).on('value', snap => {
+        const list = snap.val();
+        const div = document.getElementById('convites-pendentes');
+        div.innerHTML = list ? "<h4 style='font-size:12px; margin-top:20px;'>🔔 Pedidos de Amizade</h4>" : "";
+        for(let id in list) {
+            div.innerHTML += `
+                <div style="display:flex; justify-content:space-between; align-items:center; background:#F8FAFC; padding:12px; border-radius:15px; margin-bottom:8px;">
+                    <span style="font-size:13px"><b>@${list[id].user}</b> quer ser seu amigo</span>
+                    <button onclick="responderPedido('${id}', true)" style="border:none; background:var(--money); color:white; border-radius:8px; padding:6px 12px; font-weight:800; font-size:11px;">Aceitar</button>
+                </div>
+            `;
+        }
     });
 }
 
-async function reagir(id, emoji) {
-    const ref = db.ref(`likes/${id}/${eu.uid}`);
-    const atual = (await ref.once('value')).val();
-    if(atual === emoji) await ref.remove(); else await ref.set(emoji);
-    document.getElementById(`menu-${id}`).style.display = 'none';
+async function responderPedido(id, aceitou) {
+    if(aceitou) {
+        await db.ref(`usuarios/${eu.uid}/amigos/${id}`).set(true);
+        await db.ref(`usuarios/${id}/amigos/${eu.uid}`).set(true);
+        toast("Agora vocês são amigos!", "🤝");
+    }
+    await db.ref(`convites/${eu.uid}/${id}`).remove();
 }
 
-function abrirMenuReacao(id) {
-    const m = document.getElementById(`menu-${id}`);
-    m.style.display = m.style.display === 'flex' ? 'none' : 'flex';
+async function tratarVIP() {
+    if(!targetUid || targetUid === eu.uid) return;
+    const ref = db.ref(`usuarios/${targetUid}/vips/${eu.uid}`);
+    const snap = await ref.once('value');
+    if(snap.exists()) {
+        await ref.remove();
+        toast("Privilégio VIP removido", "💎");
+    } else {
+        await ref.set(true);
+        toast("Este amigo agora é VIP!", "💎");
+    }
+    carregarPerfilUI(targetUid);
+}
+
+// Navegação de Perfil
+function irParaPerfilProprio() { targetUid = null; trocarAba('perfil', document.querySelectorAll('.nav-item')[4]); }
+function irParaPerfil(uid) { targetUid = uid; trocarAba('perfil', document.querySelectorAll('.nav-item')[4]); carregarPerfilUI(uid); }
+
+async function carregarPerfilUI(uid) {
+    const isMe = uid === eu.uid;
+    const snap = await db.ref(`usuarios/${uid}/perfil`).once('value');
+    const p = snap.val();
+    
+    document.getElementById('perfil-foto').src = p.foto || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+    document.getElementById('perfil-nome').innerText = p.nome;
+    document.getElementById('perfil-user').innerText = '@' + p.username;
+    
+    const socialBar = document.getElementById('perfil-social-actions');
+    socialBar.style.display = isMe ? 'none' : 'flex';
+
+    if(!isMe) {
+        const status = await checarStatusAmizade(uid);
+        const btnA = document.getElementById('btn-amizade');
+        btnA.innerText = status.texto;
+        btnA.style = status.css;
+        // Reatribui o clique para garantir o UID correto
+        btnA.onclick = () => enviarPedido(uid, btnA);
+        
+        const vipSnap = await db.ref(`usuarios/${uid}/vips/${eu.uid}`).once('value');
+        document.getElementById('btn-vip').innerText = vipSnap.exists() ? "💎 VIP Ativo" : "💎 Tornar VIP";
+    }
+    
+    renderTimeline(uid);
+    renderConquistas(uid);
+}
+</script>
+
+<script>
+// --- LOGICA DE POSTAGEM ---
+async function processarFotosPost(input) {
+    fotosPost = [];
+    const container = document.getElementById('previa-post');
+    container.innerHTML = "";
+    for(let f of Array.from(input.files).slice(0,3)) {
+        const b64 = await esmagarImg(f, 600);
+        fotosPost.push(b64);
+        container.innerHTML += `<img src="${b64}" style="width:70px; height:70px; border-radius:15px; object-fit:cover; border:2px solid #fff; box-shadow:0 4px 10px rgba(0,0,0,0.1);">`;
+    }
 }
 
 async function publicarViagem() {
-    const cid = document.getElementById('reg-cidade').value;
+    const cidade = document.getElementById('reg-cidade').value;
     const uf = document.getElementById('reg-uf').value;
     const data = document.getElementById('reg-data').value;
-    if(!cid || !data) return alert("Preencha tudo.");
+    
+    // Captura dos valores individuais
+    const vH = parseFloat(document.getElementById('reg-h').value) || 0;
+    const vT = parseFloat(document.getElementById('reg-t').value) || 0;
+    const vAl = parseFloat(document.getElementById('reg-al').value) || 0;
+    const vAt = parseFloat(document.getElementById('reg-at').value) || 0;
+    
+    const ePraia = document.getElementById('reg-p').checked;
+    const eNatureza = document.getElementById('reg-n').checked;
+
+    if(!cidade || !data) return toast("Cidade e data são obrigatórios!", "⚠️");
 
     const id = Date.now();
+    const totalGeral = vH + vT + vAl + vAt;
+
     const post = {
-        id, uid: eu.uid, user: meuPerfil.username, cidade: cid, uf, data,
-        h: document.getElementById('reg-h').value || 0,
-        t: document.getElementById('reg-t').value || 0,
-        al: document.getElementById('reg-al').value || 0,
-        at: document.getElementById('reg-at').value || 0,
-        abertoParaTodos: document.getElementById('reg-publico-gastos').checked,
+        id: id,
+        uid: eu.uid,
+        user: meuPerfil.username,
+        fotoUser: meuPerfil.foto || "",
+        cidade: cidade,
+        uf: uf,
+        data: data.split('-').reverse().join('/'),
+        // Aqui definimos a estrutura que o feed vai ler:
+        h: vH, 
+        t: vT,
+        al: vAl,
+        at: vAt,
+        total: totalGeral,
+        praia: ePraia,
+        natureza: eNatureza,
         fotos: fotosPost
     };
-    post.total = Number(post.h) + Number(post.t) + Number(post.al);
 
+    // Salva no perfil do usuário e no feed global
     await db.ref(`usuarios/${eu.uid}/viagens/${id}`).set(post);
     await db.ref(`feed_global/${id}`).set(post);
-    trocarAba('feed', document.querySelector('.nav-item'));
-}
-
-async function processarFotosPost(input) {
-    fotosPost = [];
-    for(let f of Array.from(input.files).slice(0,3)) {
-        const reader = new FileReader();
-        reader.readAsDataURL(f);
-        reader.onload = e => { fotosPost.push(e.target.result); };
-    }
-}
-
-function carregarPerfilUI(uid) {
-    db.ref(`usuarios/${uid}/perfil`).on('value', snap => {
-        const p = snap.val() || {};
-        document.getElementById('perfil-nome').innerText = p.nome;
-        document.getElementById('perfil-user').innerText = "@" + p.username;
-        document.getElementById('perfil-foto').src = p.foto;
-        document.getElementById('perfil-bio').innerText = p.bio;
-    });
     
-    db.ref(`usuarios/${uid}/amigos`).on('value', s => {
-        document.getElementById('count-amigos').innerText = Object.keys(s.val() || {}).length;
-    });
+    // Atualiza o contador de estados conquistados
+    atualizarContagemEstados();
 
-    renderTimeline(uid);
-    renderConquistasUI(uid);
+    toast("Memória publicada com sucesso!", "✨");
+    trocarAba('feed', document.querySelectorAll('.nav-item')[0]);
+    
+    // Limpa o formulário
+    document.getElementById('reg-cidade').value = "";
+    document.getElementById('container-previa').innerHTML = ""; 
 }
 
-async function renderTimeline(uid) {
-    const isMe = uid === eu.uid;
-    const dono = (await db.ref(`usuarios/${uid}/perfil`).once('value')).val() || {};
-    const amigos = (await db.ref(`usuarios/${uid}/amigos/${eu.uid}`).once('value')).exists();
-
-    const container = document.getElementById('perfil-timeline');
-    if(!isMe && dono.tipoPerfil === 'local' && !amigos) {
-        container.innerHTML = "🔒 Perfil Privado"; return;
-    }
-
-    db.ref(`usuarios/${uid}/viagens`).on('value', s => {
-        const t = Object.values(s.val() || {}).reverse();
-        container.innerHTML = t.map(v => `
-            <div style="border-left:2px solid red; padding-left:10px; margin-bottom:10px;">
-                <b>${v.cidade}</b> - ${v.data}
-            </div>
-        `).join('');
-    });
+    async function atualizarContagemEstados() {
+    const vSnap = await db.ref(`usuarios/${eu.uid}/viagens`).once('value');
+    const viagens = vSnap.val() || {};
+    const ufsUnicas = new Set(Object.values(viagens).map(v => v.uf));
+    await db.ref(`usuarios/${eu.uid}/perfil/estados`).set(ufsUnicas.size);
 }
+    async function verificarConquistas() {
+    if (!eu) return;
 
-function renderConquistasUI(uid) {
-    db.ref(`usuarios/${uid}/viagens`).once('value', s => {
-        const v = Object.values(s.val() || {});
-        const ufs = new Set(v.map(i => i.uf));
-        const container = document.getElementById('lista-conquistas');
-        container.innerHTML = "";
-        
-        for(let r in REGIOES) {
-            const total = REGIOES[r].UFs.length;
-            const visitados = REGIOES[r].UFs.filter(u => ufs.has(u)).length;
-            const ativa = visitados === total;
-            container.innerHTML += `
-                <div class="badge ${ativa?'active':''}">
-                    <div class="b-icon">${REGIOES[r].icon}</div>
-                    <small>${r}</small>
-                </div>`;
+    const snapshot = await db.ref(`usuarios/${eu.uid}`).once('value');
+    const dados = snapshot.val() || {};
+    const viagens = dados.viagens || {};
+    const amigos = dados.amigos || {};
+    const conquistasSalvas = dados.conquistas || {};
+    
+    const ufsVisitadas = new Set(Object.values(viagens).map(v => v.uf));
+    const qtdAmigos = Object.keys(amigos).length;
+
+    // 1. Checar Metas de Amigos
+    const metasAmigos = [
+        { id: 'amigo_1', qtd: 1, nome: 'Primeiro Contato', icon: '🤝' },
+        { id: 'amigo_100', qtd: 100, nome: 'Influenciador', icon: '📣' },
+        { id: 'amigo_500', qtd: 500, nome: 'Popular', icon: '🌟' },
+        { id: 'amigo_1000', qtd: 1000, nome: 'Embaixador', icon: '👑' },
+        { id: 'amigo_5000', qtd: 5000, nome: 'Lenda', icon: '💎' },
+        { id: 'amigo_10000', qtd: 10000, nome: 'Fenômeno', icon: '🔥' }
+    ];
+
+    metasAmigos.forEach(meta => {
+        if (qtdAmigos >= meta.qtd && !conquistasSalvas[meta.id]) {
+            dispararAlertaConquista(meta.id, meta.nome, meta.icon);
         }
+    });
+
+    // 2. Checar Regiões Completas
+    for (let reg in REGIOES) {
+        const info = REGIOES[reg];
+        const completou = info.UFs.every(uf => ufsVisitadas.has(uf));
+        
+        if (completou && !conquistasSalvas[reg]) {
+            dispararAlertaConquista(reg, `Mestre do ${reg}`, info.icon);
+        }
+    }
+}
+
+async function dispararAlertaConquista(id, nome, icone) {
+    // Trava no banco para não repetir
+    await db.ref(`usuarios/${eu.uid}/conquistas/${id}`).set({ nome, icone, data: Date.now() });
+
+    const html = `
+        <div style="text-align:center;">
+            <div style="font-size:60px; margin-bottom:10px; animation: bounce 1s infinite;">${icone}</div>
+            <h2 style="color:var(--primary); margin:0;">NOVA CONQUISTA!</h2>
+            <p style="font-weight:800; font-size:20px; margin:10px 0;">${nome}</p>
+            <button class="btn-acao" onclick="postarConquistaFeed('${nome}', '${icone}')" style="margin-bottom:10px;">Compartilhar no Feed</button>
+        </div>
+    `;
+    
+    document.getElementById('modal-content').innerHTML = html;
+    document.getElementById('modal-global').style.display = 'flex';
+}
+
+async function postarConquistaFeed(nome, icone) {
+    const id = "badge_" + Date.now();
+    const post = {
+        id, uid: eu.uid, user: meuPerfil.username, fotoUser: meuPerfil.foto || "",
+        isBadge: true, nomeBadge: nome, iconeBadge: icone, timestamp: Date.now()
+    };
+    await db.ref(`feed_global/${id}`).set(post);
+    fecharModal();
+    toast("Conquista compartilhada!", "🚀");
+}
+// --- FEED E INTERAÇÃO (LIKES) ---
+function renderFeed() {
+    db.ref('feed_global').limitToLast(20).on('value', async snap => {
+        const container = document.getElementById('lista-feed');
+        container.innerHTML = "";
+        const posts = Object.values(snap.val() || {}).reverse();
+        
+        for(let p of posts) {
+            // Lógica de Reações (Likes)
+            const reacoesSnap = await db.ref(`likes/${p.id}`).once('value');
+            const reacoesData = reacoesSnap.val() || {};
+            const totalReacoes = Object.keys(reacoesData).length;
+            const minhaReacao = reacoesData[eu.uid] || null; // Pega o emoji que eu usei
+
+            // Card de Conquista (Badge)
+            if (p.isBadge) {
+                container.innerHTML += `
+                    <div class="feed-card" style="border: 2px solid var(--primary); background: linear-gradient(135deg, #fff 0%, #fff5f5 100%);">
+                        <div style="padding: 15px; display: flex; align-items: center; gap: 10px;">
+                            <img src="${p.fotoUser || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" style="width:30px; height:30px; border-radius:50%; object-fit:cover;">
+                            <b onclick="irParaPerfil('${p.uid}')" style="cursor:pointer; font-size:14px;">@${p.user}</b>
+                        </div>
+                        <div style="padding: 30px 20px; text-align: center;">
+                            <div style="font-size: 60px; margin-bottom: 10px; animation: bounce 2s infinite;">${p.iconeBadge}</div>
+                            <b style="font-size: 18px; color: var(--primary); display: block;">${p.nomeBadge}</b>
+                            <p style="font-size: 12px; color: var(--text-sub);">Nova conquista desbloqueada!</p>
+                        </div>
+                    </div>`;
+                continue;
+            }
+
+            // Card de Viagem
+            const isVIP = (p.uid === eu.uid) || (await db.ref(`usuarios/${p.uid}/vips/${eu.uid}`).once('value')).exists();
+            let tagsHtml = "";
+            if(p.praia) tagsHtml += `<span style="background:#E0F2FE; color:#0369A1; padding:4px 8px; border-radius:8px; font-size:10px; font-weight:800; margin-left:5px;">🏖️ PRAIA</span>`;
+            if(p.natureza) tagsHtml += `<span style="background:#DCFCE7; color:#15803D; padding:4px 8px; border-radius:8px; font-size:10px; font-weight:800; margin-left:5px;">🌳 NATUREZA</span>`;
+
+            let gastosHtml = "";
+            if (isVIP) {
+                if(p.h > 0) gastosHtml += `<span style="background:#F1F5F9; padding:4px 8px; border-radius:8px; font-size:11px; font-weight:700;">🏨 R$ ${p.h}</span>`;
+                if(p.t > 0) gastosHtml += `<span style="background:#F1F5F9; padding:4px 8px; border-radius:8px; font-size:11px; font-weight:700;">🚗 R$ ${p.t}</span>`;
+                if(p.al > 0) gastosHtml += `<span style="background:#F1F5F9; padding:4px 8px; border-radius:8px; font-size:11px; font-weight:700;">🍴 R$ ${p.al}</span>`;
+                if(p.at > 0) gastosHtml += `<span style="background:#F1F5F9; padding:4px 8px; border-radius:8px; font-size:11px; font-weight:700;">🎡 R$ ${p.at}</span>`;
+            } else {
+                gastosHtml = `<span style="font-size:10px; font-weight:800; color:var(--text-sub); opacity:0.6;">🔒 GASTOS VIP</span>`;
+            }
+
+            container.innerHTML += `
+                <div class="feed-card" style="margin-bottom: 25px; position:relative;">
+                    <div style="padding:15px; display:flex; align-items:center; justify-content:space-between;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <img src="${p.fotoUser || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'}" style="width:35px; height:35px; border-radius:50%; object-fit:cover;">
+                            <div>
+                                <b onclick="irParaPerfil('${p.uid}')" style="cursor:pointer; font-size:14px;">@${p.user}</b><br>
+                                <small style="color:var(--text-sub); font-size:11px;">${p.cidade} - ${p.uf.replace('BR','')}</small>
+                            </div>
+                        </div>
+                        <div>${tagsHtml}</div>
+                    </div>
+
+                    <div class="carrossel" onscroll="atualizarPontinhos(this, '${p.id}')">
+                        ${p.fotos ? p.fotos.map(f => `<img src="${f}">`).join('') : '<div style="width:100%; height:320px; background:#F8FAFC;"></div>'}
+                    </div>
+
+                    <div class="reacoes-menu" id="menu-${p.id}">
+                        <span onclick="reagir('${p.id}', '❤️')">❤️</span>
+                        <span onclick="reagir('${p.id}', '🔥')">🔥</span>
+                        <span onclick="reagir('${p.id}', '💙')">💙</span>
+                        <span onclick="reagir('${p.id}', '✈️')">✈️</span>
+                    </div>
+
+                    <div style="padding:15px; display:flex; justify-content:space-between; align-items:center;">
+                        <button class="like-btn" onclick="abrirMenuReacao('${p.id}')" style="border:none; background:none; padding:0; display:flex; align-items:center; gap:6px;">
+                            <span style="font-size:24px;">${minhaReacao || '🤍'}</span> 
+                            <span style="font-size:15px; font-weight:800; color:var(--text-main)">${totalReacoes}</span>
+                        </button>
+
+                        <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; max-width: 70%;">
+                            ${gastosHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    });
+}
+
+    function atualizarPontinhos(el, postId) {
+    const index = Math.round(el.scrollLeft / el.offsetWidth);
+    const containerIndicadores = document.getElementById(`ind-${postId}`);
+    if (containerIndicadores) {
+        const pontos = containerIndicadores.querySelectorAll('.ponto');
+        pontos.forEach((p, i) => {
+            if (i === index) p.classList.add('ativo');
+            else p.classList.remove('ativo');
+        });
+    }
+}
+    // Abre o menu de emojis
+    function abrirMenuReacao(postId) {
+    const menu = document.getElementById(`menu-${postId}`);
+    // Fecha outros menus abertos
+    document.querySelectorAll('.reacoes-menu').forEach(m => {
+        if(m.id !== `menu-${postId}`) m.style.display = 'none';
+    });
+    // Alterna o atual
+    menu.style.display = (menu.style.display === 'flex') ? 'none' : 'flex';
+}
+   // Salva a reação no Firebase
+async function reagir(postId, emoji) {
+    const ref = db.ref(`likes/${postId}/${eu.uid}`);
+    const snap = await ref.once('value');
+
+    if (snap.val() === emoji) {
+        // Se clicar no mesmo emoji, remove a curtida
+        await ref.remove();
+    } else {
+        // Salva ou troca o emoji
+        await ref.set(emoji);
+    }
+    
+    document.getElementById(`menu-${postId}`).style.display = 'none';
+}
+
+// Fecha menus ao clicar fora
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.like-btn') && !e.target.closest('.reacoes-menu')) {
+        document.querySelectorAll('.reacoes-menu').forEach(m => m.style.display = 'none');
+    }
+});
+    
+    async function toggleLike(postId) {
+    const ref = db.ref(`likes/${postId}/${eu.uid}`);
+    const snap = await ref.once('value');
+    if(snap.exists()) await ref.remove();
+    else await ref.set(true);
+}
+
+// --- MAPA E PRIVACIDADE ---
+
+    function pintarMapa(uid) {
+    db.ref(`usuarios/${uid}/viagens`).once('value', snap => {
+        const viagens = snap.val() || {};
+        // Remove a cor de todos os estados primeiro
+        document.querySelectorAll('.estado').forEach(p => p.classList.remove('visitado'));
+        
+        // Pinta apenas os visitados
+        Object.values(viagens).forEach(v => {
+            const el = document.getElementById(v.uf);
+            if(el) el.classList.add('visitado');
+        });
+    });
+}
+
+async function gerenciarCliqueEstado(ufId) {
+    const uid = targetUid || eu.uid;
+    // REGRA DE AMIZADE: Se não sou eu, preciso ser amigo para ver detalhes
+    if(uid !== eu.uid) {
+        const amigosSnap = await db.ref(`usuarios/${uid}/amigos/${eu.uid}`).once('value');
+        if(!amigosSnap.exists()) return toast("Apenas amigos podem ver as memórias detalhadas!", "🔒");
+    }
+    abrirPopEstado(ufId, uid);
+}
+
+async function abrirPopEstado(ufId, uid) {
+    const snap = await db.ref(`usuarios/${uid}/viagens`).once('value');
+    const trips = Object.values(snap.val() || {}).filter(v => v.uf === ufId);
+    if(trips.length === 0) return;
+
+    let h = `<h2 style="color:var(--primary); margin-bottom:20px;">🚩 ${ufId.replace('BR','')}</h2>`;
+    trips.forEach(t => {
+        h += `
+            <div style="background:#F8FAFC; border-radius:20px; padding:15px; margin-bottom:15px; text-align:left;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                    <b>${t.cidade}</b>
+                    <small style="color:var(--text-sub)">${t.data}</small>
+                </div>
+                <div style="display:flex; gap:8px; margin-top:10px; overflow-x:auto; padding-bottom:5px;">
+                    ${t.fotos ? t.fotos.map(f => `<img src="${f}" style="width:80px; height:80px; border-radius:12px; object-fit:cover;">`).join('') : ''}
+                </div>
+            </div>
+        `;
+    });
+    document.getElementById('modal-content').innerHTML = h;
+    document.getElementById('modal-icon').innerText = '🗺️';
+    document.getElementById('modal-global').style.display = 'flex';
+}
+
+// --- UTILITÁRIOS ---
+function esmagarImg(file, size = 600) {
+    return new Promise(r => {
+        const reader = new FileReader(); reader.readAsDataURL(file);
+        reader.onload = e => {
+            const img = new Image(); img.src = e.target.result;
+            img.onload = () => {
+                const cv = document.createElement('canvas'); const ctx = cv.getContext('2d');
+                cv.width = size; cv.height = size * (img.height/img.width);
+                ctx.drawImage(img, 0, 0, size, cv.height);
+                r(cv.toDataURL('image/jpeg', 0.6));
+            };
+        };
     });
 }
 
 function trocarAba(id, btn) {
     document.querySelectorAll('.aba').forEach(a => a.classList.remove('ativa'));
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    document.getElementById('aba-'+id).classList.add('ativa');
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    document.getElementById('aba-' + id).classList.add('ativa');
     btn.classList.add('active');
+    
+    if(id !== 'perfil') targetUid = null; 
+    document.getElementById('view-title').innerText = id.charAt(0).toUpperCase() + id.slice(1);
+    
+    if(id === 'mapa') {
+        const uid = targetUid || eu.uid;
+        document.getElementById('map-owner-tag').innerText = (uid === eu.uid) ? "Meu Mapa" : "Mapa de Amigo";
+        pintarMapa(uid);
+        setTimeout(() => mapaZoom.resize().fit().center(), 100);
+    }
+    if(id === 'gastos') renderRelatorioGastos();
     if(id === 'perfil') carregarPerfilUI(targetUid || eu.uid);
 }
 
-function irParaPerfil(uid) { targetUid = uid; trocarAba('perfil', document.querySelectorAll('.nav-item')[4]); }
-function irParaPerfilProprio() { targetUid = null; trocarAba('perfil', document.querySelectorAll('.nav-item')[4]); }
-function fecharModal() { document.getElementById('modal-global').style.display='none'; }
-function toast(m) { alert(m); }
+function toast(msg, icon) {
+    document.getElementById('modal-icon').innerText = icon || '💡';
+    document.getElementById('modal-content').innerHTML = `<p style="font-weight:700; font-size:16px;">${msg}</p>`;
+    document.getElementById('modal-global').style.display = 'flex';
+}
 
+function fecharModal() { document.getElementById('modal-global').style.display = 'none'; }
+
+// --- RELATÓRIOS E CONQUISTAS ---
+function renderRelatorioGastos() {
+    db.ref(`usuarios/${eu.uid}/viagens`).on('value', snap => {
+        const viagens = Object.values(snap.val() || {});
+        let total = 0;
+        const ufs = {};
+        
+        viagens.forEach(v => {
+            total += v.total;
+            ufs[v.uf] = (ufs[v.uf] || 0) + v.total;
+        });
+
+        document.getElementById('valor-total-brasil').innerText = total.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+        
+        let html = '';
+        for(let uf in ufs) {
+            html += `<div style="display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid #F1F5F9;">
+                        <b>🚩 ${uf.replace('BR','')}</b>
+                        <span style="color:var(--money); font-weight:800;">${ufs[uf].toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}</span>
+                     </div>`;
+        }
+        document.getElementById('lista-gastos-uf').innerHTML = html || '<p style="text-align:center; color:var(--text-sub)">Nenhum gasto registrado.</p>';
+    });
+}
+
+function renderConquistas(uid) {
+    db.ref(`usuarios/${uid}/perfil/estados`).on('value', snap => {
+        const n = snap.val() || 0;
+        const conquistas = [
+            {n:1, t:'Início', i:'🌱'}, {n:5, t:'Explorador', i:'🏃'}, {n:10, t:'Aventureiro', i:'⭐'}, 
+            {n:20, t:'Viajante Raiz', i:'🔥'}, {n:26, t:'Mestre do Brasil', i:'👑'}
+        ];
+        let h = '';
+        conquistas.forEach(c => {
+            const ativa = n >= c.n;
+            h += `<div class="badge ${ativa?'active':''}">
+                    <div class="b-icon">${c.i}</div>
+                    <div style="font-size:10px; font-weight:800;">${c.t}</div>
+                  </div>`;
+        });
+        document.getElementById('lista-conquistas').innerHTML = h;
+        document.getElementById('count-conquistas').innerText = conquistas.filter(c => n >= c.n).length;
+    });
+}
+
+function renderTimeline(uid) {
+    db.ref(`usuarios/${uid}/viagens`).on('value', snap => {
+        const container = document.getElementById('perfil-timeline');
+        const trips = Object.values(snap.val() || {}).reverse();
+        container.innerHTML = trips.length ? "" : "<p style='color:var(--text-sub); font-size:13px;'>Nenhuma viagem registrada.</p>";
+        trips.forEach(t => {
+            container.innerHTML += `
+                <div style="border-left:3px solid var(--primary); padding-left:15px; margin-bottom:15px; position:relative;">
+                    <div style="width:12px; height:12px; background:var(--primary); border-radius:50%; position:absolute; left:-7.5px; top:0;"></div>
+                    <b style="font-size:14px;">${t.cidade} - ${t.uf.replace('BR','')}</b><br>
+                    <small style="color:var(--text-sub)">${t.data}</small>
+                </div>
+            `;
+        });
+    });
+}
+
+// Configurações
+function abrirConfiguracoes() {
+    document.getElementById('edit-nome').value = meuPerfil.nome;
+    document.getElementById('edit-user').value = meuPerfil.username;
+    document.getElementById('edit-bio').value = meuPerfil.bio;
+    document.getElementById('modal-config').style.display = 'flex';
+}
+
+async function validarUsername(val) {
+    const user = val.toLowerCase().trim().replace(/[^a-z0-9_]/g, "");
+    document.getElementById('edit-user').value = user;
+    if(user.length < 3) return;
+    const snap = await db.ref(`usernames/${user}`).once('value');
+    userDisponivel = !snap.val() || snap.val() === eu.uid;
+    const msg = document.getElementById('msg-user');
+    msg.innerText = userDisponivel ? "✓ Disponível" : "✕ Já em uso";
+    msg.style.color = userDisponivel ? "var(--money)" : "var(--primary)";
+}
+
+async function salvarConfig() {
+    if(!userDisponivel) return toast("Username ocupado!", "❌");
+    const novo = document.getElementById('edit-user').value;
+    const antigo = meuPerfil.username;
+
+    const updates = {
+        nome: document.getElementById('edit-nome').value,
+        username: novo,
+        bio: document.getElementById('edit-bio').value
+    };
+
+    await db.ref(`usuarios/${eu.uid}/perfil`).update(updates);
+    if(novo !== antigo) {
+        await db.ref(`usernames/${novo}`).set(eu.uid);
+        await db.ref(`usernames/${antigo}`).remove();
+    }
+    document.getElementById('modal-config').style.display = 'none';
+    toast("Perfil atualizado!", "✅");
+}
 </script>
 </body>
 </html>
+
