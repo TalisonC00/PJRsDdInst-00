@@ -344,8 +344,16 @@ function toggleAuthMode() {
         btnToggle.innerText = "Entrar";
     }
 }
+
+    function fazerLogout() {
+    if(confirm("Deseja realmente sair?")) {
+        // Fecha o modal de config antes de sair para não travar a UI
+        document.getElementById('modal-config').style.display = 'none';
+        auth.signOut();
+    }
+}
     
-async function handleAuth() {
+    async function handleAuth() {
     const email = document.getElementById('auth-email').value.trim();
     const pass = document.getElementById('auth-pass').value;
     const btn = document.getElementById('btn-auth-main');
