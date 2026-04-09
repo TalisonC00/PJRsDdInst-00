@@ -206,6 +206,13 @@
                 <label style="display: flex; align-items: center; gap: 6px; font-size:12px; font-weight:700;"><input type="checkbox" id="reg-p" style="width:18px;height:18px;margin:0"> Praia? 🏖️</label>
                 <label style="display: flex; align-items: center; gap: 6px; font-size:12px; font-weight:700;"><input type="checkbox" id="reg-n" style="width:18px;height:18px;margin:0"> Natureza? 🌳</label>
             </div>
+            
+            <div style="margin: 10px 0; padding: 12px; background: #FFF5F5; border-radius: 16px; border: 1px solid #FFE4E6;">
+            <label style="display: flex; align-items: center; gap: 10px; font-size:11px; cursor:pointer; color: var(--primary); text-transform: none;">
+            <input type="checkbox" id="reg-publico-gastos" style="width:20px;height:20px;margin:0"> 
+            <span><b>Exibir valores da viagem?</b>🌍</span>
+            </label>
+            </div>
 
             <label>Fotos (Máx 3)</label>
             <input type="file" id="reg-fotos" multiple accept="image/*" onchange="processarFotosPost(this)">
@@ -276,20 +283,31 @@
 
     <div id="modal-config" class="modal">
         <div class="modal-card">
-            <h3>Configurações de Perfil</h3>
-            <label>Foto de Perfil</label>
-            <input type="file" accept="image/*" onchange="uploadFotoPerfil(this)">
-            <label>Nome Completo</label>
-            <input type="text" id="edit-nome">
-            <label>Nome de Usuário (Username)</label>
-            <input type="text" id="edit-user" oninput="validarUsername(this.value)">
-            <div id="msg-user" style="font-size:10px; font-weight:800; margin-bottom:10px;"></div>
-            <label>Bio</label>
-            <textarea id="edit-bio" rows="3"></textarea>
-            <button class="btn-acao" onclick="salvarConfig()">Salvar Alterações</button>
-            <button onclick="auth.signOut()" style="...">DESCONECTAR CONTA</button>
-            <button onclick="logout()" style="background:none; border:none; color:var(--primary); font-weight:800; margin-top:25px; cursor:pointer; width:100%">DESCONECTAR CONTA</button>
-        </div>
+    <h3>Configurações de Perfil</h3>
+    
+    <label>Foto de Perfil</label>
+    <input type="file" accept="image/*" onchange="uploadFotoPerfil(this)">
+    
+    <label>Nome Completo</label>
+    <input type="text" id="edit-nome">
+    
+    <label>Username</label>
+    <input type="text" id="edit-user" oninput="validarUsername(this.value)">
+    <div id="msg-user" style="font-size:10px; font-weight:800; margin-bottom:10px;"></div>
+    
+    <label>Bio</label>
+    <textarea id="edit-bio" rows="2"></textarea>
+    
+    <label>Tipo de Perfil</label>
+    <select id="edit-tipo">
+        <option value="brasil">Viajante Brasil (Público)</option>
+        <option value="local">Viajante Local (Privado)</option>
+    </select>
+
+    <button class="btn-acao" onclick="salvarConfig()">Salvar Alterações</button>
+    
+    <button onclick="logout()" style="background:none; border:none; color:var(--primary); font-weight:800; margin-top:25px; cursor:pointer; width:100%">DESCONECTAR CONTA</button>
+</div>
     </div>
 
 <script>
