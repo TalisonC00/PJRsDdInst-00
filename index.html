@@ -643,6 +643,11 @@ async function carregarPerfilUI(uid) {
     
     const socialBar = document.getElementById('perfil-social-actions');
     socialBar.style.display = isMe ? 'none' : 'flex';
+    db.ref(`usuarios/${uid}/amigos`).on('value', snap => {
+    const totalAmigos = snap.numChildren();
+    const elAmigos = document.getElementById('count-amigos');
+    if (elAmigos) elAmigos.innerText = totalAmigos;
+});
 
     if(!isMe) {
         const status = await checarStatusAmizade(uid);
@@ -654,14 +659,11 @@ async function carregarPerfilUI(uid) {
         
         const vipSnap = await db.ref(`usuarios/${uid}/vips/${eu.uid}`).once('value');
         document.getElementById('btn-vip').innerText = vipSnap.exists() ? "💎 VIP Ativo" : "💎 Tornar VIP";
-    }
-    
+    }  
     renderTimeline(uid);
     renderConquistas(uid);
 }
-</script>
 
-<script>
 // --- LOGICA DE POSTAGEM ---
 async function processarFotosPost(input) {
     fotosPost = [];
@@ -736,24 +738,31 @@ async function publicarViagem() {
     async function verificarConquistas() {
     if (!eu) return;
 
+    // Buscamos os dados APENAS do usuário logado (eu)
     const snapshot = await db.ref(`usuarios/${eu.uid}`).once('value');
     const dados = snapshot.val() || {};
     const viagens = dados.viagens || {};
     const amigos = dados.amigos || {};
-    const conquistasSalvas = dados.conquistas || {};
+    const conquistasExistentes = dados.conquistas || {};
     
     const ufsVisitadas = new Set(Object.values(viagens).map(v => v.uf));
     const qtdAmigos = Object.keys(amigos).length;
 
-    // 1. Checar Metas de Amigos
-    const metasAmigos = [
-        { id: 'amigo_1', qtd: 1, nome: 'Primeiro Contato', icon: '🤝' },
-        { id: 'amigo_100', qtd: 100, nome: 'Influenciador', icon: '📣' },
-        { id: 'amigo_500', qtd: 500, nome: 'Popular', icon: '🌟' },
-        { id: 'amigo_1000', qtd: 1000, nome: 'Embaixador', icon: '👑' },
-        { id: 'amigo_5000', qtd: 5000, nome: 'Lenda', icon: '💎' },
-        { id: 'amigo_10000', qtd: 10000, nome: 'Fenômeno', icon: '🔥' }
-    ];
+    // Regra: Primeiro Amigo
+    if (qtdAmigos >= 1 && !conquistasExistentes['amigo_1']) {
+        dispararAlertaConquista('amigo_1', 'Primeiro Contato', '🤝');
+    }
+
+    // Regra: Início (Primeira Viagem)
+    if (ufsVisitadas.size >= 1 && !conquistasExistentes['inicio']) {
+        dispararAlertaConquista('inicio', 'Início da Jornada', '🌱');
+    }
+    
+    // Regra: Explorador (5 Estados)
+    if (ufsVisitadas.size >= 5 && !conquistasExistentes['explorador']) {
+        dispararAlertaConquista('explorador', 'Explorador', '🏃');
+    }
+}
 
     metasAmigos.forEach(meta => {
         if (qtdAmigos >= meta.qtd && !conquistasSalvas[meta.id]) {
@@ -1056,22 +1065,45 @@ function renderRelatorioGastos() {
 }
 
 function renderConquistas(uid) {
-    db.ref(`usuarios/${uid}/perfil/estados`).on('value', snap => {
-        const n = snap.val() || 0;
-        const conquistas = [
-            {n:1, t:'Início', i:'🌱'}, {n:5, t:'Explorador', i:'🏃'}, {n:10, t:'Aventureiro', i:'⭐'}, 
-            {n:20, t:'Viajante Raiz', i:'🔥'}, {n:26, t:'Mestre do Brasil', i:'👑'}
+    if (!uid) return;
+
+    // Escuta os dados específicos DESTE UID (seja o seu ou do amigo)
+    db.ref(`usuarios/${uid}`).on('value', snap => {
+        const dados = snap.val() || {};
+        
+        // 1. Pega os estados visitados do perfil desse UID
+        const nEstados = (dados.perfil && dados.perfil.estados) || 0;
+        
+        // 2. Pega as conquistas salvas no nó desse UID
+        const conquistasSalvas = dados.conquistas || {};
+
+        const conquistasBase = [
+            {id: 'inicio', n: 1, t: 'Início', i: '🌱'},
+            {id: 'explorador', n: 5, t: 'Explorador', i: '🏃'},
+            {id: 'aventureiro', n: 10, t: 'Aventureiro', i: '⭐'},
+            {id: 'mestre', n: 26, t: 'Mestre do Brasil', i: '👑'}
         ];
-        let h = '';
-        conquistas.forEach(c => {
-            const ativa = n >= c.n;
-            h += `<div class="badge ${ativa?'active':''}">
+
+        let html = '';
+        let totalAcesas = 0;
+
+        conquistasBase.forEach(c => {
+            // A conquista só "acende" se o UID atual atingiu os estados OU se já tem o registro
+            const ativa = nEstados >= c.n || conquistasSalvas[c.id];
+            if (ativa) totalAcesas++;
+
+            html += `
+                <div class="badge ${ativa ? 'active' : ''}">
                     <div class="b-icon">${c.i}</div>
                     <div style="font-size:10px; font-weight:800;">${c.t}</div>
-                  </div>`;
+                </div>`;
         });
-        document.getElementById('lista-conquistas').innerHTML = h;
-        document.getElementById('count-conquistas').innerText = conquistas.filter(c => n >= c.n).length;
+
+        const listaEl = document.getElementById('lista-conquistas');
+        const countEl = document.getElementById('count-conquistas');
+        
+        if (listaEl) listaEl.innerHTML = html;
+        if (countEl) countEl.innerText = totalAcesas;
     });
 }
 
