@@ -729,18 +729,20 @@ async function publicarViagem() {
     document.getElementById('container-previa').innerHTML = ""; 
 }
 
-    async function atualizarContagemEstados() {
+async function atualizarContagemEstados() {
     const vSnap = await db.ref(`usuarios/${eu.uid}/viagens`).once('value');
     const viagens = vSnap.val() || {};
     const ufsUnicas = new Set(Object.values(viagens).map(v => v.uf));
     await db.ref(`usuarios/${eu.uid}/perfil/estados`).set(ufsUnicas.size);
 }
-    async function verificarConquistas() {
+
+async function verificarConquistas() {
     if (!eu) return;
 
-    // Buscamos os dados APENAS do usuário logado (eu)
+    // Buscamos os dados APENAS do usuário logado (eu) para garantir isolamento
     const snapshot = await db.ref(`usuarios/${eu.uid}`).once('value');
     const dados = snapshot.val() || {};
+    
     const viagens = dados.viagens || {};
     const amigos = dados.amigos || {};
     const conquistasExistentes = dados.conquistas || {};
@@ -748,37 +750,51 @@ async function publicarViagem() {
     const ufsVisitadas = new Set(Object.values(viagens).map(v => v.uf));
     const qtdAmigos = Object.keys(amigos).length;
 
-    // Regra: Primeiro Amigo
-    if (qtdAmigos >= 1 && !conquistasExistentes['amigo_1']) {
-        dispararAlertaConquista('amigo_1', 'Primeiro Contato', '🤝');
-    }
-
-    // Regra: Início (Primeira Viagem)
-    if (ufsVisitadas.size >= 1 && !conquistasExistentes['inicio']) {
-        dispararAlertaConquista('inicio', 'Início da Jornada', '🌱');
-    }
-    
-    // Regra: Explorador (5 Estados)
-    if (ufsVisitadas.size >= 5 && !conquistasExistentes['explorador']) {
-        dispararAlertaConquista('explorador', 'Explorador', '🏃');
-    }
-}
+    // --- REGRAS DE AMIGOS ---
+    const metasAmigos = [
+        { id: 'amigo_1', qtd: 1, nome: 'Primeiro Contato', icon: '🤝' },
+        { id: 'amigo_100', qtd: 100, nome: 'Influenciador', icon: '📣' },
+        { id: 'amigo_500', qtd: 500, nome: 'Popular', icon: '🌟' },
+        { id: 'amigo_1000', qtd: 1000, nome: 'Embaixador', icon: '👑' }
+    ];
 
     metasAmigos.forEach(meta => {
-        if (qtdAmigos >= meta.qtd && !conquistasSalvas[meta.id]) {
+        if (qtdAmigos >= meta.qtd && !conquistasExistentes[meta.id]) {
             dispararAlertaConquista(meta.id, meta.nome, meta.icon);
         }
     });
 
-    // 2. Checar Regiões Completas
+    // --- REGRAS DE ESTADOS (QUANTIDADE) ---
+    if (ufsVisitadas.size >= 1 && !conquistasExistentes['inicio']) {
+        dispararAlertaConquista('inicio', 'Início da Jornada', '🌱');
+    }
+    if (ufsVisitadas.size >= 5 && !conquistasExistentes['explorador']) {
+        dispararAlertaConquista('explorador', 'Explorador', '🏃');
+    }
+    if (ufsVisitadas.size >= 10 && !conquistasExistentes['aventureiro']) {
+        dispararAlertaConquista('aventureiro', 'Aventureiro', '⭐');
+    }
+    if (ufsVisitadas.size >= 26 && !conquistasExistentes['mestre_brasil']) {
+        dispararAlertaConquista('mestre_brasil', 'Mestre do Brasil', '👑');
+    }
+
+    // --- REGRAS DE REGIÕES COMPLETAS ---
     for (let reg in REGIOES) {
         const info = REGIOES[reg];
-        const completou = info.UFs.every(uf => ufsVisitadas.has(uf));
+        // Verifica se todas as UFs daquela região estão no Set de visitadas
+        const completouRegiao = info.UFs.every(uf => ufsVisitadas.has(uf));
         
-        if (completou && !conquistasSalvas[reg]) {
-            dispararAlertaConquista(reg, `Mestre do ${reg}`, info.icon);
+        if (completouRegiao && !conquistasExistentes['regiao_' + reg]) {
+            dispararAlertaRegiao(reg, info);
         }
     }
+}
+
+// Função auxiliar para disparar conquista de região (opcional, para manter o padrão)
+async function dispararAlertaRegiao(regId, info) {
+    const idUnico = 'regiao_' + regId;
+    const nomeConquista = `Mestre do ${regId.charAt(0) + regId.slice(1).toLowerCase()}`;
+    dispararAlertaConquista(idUnico, nomeConquista, info.icon);
 }
 
 async function dispararAlertaConquista(id, nome, icone) {
