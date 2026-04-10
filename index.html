@@ -717,6 +717,8 @@ async function publicarViagem() {
     // Salva no perfil do usuário e no feed global
     await db.ref(`usuarios/${eu.uid}/viagens/${id}`).set(post);
     await db.ref(`feed_global/${id}`).set(post);
+    await atualizarContagemEstados(); 
+    await verificarConquistas();
     
     // Atualiza o contador de estados conquistados
     atualizarContagemEstados();
@@ -724,9 +726,13 @@ async function publicarViagem() {
     toast("Memória publicada com sucesso!", "✨");
     trocarAba('feed', document.querySelectorAll('.nav-item')[0]);
     
-    // Limpa o formulário
-    document.getElementById('reg-cidade').value = "";
-    document.getElementById('container-previa').innerHTML = ""; 
+    // LIMPEZA SEGURA (Garante que o elemento existe antes de limpar)
+    const inputCidade = document.getElementById('reg-cidade');
+    const containerPrevia = document.getElementById('previa-post'); // ID correto do seu HTML
+    
+    if(inputCidade) inputCidade.value = "";
+    if(containerPrevia) containerPrevia.innerHTML = ""; 
+    fotosPost = []; // Reseta o array de fotos global
 }
 
 async function atualizarContagemEstados() {
